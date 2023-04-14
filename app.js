@@ -1,18 +1,25 @@
 // app.js
 // 서버에서 사용할 미들웨어를 정의하는 곳
+const jsonToFirestore = require('./routes/import');
+
 
 const express = require('express');
-const path = require('path');
-var serveStatic = require("serve-static"); //특정 폴더를 패스로 접근 가능하게 하는것.
-var expressErrorHandler = require("express-error-handler");
-// var cookieParser = require("cookie-parser");
-// var expressSession = require("express-session");
+const serveStatic = require('serve-static');
 
+const path = require('path');
 
 const fs = require('fs');
 const multer = require('multer');
 const csvtojson = require('csvtojson');
-// const { convertCsv2JSON } = require('./routes/fileController');
+
+
+// Firebase 관련 패키지
+const admin = require("firebase-admin");
+const firestoreService = require('firestore-export-import');
+const firebaseConfig = require("./config");
+const serviceAccount = require('./serviceAccount.json');
+
+
 
 
 const app = express();
@@ -21,12 +28,12 @@ const port = 3000; // 서버 포트 번호
 
 
 
+
 // middleware 등록
 app.use(express.json());
 app.use(express.urlencoded( { extended: false } ));
 app.use(express.static(path.join(__dirname, "views")));
-// app.use("/public",serveStatic(path.join(__dirname,"public"))); //public (실제)폴더의 이름을 써준것
-app.use("/upload",serveStatic(path.join(__dirname, "uploads"))); //use앞은 가상주소(upload) / 뒤에는 실제 주소 (uploads)
+app.use("/upload", serveStatic(path.join(__dirname, "uploads"))); //use앞은 가상주소(upload) / 뒤에는 실제 주소 (uploads)
 
 
 
@@ -42,9 +49,9 @@ var storage = multer.diskStorage({
 		var extension = path.extname(file.originalname);
 		var basename = path.basename(file.originalname, extension);
 		
-		callback(null, basename + extension); // 파일이름이 abc.txt로 들어간다.
+		// callback(null, basename + extension); // 파일이름이 abc.txt로 들어간다.
 		// callback(null,file.originalname); 위와 동일하다
-		// callback(null, basename + Date.now() + extension); // 파일이름 + 현재 날짜를 붙임
+		callback(null, basename + Date.now() + extension); // 파일이름 + 현재 날짜를 붙임
 		//callback(null,Date.now().toString() + path.extname(file.originalname)); //현재 날짜만 붙임.
 		
 	},
@@ -60,111 +67,62 @@ const upload = multer({
 		files:10,
 		fileSize: 1024 * 1024 * 1024
 	},
-	preservePath: true,
 
 });
  
- 
-//라우터 객체 추가 
-var router = express.Router();
+
+// var errorHandler = expressErrorHandler({
+	
+// 	static : {
+// 		"404":"./views/404.html"
+// 	}
+	
+// });
+
+// Firebase 초기화
+console.log('Initializing Firebase');
+admin.initializeApp({
+	credential: admin.credential.cert(serviceAccount),
+	databaseURL: firebaseConfig.databaseURL
+});
+console.log('Firebase Initialized');
 
 
-const showUploadedFiles = (req, res, next) => {
+app.post('/process/file', upload.single("upload"), (req, res) => {
 
-    console.log("/process/file 호출.."); 
+	if (!req.file) {
+		res.send("파일이 업로드되지 않았습니다.");
+	} else {
 
-    try {
-		
-		let file = req.file; // 파일 정보를 배열로 받음
+		let file = req.file;
 
-		console.log(`file: ${file}`);
-		
-		//console.log(req.files[0]); //req로 넘어온 files의 0번째 출력
-		//console.log(req.files[1]);
-		
-		//파일 정보를 저장할 변수
 		let originalName = file.originalname;
-		let fileName = file.filename;
-		let mimeType = file.mimetype
-		let size = file.size;
-		
-		res.writeHead("200",{"Content-type":"text/html;charset=utf-8"});
-		res.write("<h1>파일 업로드 성공</h1>");
-		
-		res.write("<hr/>");
-		res.write("<div>원본파일명 : " + originalName + "</div>");
-		res.write("<div>저장파일명 : " + fileName + "</div>");
-		res.write("<div>MimeType : " + mimeType + "</div>");
-		res.write("<div>파일크기 : " + size + "</div>");
-		
-        req.data = path.join(__dirname, 'uploads', fileName);
+		let filePath = file.path;
+		let extension = path.extname(originalName);
+		var basename = path.basename(file.originalname, extension);
 
-		console.log(`req.data: ${req.data}`);
+		// console.log(`file.originalname: ${originalName}`);
+		// console.log(`file.path: ${filePath}`);
 
-        next();
-		
-		
-	} catch (err) {
-		console.dir(err.stack); // 에러가 있으면 뿌려라  == e.stack
+		// json 저장
+		let dirpath = path.join(__dirname, 'assets'); // 저장 디렉토리 경로
+    	let jsonfilepath = path.join(dirpath, `${basename}.json`); // 저장 파일 경로
+
+		csvtojson()
+			.fromFile(path.join(__dirname, filePath))
+			.then(data => {
+				fs.writeFileSync(jsonfilepath, JSON.stringify({"users": data}, null, 4));
+				jsonToFirestore(jsonfilepath);
+			})
+
+		res.sendStatus(200);
 	}
 
-};
-
-app.use(showUploadedFiles);
-
-const convertCsv2JSON = (req, res) => {
-    var dirpath = path.join(__dirname, 'assets');
-    var jsonfilepath = "";
-
-    console.log(`convertCsvToJSON 내부. req.data: ${req.data}`);
-
-    try {
-
-        if (!fs.existsSync(dirpath)) {
-            fs.mkdirSync(dirpath);
-        }
-
-        jsonfilepath = path.join(dirpath, `${path.parse(req.data).name}.json`);
-
-        csvtojson()
-            .fromFile(req.data)
-            .then(data => {
-                fs.writeFileSync(jsonfilepath, JSON.stringify({"users": data}, null, 4));
-            })
-
-        res.data = jsonfilepath
-
-        // next();
-
-    } catch (err) {
-        console.log(err);
-    }
-}
-
-app.use(convertCsv2JSON);
-
- 
-// 라우팅 함수 등록 - https://backendcode.tistory.com/131
-// router.route("/process/file").post(upload.array("upload", 2), showUploadedFiles, convertCsv2JSON);
-router.route("/process/file").post(upload.single("upload"), showUploadedFiles, convertCsv2JSON);
- 
- 
-//라우터 객체를 app객체에 추가
-app.use("/", router);
- 
-
-var errorHandler = expressErrorHandler({
-	
-	static : {
-		"404":"./views/404.html"
-	}
-	
 });
- 
-app.use(expressErrorHandler.httpError(404));
-app.use(errorHandler);
- 
- 
+
+
+
+
 //Express 서버 시작
 app.listen(port, () => {
     console.log(`서버가 실행됩니다. http:localhost:${port}`);

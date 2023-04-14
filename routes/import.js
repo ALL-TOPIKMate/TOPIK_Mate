@@ -4,17 +4,16 @@ const firestoreService = require('firestore-export-import');
 const firebaseConfig = require("../config.js");
 const serviceAccount = require('../serviceAccount.json');
 
-const path = require('path');
 
 // JSON to firestore
 const jsonToFirestore = async (filepath) => {
     try {
-        console.log('Initializing Firebase');
-        admin.initializeApp({
-            credential: admin.credential.cert(serviceAccount),
-            databaseURL: firebaseConfig.databaseURL
-        });
-        console.log('Firebase Initialized');
+        // console.log('Initializing Firebase');
+        // admin.initializeApp({
+        //     credential: admin.credential.cert(serviceAccount),
+        //     databaseURL: firebaseConfig.databaseURL
+        // });
+        // console.log('Firebase Initialized');
 
         await firestoreService.restore(filepath);
         console.log("Upload Success");
