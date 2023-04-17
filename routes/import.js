@@ -16,6 +16,7 @@ const jsonToFirestore = async (filepath) => {
         // console.log('Firebase Initialized');
 
         await firestoreService.restore(filepath);
+
         console.log("Upload Success");
 
     } catch (err) {

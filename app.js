@@ -79,7 +79,25 @@ const upload = multer({
 	
 // });
 
-// Firebase 초기화
+
+const assetsDirPath = path.join(__dirname, 'assets');
+const uploadsDirPath = path.join(__dirname, 'uploads');
+
+
+// assects 디렉토리 생성 - 결과 JSON 저장 디렉토리
+if (!fs.existsSync(assetsDirPath)) {
+	fs.mkdirSync(assetsDirPath);
+	console.log(`Created a directory. Path: ${assetsDirPath}`);
+}
+
+if (!fs.existsSync(uploadsDirPath)) {
+	fs.mkdirSync(uploadsDirPath);
+	console.log(`Created a directory. Path: ${uploadsDirPath}`);
+}
+
+
+
+// Firebase 커넥션 초기화
 console.log('Initializing Firebase');
 admin.initializeApp({
 	credential: admin.credential.cert(serviceAccount),
@@ -111,7 +129,20 @@ app.post('/process/file', upload.single("upload"), (req, res) => {
 		csvtojson()
 			.fromFile(path.join(__dirname, filePath))
 			.then(data => {
-				fs.writeFileSync(jsonfilepath, JSON.stringify({"users": data}, null, 4));
+				/**
+				 * {
+				 *     "컬렉션 이름": [
+				 *         {
+				 *             "필드1": "값1",
+				 *             "필드2": "값2", ...
+				 *         },
+				 *         { ... },
+				 *     ]
+				 * }
+				 */
+				fs.writeFileSync(jsonfilepath, JSON.stringify({"problems": data}, null, 4));
+				
+				// Firebase에 JSON 적재
 				jsonToFirestore(jsonfilepath);
 			})
 
