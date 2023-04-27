@@ -126,7 +126,40 @@ app.post('/process/file', upload.single("upload"), (req, res) => {
 		let dirpath = path.join(__dirname, 'assets'); // 저장 디렉토리 경로
     	let jsonfilepath = path.join(dirpath, `${basename}.json`); // 저장 파일 경로
 
-		csvtojson()
+		csvtojson({
+
+			// 커스텀 파서 만들기 - 필드 타입 정의 가능
+			colParser: {
+				"PRB_ID": "string",
+				"PRB_RSC": "string",
+				"PRB_SECT": "string",
+				"PRB_NUM": "string",
+				"PRB_CORRT_ANSW": "string",
+
+				"PRB_POINT": "number", // 점수 계산을 위해 number로 지정해야 함
+				"PRB_MAIN_CONT": "string",
+				"PRB_SUB_CONT": "string",
+				"PRB_TXT": "string",
+				"PRB_SCRPT": "string",
+				"AUD_REF": function () {
+
+				},
+				"IMG_REF": function () {
+
+				},
+				"PRB_CHOICE1": "string",
+				"PRB_CHOICE2": "string",
+				"PRB_CHOICE3": "string",
+				"PRB_CHOICE4": "string",
+				"연속 문제(여부)": "omit",
+
+				"AUD_SCRPT": "string"
+			},
+
+			// 자동 타입 체크 
+			// - colParser 뒤에 위치 시켜서 사용자가 타입을 지정하지 않은 필드에 대한 자동 타입 체크
+			checkType: true,
+		})
 			.fromFile(path.join(__dirname, filePath))
 			.then(data => {
 				/**
