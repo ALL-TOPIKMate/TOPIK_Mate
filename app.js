@@ -27,6 +27,9 @@ const http = require('http').createServer(app);
 const port = 3000; // 서버 포트 번호
 
 
+// Firebase Cloud Database 
+const collectionName = 'test';
+
 
 
 // middleware 등록
@@ -162,18 +165,47 @@ app.post('/process/file', upload.single("upload"), (req, res) => {
 		})
 			.fromFile(path.join(__dirname, filePath))
 			.then(data => {
+
+				// data -> JSON 오브젝트로 사용하기
+				jsonStr = JSON.stringify(data);
+				jsonObj = JSON.parse(jsonStr); // 배열
+
+
+				// Firebase Cloud Database에 bulk할 JSON 형태
 				/**
+				 * *************** dataset *************** 
 				 * {
-				 *     "컬렉션 이름": [
-				 *         {
+				 *     "컬렉션 이름": {
+				 *         "도큐먼트ID": {
 				 *             "필드1": "값1",
 				 *             "필드2": "값2", ...
 				 *         },
-				 *         { ... },
-				 *     ]
+				 *         "도큐먼트ID": { 
+				 *             ... 
+				 *         },
+				 *     }
 				 * }
 				 */
-				fs.writeFileSync(jsonfilepath, JSON.stringify({"problems": data}, null, 4));
+				let dataset = new Object();
+				let collection = new Object();
+
+				// 문제 데이터 순회
+				jsonObj.forEach(function(element, idx) {
+
+					// 각 도큐먼트(문제) ID를 PRB_ID로 지정
+					console.log(element.PRB_ID);
+					let prbId = element.PRB_ID;
+
+					collection[`${prbId}`] = element;
+					
+				});
+
+				dataset[`${collectionName}`] = collection;
+
+
+				// JSON 파일 저장
+				fs.writeFileSync(jsonfilepath, JSON.stringify(dataset, null, 4));
+				
 				
 				// Firebase에 JSON 적재
 				jsonToFirestore(jsonfilepath);

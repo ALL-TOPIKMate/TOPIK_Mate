@@ -1,5 +1,9 @@
 node_modules/
 
+# data 파일들
+assets/
+uploads/
+
 # Firebase SDK
 serviceAccount.json
 config.json
