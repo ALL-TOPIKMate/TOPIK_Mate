@@ -206,7 +206,7 @@ app.post('/process/file', upload.single("upload"), (req, res) => {
 				// JSON 파일 저장
 				fs.writeFileSync(jsonfilepath, JSON.stringify(dataset, null, 4));
 				
-				
+
 				// Firebase에 JSON 적재
 				jsonToFirestore(jsonfilepath);
 			})
