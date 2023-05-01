@@ -19,7 +19,7 @@ const TypeScreen = ({ navigation }) => {
       </View>
       {showButtons && (
         <View style={styles.buttonColumn}>
-          <Button title="Button 1" onPress={() => { console.log("Button 4 pressed") }} />
+          <Button title="Button 1" onPress={() => { navigation.navigate('TypeQuest') }} />
           <Button title="Button 2" onPress={() => { console.log("Button 5 pressed") }} />
           <Button title="Button 3" onPress={() => { console.log("Button 6 pressed") }} />
         </View>
