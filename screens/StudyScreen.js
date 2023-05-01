@@ -1,18 +1,21 @@
-import React, {useState, useEffect} from 'react';
+import React, {useState, useEffect, useRef} from 'react';
 
-import {View, Text, StyleSheet, Button} from 'react-native'
-import AppNameHeader from './component/AppNameHeader'
+import {View, Text, StyleSheet} from 'react-native'
+
 import ProbMain from "./component/ProbMain";
 import AudRef from "./component/AudRef";
+import ProbChoice from "./component/ProbChoice";
 
-const LoadProblemScreen = (loadedProblem, setLoadedProblem, problemStructure, setProblemStructure) => {
+
+
+const LoadProblemScreen = (loadedProblem, setProblemStructure, choiceRef, setNextBtn) => {
     // MOUNT시 실행되는 함수
     // 모든 문제에 대해서 구조화
   
     let question = []
     let problemStructures = [];
 
-    console.log(loadedProblem.length)
+    // console.log(loadedProblem.length)
     for(var i=0; i<loadedProblem.length; i++){
         question = []
 
@@ -25,44 +28,42 @@ const LoadProblemScreen = (loadedProblem, setLoadedProblem, problemStructure, se
             
             // PRB_SUB_CONT: 서브 문제
             if(loadedProblem[i].PRB_SUB_CONT){
-              question.push(<Text key = "3">{loadedProblem[i].PRB_SUB_CONT}</Text>)
+              question.push(<Text style = {{flex: 3}}>{loadedProblem[i].PRB_SUB_CONT}</Text>)
             }
-            
-            // PRB_CHOICE1 ~ 4: 4지 선다
-            question.push(<Text key = "4">{loadedProblem[i].PRB_CHOICE1}</Text>)
-            
-            question.push(<Text key = "5">{loadedProblem[i].PRB_CHOICE2}</Text>)
-            
-            question.push(<Text key = "6">{loadedProblem[i].PRB_CHOICE3}</Text>)
-            
-            question.push(<Text key = "7">{loadedProblem[i].PRB_CHOICE4}</Text>)
+
         }else if(loadedProblem[i].PRB_SECT == "읽기"){
             // PRB_TXT: 지문
-            question.push(<Text key = "2">{loadedProblem[i].PRB_TXT}</Text>)
+            question.push(<Text style = {{flex: 3}}>{loadedProblem[i].PRB_TXT}</Text>)
         
              // PRB_SUB_CONT: 서브 문제
              if(loadedProblem[i].PRB_SUB_CONT){
-                question.push(<Text key = "3">{loadedProblem[i].PRB_SUB_CONT}</Text>)
+                question.push(<Text style = {{flex: 3}}>{loadedProblem[i].PRB_SUB_CONT}</Text>)
               }// PRB_SCRPT: 서브 지문
-              else if(loadedProblem[i].PRB_SCRPT){
-                question.push(<Text key = "3">{loadedProblem[i].PRB_SCRPT}</Text>)  
+              if(loadedProblem[i].PRB_SCRPT){
+                question.push(<Text style = {{flex: 3}}>{loadedProblem[i].PRB_SCRPT}</Text>)  
               }
-        
-               // PRB_CHOICE1 ~ 4: 4지 선다
-            question.push(<Text key = "4">{loadedProblem[i].PRB_CHOICE1}</Text>)
-            
-            question.push(<Text key = "5">{loadedProblem[i].PRB_CHOICE2}</Text>)
-            
-            question.push(<Text key = "6">{loadedProblem[i].PRB_CHOICE3}</Text>)
-            
-            question.push(<Text key = "7">{loadedProblem[i].PRB_CHOICE4}</Text>)
         }
 
-        problemStructures.push(<View>{question}</View>)
+        // PRB_CHOICE1 ~ 4: 4지 선다
+        question.push(<ProbChoice
+            PRB_CHOICE1= {loadedProblem[i].PRB_CHOICE1} 
+            PRB_CHOICE2={loadedProblem[i].PRB_CHOICE2} 
+            PRB_CHOICE3= {loadedProblem[i].PRB_CHOICE3} 
+            PRB_CHOICE4={loadedProblem[i].PRB_CHOICE4} 
+            PRB_CORRT_ANSW = {loadedProblem[i].PRB_CORRT_ANSW}
+
+            choiceRef = {choiceRef}
+            nextBtn = {i}
+            setNextBtn = {setNextBtn}
+
+            key = {i}
+        />)
+
+        problemStructures.push(<View style = {styles.containerPos}>{question}</View>)
     }
 
 
-    console.log(problemStructures)
+    // console.log(problemStructures)
 
 
 
@@ -77,12 +78,18 @@ const LoadProblemScreen = (loadedProblem, setLoadedProblem, problemStructure, se
 
 
 const StudyScreen = ({route}) =>{
-    // 비동기 state
+    
+    // 문제구조 html 코드
     const [problemStructure, setProblemStructure] = useState([]); // component
+    // 백엔드에서 불러온 json 문제
     const [loadedProblem, setLoadedProblem] = useState([]); // json
 
+    // 다음 문제를 넘길 때 사용
     const [nextBtn, setNextBtn] = useState(0);
-    
+
+    // 4지선다 컴포넌트에서 사용자가 고른 답을 저장
+    const choiceRef = useRef(0);
+
     // MOUNT 
     useEffect(()=> {
         // 백엔드에서 json 형태의 문제를 load
@@ -151,6 +158,19 @@ const StudyScreen = ({route}) =>{
             PRB_CHOICE3: "㉢",
             PRB_CHOICE4: "㉣"
          },
+         {
+            PRB_SECT: "읽기",
+            PRB_NUM: 19,
+            PRB_CORRT_ANSW: 2,
+            PRB_POINT: 2,
+            PRB_MAIN_CONT: "다음을 읽고 물음에 답하십시오.",
+            PRB_SUB_CONT: "( )에 들어갈 알맞은 것을 고르십시오.",
+            PRB_TXT: "과일을 빨리 익히기 위해 화학 물질이 사용되기도 한다. 그러나 화학 물질로 익힌 과일은 겉은 익었지만 속이 잘 익지 않은 경우가 많다. 그래서 화학 물질로 익힌 과일은 대게 자연적으로 숙성된 과일에 비해 맛과 향이 떨어진다. ( ) 화학 물질이 과일 껍질에 남게 될 수도 있다. 이런 과일을 지속적으로 먹으면 건강에 문제가 생기게 된다.",
+            PRB_CHOICE1: "또는",
+            PRB_CHOICE2: "또한",
+            PRB_CHOICE3: "그래도",
+            PRB_CHOICE4: "그러면"
+         }
          
         ])
         
@@ -158,36 +178,43 @@ const StudyScreen = ({route}) =>{
     // setState 실행
 
 
+    
     // 모든 문제를 불러온 후 구조 만들기
     useEffect(()=>{
-        console.log(loadedProblem)
-        LoadProblemScreen(loadedProblem, setLoadedProblem, problemStructure, setProblemStructure);
+        // console.log(loadedProblem)
+        LoadProblemScreen(loadedProblem, setProblemStructure, choiceRef, setNextBtn);
     }, [loadedProblem])
+   
     
-    // 문제 풀이 결과를 보냄
+    // 문제 풀이 결과를 보냄 or 저장
+    useEffect(()=>{
+        // console.log(`
+        //     {   
+        //         userId: hello,
+        //         PRB_ID: AAAAAAAAAAAA,
+        //         elapsed_time(sec): 10,
+        //         Success: True,
+        //         Date: 2023-04-17,
+        //         Rank(1-5 level): 4 
+        //     }
+        // `);
 
-    // useEffect(()=>{
-    //     console.log(`
-    //         {   
-    //             userId: hello,
-    //             PRB_ID: AAAAAAAAAAAA,
-    //             elapsed_time(sec): 10,
-    //             Success: True,
-    //             Date: 2023-04-17,
-    //             Rank(1-5 level): 4 
-    //         }
-    //     `);
-    // }, [nextBtn])
+        console.log(choiceRef.current)
+
+        choiceRef.current = 0;
+    }, [nextBtn])
     
+
+
+ 
 
 
     return (
-        <View style = {styles.container}>
-            <AppNameHeader/>
-            <View>
+        <View style = {[styles.container, styles.containerPos]}>
+            <View style = {[styles.container, styles.containerPos]}>
                 
                 {problemStructure[nextBtn]}
-                <Button onPress = {() => {setNextBtn(nextBtn+1)}} title = "next to"/>
+    
 
                 <Text>
                     아이디 값은 {route.params.id}
@@ -200,7 +227,11 @@ const StudyScreen = ({route}) =>{
 
 const styles = StyleSheet.create({
     container:{
-        padding: 30,
+        padding: 10,
+    },
+
+    containerPos: {
+        flex:20
     }
 })
 
