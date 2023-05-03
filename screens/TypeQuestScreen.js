@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, Button, StyleSheet } from 'react-native';
 import AppNameHeader from './component/AppNameHeader';
 const Box = ({ text }) => {
@@ -9,15 +9,28 @@ const Box = ({ text }) => {
   );
 };
 const TypeQuestScreen = ({ navigation }) => {
-  const [buttonText, setButtonText] = React.useState('제출');
-
-  const handleButtonPress = () => {
-    if (buttonText === '제출') {
-      setButtonText('다음');
+  const [selectedOption, setSelectedOption] = useState(null);
+  const [submitted, setSubmitted] = useState(false);
+  const [answer2Color, setAnswer2Color] = useState("#8A2BE2");
+  useEffect(() => {
+    console.log(answer2Color);
+  }, [answer2Color]);
+  const handleOptionSelect = (optionNumber) => {
+    setSelectedOption(optionNumber);
+  }
+  const handleSubmit = () => {
+    setSubmitted(true);
+    console.log(`선택한 보기: ${selectedOption}`);
+    if (selectedOption === 2) {
+      setAnswer2Color("#0000FF");
+      console.log(answer2Color) // 여기서 바뀐거는 확인되는데 화면상 보이지 않음.
     } else {
-      // '다음' 버튼을 눌렀을 때 처리할 로직 추가
+      setAnswer2Color("#696969");
+      console.log(answer2Color) // 여기서 바뀐거는 확인되는데 화면상 보이지 않음.
     }
+    
   };
+  
   return (
     <View>
       <AppNameHeader />
@@ -28,17 +41,36 @@ const TypeQuestScreen = ({ navigation }) => {
         <Box text="밖에서 시끄럽게 공사를 (  ) 잠을 잘 수가 없다." />
       </View>
       <View style={styles.buttonContainer}>
-        <Button title="보기 1" color='#A9DFBF'onPress={() => console.log('보기 1 선택됨')} />
-        <Button title="보기 2" color='#A9DFBF'onPress={() => console.log('보기 2 선택됨')} />
-        <Button title="보기 3" color='#A9DFBF'onPress={() => console.log('보기 3 선택됨')} />
-        <Button title="보기 4" color='#A9DFBF'onPress={() => console.log('보기 4 선택됨')} />
+      <Button
+          title="보기 1"
+          color={selectedOption === 1 ? '#F5B7B1' : '#A9DFBF'}
+          onPress={() => handleOptionSelect(1)} //disabled={submitted}
+        />
+        <Button
+          title="보기 2"
+          color={selectedOption === 2 ? '#F5B7B1' : '#A9DFBF'}
+          onPress={() => handleOptionSelect(2)} //disabled={submitted}
+        />
+        <Button
+          title="보기 3"
+          color={selectedOption === 3 ? '#F5B7B1' : '#A9DFBF'}
+          onPress={() => handleOptionSelect(3)} //disabled={submitted}
+        />
+        <Button
+          title="보기 4"
+          color={selectedOption === 4 ? '#F5B7B1' : '#A9DFBF'}
+          onPress={() => handleOptionSelect(4)} //disabled={submitted}
+        />
+      </View>
+      <View style={styles.bottomButtonContainer3}>
+      <Button title="제출" onPress={handleSubmit}
+          disabled={!selectedOption} />
       </View>
       <View style={styles.bottomButtonContainer}>
-        <Button title="이전" onPress={() => console.log("이전 선택됨")} />
+        <Button title="이전" onPress={() => console.log("이전 선택됨") } />
+        <Button title="다음" onPress={() => console.log('다음 선택됨')} disabled={!submitted}  />
       </View>
-      <View style={styles.bottomButtonContainer2}>
-        <Button title={buttonText} onPress={handleButtonPress} />
-      </View>
+      
     </View>
     
   );
@@ -51,6 +83,7 @@ const styles = StyleSheet.create({
       justifyContent: 'flex-start',
       flexDirection: 'row',
       flexWrap: 'wrap',
+      marginBottom: 330, // 하단에 마진 추가
     },
     box: {
       backgroundColor: '#D4EFDF',
@@ -66,7 +99,8 @@ const styles = StyleSheet.create({
       position: 'absolute',
       top: 200,
       left: 30,
-      width: 350
+      width: 350,
+      justifyContent: 'flex-start', // 추가
     },
     button: {
       width: 100,
@@ -80,18 +114,18 @@ const styles = StyleSheet.create({
       fontWeight: 'bold',
     },
     bottomButtonContainer: {
-      position: "absolute",
-      top: 450,
-      left: 20,
-      right: 20,
-      width: 100
+      flexDirection: 'row',
+      top: 70,
+      justifyContent: 'space-between',
+      flexWrap: 'nowrap',
+      paddingHorizontal: 30,
     },
-    bottomButtonContainer2: {
+    bottomButtonContainer3: {
       position: "absolute",
-      top: 450,
-      left: 300,
-      right: 20,
-      width: 100
+      top: 380,
+      left: 150,
+      width: 100,
+      justifyContent: 'center',
     },
     
 });
