@@ -22,6 +22,7 @@ import SignupScreen from "./screens/SignupScreen";
 import StudyScreen from "./screens/StudyScreen";
 import MockStudyScreen from "./screens/MockStudyScreen";
 import TypeQuestScreen from "./screens/TypeQuestScreen";
+import TypeQuestScreenLc from "./screens/TypeQuestScreenLc";
 
 
 const Tab = createBottomTabNavigator();
@@ -51,6 +52,7 @@ const App = () => {
           <Stack.Screen name = "Study" component = {StudyScreen}/>
           <Stack.Screen name="MockStudy" component = {MockStudyScreen}/>
           <Stack.Screen name="TypeQuest" component = {TypeQuestScreen}/>
+          <Stack.Screen name="TypeQuestLc" component = {TypeQuestScreenLc}/>
         </Stack.Navigator>
 
       </NavigationContainer>    

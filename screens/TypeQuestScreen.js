@@ -68,7 +68,7 @@ const TypeQuestScreen = ({ navigation }) => {
       </View>
       <View style={styles.bottomButtonContainer}>
         <Button title="이전" onPress={() => console.log("이전 선택됨") } />
-        <Button title="다음" onPress={() => console.log('다음 선택됨')} disabled={!submitted}  />
+        <Button title="다음" onPress={() => navigation.navigate('TypeQuestLc')} disabled={!submitted}  />
       </View>
       
     </View>
