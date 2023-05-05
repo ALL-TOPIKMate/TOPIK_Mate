@@ -21,6 +21,7 @@ import SigninScreen from "./screens/SigninScreen";
 import SignupScreen from "./screens/SignupScreen";
 import StudyScreen from "./screens/StudyScreen";
 import MockStudyScreen from "./screens/MockStudyScreen";
+import TypeQuestScreen from "./screens/TypeQuestScreen";
 
 
 const Tab = createBottomTabNavigator();
@@ -49,6 +50,7 @@ const App = () => {
           <Stack.Screen name = "Signup" component = {SignupScreen}/>
           <Stack.Screen name = "Study" component = {StudyScreen}/>
           <Stack.Screen name="MockStudy" component = {MockStudyScreen}/>
+          <Stack.Screen name="TypeQuest" component = {TypeQuestScreen}/>
         </Stack.Navigator>
 
       </NavigationContainer>    
@@ -57,3 +59,4 @@ const App = () => {
 
 
 export default App;
+
