@@ -18,7 +18,7 @@ const StudyScreen = ({route}) =>{
                 </Text>
 
                 <Text>
-                    누른 회차 정보 {route.params.order }
+                    누른 회차 정보 {route.params.order}
                 </Text>
             </View>
         </View>

@@ -21,7 +21,7 @@ import SigninScreen from "./screens/SigninScreen";
 import SignupScreen from "./screens/SignupScreen";
 import StudyScreen from "./screens/StudyScreen";
 import MockStudyScreen from "./screens/MockStudyScreen";
-
+import MockListScreen from "./screens/MockListScreen";
 
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
@@ -48,7 +48,8 @@ const App = () => {
           <Stack.Screen name = "Signin" component = {SigninScreen}/>
           <Stack.Screen name = "Signup" component = {SignupScreen}/>
           <Stack.Screen name = "Study" component = {StudyScreen}/>
-          <Stack.Screen name="MockStudy" component = {MockStudyScreen}/>
+          <Stack.Screen name = "MockStudy" component = {MockStudyScreen}/>
+          <Stack.Screen name = "MockList" component = {MockListScreen}/>
         </Stack.Navigator>
 
       </NavigationContainer>    
