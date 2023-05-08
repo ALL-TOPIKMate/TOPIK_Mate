@@ -6,4 +6,8 @@ uploads/
 
 # Firebase SDK
 serviceAccount.json
-config.json
+serviceAccountTest.json
+config.js
+
+# 환경 파일
+.env
