@@ -25,6 +25,7 @@ import TypeQuestScreen from "./screens/TypeQuestScreen";
 import TypeQuestScreenLc from "./screens/TypeQuestScreenLc";
 import WrongStudyScreen from './screens/WrongStudyScreen';
 
+
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
 
