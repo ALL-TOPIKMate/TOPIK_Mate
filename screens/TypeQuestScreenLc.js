@@ -1,14 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, Button, StyleSheet } from 'react-native';
 import AppNameHeader from './component/AppNameHeader';
-import firestore from '@react-native-firebase/firestore';
-const Box = ({ text }) => {
-  return (
-    <View style={styles.box}>
-      <Text>{text}</Text>
-    </View>
-  );
-};
+
 const TypeQuestScreen = ({ navigation }) => {
   const [selectedOption, setSelectedOption] = useState(null);
   const [submitted, setSubmitted] = useState(false);
@@ -38,9 +31,7 @@ const TypeQuestScreen = ({ navigation }) => {
       <View>
         <Text>문제1. ( )에 들어갈 가장 알맞은 단어를 고르시오.</Text>
       </View>
-      <View style={styles.container}>
-        <Box text="밖에서 시끄럽게 공사를 (  ) 잠을 잘 수가 없다." />
-      </View>
+      
       <View style={styles.buttonContainer}>
       <Button
           title="보기 1"
@@ -69,7 +60,7 @@ const TypeQuestScreen = ({ navigation }) => {
       </View>
       <View style={styles.bottomButtonContainer}>
         <Button title="이전" onPress={() => console.log("이전 선택됨") } />
-        <Button title="다음" onPress={() => navigation.navigate('TypeQuestLc')} disabled={!submitted}  />
+        <Button title="다음" onPress={() => console.log('다음 선택됨')} disabled={!submitted}  />
       </View>
       
     </View>
@@ -77,25 +68,6 @@ const TypeQuestScreen = ({ navigation }) => {
   );
 };
 const styles = StyleSheet.create({
-    container: {
-      flex: 1,
-      backgroundColor: '#fff',
-      alignItems: 'flex-start',
-      justifyContent: 'flex-start',
-      flexDirection: 'row',
-      flexWrap: 'wrap',
-      marginBottom: 330, // 하단에 마진 추가
-    },
-    box: {
-      backgroundColor: '#D4EFDF',
-      borderWidth: 1,
-      borderColor: 'black',
-      justifyContent: 'center',
-      alignItems: 'center',
-      width: 390,
-      height: 100,
-      margin: 10,
-    },
     buttonContainer: {
       position: 'absolute',
       top: 200,
