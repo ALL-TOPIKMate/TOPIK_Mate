@@ -23,7 +23,7 @@ import StudyScreen from "./screens/StudyScreen";
 import MockStudyScreen from "./screens/MockStudyScreen";
 import TypeQuestScreen from "./screens/TypeQuestScreen";
 import TypeQuestScreenLc from "./screens/TypeQuestScreenLc";
-
+import WrongStudyScreen from './screens/WrongStudyScreen';
 
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
@@ -53,6 +53,7 @@ const App = () => {
           <Stack.Screen name="MockStudy" component = {MockStudyScreen}/>
           <Stack.Screen name="TypeQuest" component = {TypeQuestScreen}/>
           <Stack.Screen name="TypeQuestLc" component = {TypeQuestScreenLc}/>
+          <Stack.Screen name="WrongStudy" component = {WrongStudyScreen}/>
         </Stack.Navigator>
 
       </NavigationContainer>    
