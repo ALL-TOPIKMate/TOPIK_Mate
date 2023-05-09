@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, Button, StyleSheet } from 'react-native';
 import AppNameHeader from './component/AppNameHeader';
+import firestore from '@react-native-firebase/firestore';
 const Box = ({ text }) => {
   return (
     <View style={styles.box}>
