@@ -6,8 +6,9 @@ import firestore from '@react-native-firebase/firestore';
 import ProbMain from "./component/ProbMain";
 import AudRef from "./component/AudRef";
 import ProbChoice from "./component/ProbChoice";
-
-
+import ProbSub from "./component/ProbSub";
+import ProbTxt from "./component/ProbTxt"
+import ProbScrpt from './component/ProbScrpt';
 
 const LoadProblemScreen = (loadedProblem, setProblemStructure, choiceRef, setNextBtn) => {
     // MOUNT시 실행되는 함수
@@ -16,8 +17,9 @@ const LoadProblemScreen = (loadedProblem, setProblemStructure, choiceRef, setNex
     let question = []
     let problemStructures = [];
 
-    // console.log(loadedProblem.length)
+    
     for(var i=0; i<loadedProblem.length; i++){
+        let cnt = 0;
         question = []
 
         // component화 하기
@@ -29,19 +31,27 @@ const LoadProblemScreen = (loadedProblem, setProblemStructure, choiceRef, setNex
             
             // PRB_SUB_CONT: 서브 문제
             if(loadedProblem[i].PRB_SUB_CONT){
-              question.push(<Text style = {{flex: 3}} key = {i*7+2}>{loadedProblem[i].PRB_SUB_CONT}</Text>)
+              question.push(<ProbSub PRB_SUB_CONT = {loadedProblem[i].PRB_SUB_CONT} key = {i*7+2}/>)
+            }else{
+                question.push(<View style = {{flex: 1}} key = {i*7+2}/>)
             }
 
         }else if(loadedProblem[i].PRB_SECT == "읽기"){
             // PRB_TXT: 지문
-            question.push(<Text style = {{flex: 3}} key = {i*7+3}>{loadedProblem[i].PRB_TXT}</Text>)
+            question.push(<ProbTxt PRB_TXT = {loadedProblem[i].PRB_TXT} key = {i*7+3}/>)
         
              // PRB_SUB_CONT: 서브 문제
             if(loadedProblem[i].PRB_SUB_CONT){
-                question.push(<Text style = {{flex: 3}} key = {i*7+4}>{loadedProblem[i].PRB_SUB_CONT}</Text>)
+                cnt++;
+                question.push(<ProbSub PRB_SUB_CONT = {loadedProblem[i].PRB_SUB_CONT} key = {i*7+4}/>)
             }// PRB_SCRPT: 서브 지문
             if(loadedProblem[i].PRB_SCRPT){
-                question.push(<Text style = {{flex: 3}} key = {i*7+5}>{loadedProblem[i].PRB_SCRPT}</Text>)  
+                cnt++;
+                question.push(<ProbScrpt PRB_SCRPT = {loadedProblem[i].PRB_SCRPT} key = {i*7+5} />)
+            }
+
+            if(cnt<2){
+                question.push(<View style = {{flex: 1}} />)
             }
         }
 
@@ -63,18 +73,7 @@ const LoadProblemScreen = (loadedProblem, setProblemStructure, choiceRef, setNex
         problemStructures.push(<View style = {styles.containerPos}>{question}</View>)
     }
 
-
-    // console.log(problemStructures)
-
-
-
-    // 비동기 setstate를 동기 방식으로 처리하기
-    const help = () => {
-        setProblemStructure(problemStructures)
-    }
-
-    help();
-    
+    setProblemStructure(problemStructures)
 }
 
 
@@ -101,8 +100,7 @@ const StudyScreen = ({route}) =>{
                 setLoadedProblem(data.docs.map(doc => ({...doc.data()})))
             }catch(error){
                 console.log(error.message);
-            }
-        
+            }    
         }
 
         dataLoading();
@@ -113,7 +111,6 @@ const StudyScreen = ({route}) =>{
     
     // 모든 문제를 불러온 후 구조 만들기
     useEffect(()=>{
-        console.log(loadedProblem)
         LoadProblemScreen(loadedProblem, setProblemStructure, choiceRef, setNextBtn);
     }, [loadedProblem])
    
@@ -136,10 +133,6 @@ const StudyScreen = ({route}) =>{
         choiceRef.current = 0;
     }, [nextBtn])
     
-
-
- 
-
 
     return (
         <View style = {[styles.container, styles.containerPos]}>
