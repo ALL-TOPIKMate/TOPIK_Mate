@@ -3,7 +3,6 @@ import {signIn } from "../lib/auth";
 import {Button, View ,TextInput, StyleSheet, Text, Alert} from 'react-native'
 import AppNameHeader from './component/AppNameHeader'
 
-
 const SigninScreen = ({navigation}) =>{
     const [form, setForm] = useState({
         email: "",
