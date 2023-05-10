@@ -23,6 +23,7 @@ const SigninScreen = ({navigation}) =>{
             const {user} = await signIn(info); 
             console.log(user);
             console.log('성공')
+            navigation.navigate('Home')
         } catch (e) {
             const alertMessage = resultMessages[e.code] ? 
             resultMessages[e.code] : "알 수 없는 이유로 로그인에 실패하였습니다.";
@@ -46,7 +47,7 @@ const SigninScreen = ({navigation}) =>{
                 
                 
                 <Button title = "로그인" onPress={()=> signInSubmit()}/> 
-                
+
                 <Button title = "회원가입" onPress={()=> navigation.push("Signup")}/>  
             </View>
         </View>
