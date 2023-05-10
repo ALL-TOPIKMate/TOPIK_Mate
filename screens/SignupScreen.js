@@ -27,6 +27,7 @@ const SignupScreen = ({navigation}) =>{
         try {
           const {user} = await signUp(info);
           console.log(user);
+          navigation.navigate('Home')
         } catch (e) {
             const alertMessage = resultMessages[e.code] ? 
             resultMessages[e.code] : "알 수 없는 이유로 회원가입에 실패하였습니다.";
