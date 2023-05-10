@@ -8,8 +8,8 @@ const WrongStudyScreen = ({route, navigation}) =>{
     return (
         <View>
             {
-                route.params.userTag.map(data => {
-                    return <Text>{data}</Text>
+                route.params.userTag.map((data, index) => {
+                    return <Text key={index}>{data}</Text>
                 })
             }
         </View>
