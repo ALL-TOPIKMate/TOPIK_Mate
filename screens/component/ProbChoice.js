@@ -60,8 +60,17 @@ export default ProbChoice = (props) =>{
        </TouchableOpacity>
 
         <Text/>
-        {!subBtn ? <Button onPress = {() => {props.choiceRef.current = click; setSubBtn(true)}} disabled = {click==0} title = "SUBMIT"/> :  <Button onPress = {() => {props.setNextBtn(props.nextBtn+1)}} title = "NEXT TO"/>}
-        
+        {!subBtn ? 
+            (<TouchableOpacity onPress = {() => {props.choiceRef.current = click; setSubBtn(true)}} disabled = {click==0} style = {[styles.button, {backgroundColor: click == 0 ? "#D9D9D9" : "#94AF9F"}]}>
+                <Text>
+                    SUBMIT
+                </Text>
+            </TouchableOpacity>): 
+            (<TouchableOpacity onPress = {() => {props.setNextBtn(props.nextBtn+1)}} style = {[styles.button, {backgroundColor: "#94AF9F"}]}>
+                <Text>
+                    NEXT TO
+                </Text>
+            </TouchableOpacity>)}
       </View>  
     );
 }
@@ -72,8 +81,8 @@ const styles = StyleSheet.create({
         flex: 3,
         
         flexDirection: "row",
-        justifyContent: "center"
-
+        justifyContent: "center",
+        alignItems: "center",
+        borderRadius: 10
     }
-
 })
