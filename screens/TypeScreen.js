@@ -13,7 +13,7 @@ const TypeScreen = ({navigation}) =>{
                     유형별 문제
                 </Text>
 
-                <Button title = "유형학습" onPress={()=>{navigation.push("Study", {id: 2})}}/>
+                <Button title = "유형학습" onPress={()=>{navigation.push("TypeQuest")}}/>
             </View>
         </View>
     );

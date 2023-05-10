@@ -9,6 +9,8 @@ const RecommendScreen = ({navigation}) =>{
         <View>
             <AppNameHeader/>
             <View>
+                <Text>Weak -------- <Button title = "▷" onPress = { () => {navigation.navigate("Info")} } /></Text>
+                <Text>Strong -------- <Button title = "▷" onPress = {() => {navigation.navigate("Info")}}/></Text>
                 <Button title = "추천 문제 풀기" onPress={()=> navigation.push("Study", {id: 1})}/> 
             </View>
         </View>

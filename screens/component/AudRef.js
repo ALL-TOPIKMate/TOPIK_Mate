@@ -6,20 +6,29 @@ import {View, Text, StyleSheet, Button} from 'react-native'
 
 const AudRef = (props) =>{
     return (    
-        <View>
-            <Text style = {styles.play}>
-                <Button title = "Start"/>
+        <View style = {{flex: 5}}>
+            <View style = {styles.button}>
+                <Button title = "Start" style ={{paddingHorizontal: 10}}/>
                 <Button title = "Stop"/>
-            </Text>
+            </View>   
+
+            <View style = {{flex: 2}}>
+            </View> 
         </View>
     );
 }
 
 const styles = StyleSheet.create({
-    play:{
-        textAlign: 'center',
+   button:{
+    backgroundColor: "#D9D9D9", 
+    flexDirection: "row", 
+    justifyContent: "center",
 
-    },
+    alignItems: "center",
+    
+
+    flex: 3
+   }
 })
 
 
