@@ -134,7 +134,6 @@ const StudyScreen = ({route}) =>{
     }, [nextBtn])
     
 
-    
     return (
         <View style = {[styles.container, styles.containerPos]}>
             <View style = {[styles.container, styles.containerPos]}>
