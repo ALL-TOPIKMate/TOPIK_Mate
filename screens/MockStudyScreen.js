@@ -1,14 +1,14 @@
 import React, {useState, useEffect, useRef} from 'react';
-import {View, Text, StyleSheet, TextInput} from 'react-native'
+import {View, Text, StyleSheet, FlatList} from 'react-native'
 import firestore from '@react-native-firebase/firestore';
 
 import ProbMain from "./component/ProbMain";
 import AudRef from "./component/AudRef";
 import ProbChoice from "./component/ProbChoice";
+import ProbWrite from "./component/ProbWrite";
 
-const [text, onChangeText] = React.useState();
 
-const LoadProblemScreen = (loadedProblem, setProblemStructure, choiceRef, setNextBtn) => {
+const LoadProblemScreen = (loadedProblem, setProblemStructure, choiceRef, textRef, setNextBtn) => {
     // MOUNT시 실행되는 함수
     // 모든 문제에 대해서 구조화
   
@@ -82,24 +82,21 @@ const LoadProblemScreen = (loadedProblem, setProblemStructure, choiceRef, setNex
             // PRB_TXT: 지문
             question.push(<Text style = {{flex: 3}} key = {i*7+3}>{loadedProblem[i].PRB_TXT}</Text>)
         
-            question.push(<TextInput 
-                style={styles.input} 
-                placeholder="Enter your answer"
-                // onChangeText={text => onChangeText(text)}
+            question.push(<ProbWrite
+
+                textRef = {textRef}
+                nextBtn = {i}
+                setNextBtn = {setNextBtn}
 
                 key = {i*7+5} 
             />)
-
         }
-
-        
 
         problemStructures.push(<View style = {styles.containerPos}>{question}</View>)
     }
 
 
     // console.log(problemStructures)
-
 
 
     // 비동기 setstate를 동기 방식으로 처리하기
@@ -112,7 +109,7 @@ const LoadProblemScreen = (loadedProblem, setProblemStructure, choiceRef, setNex
 }
 
 
-const StudyScreen = ({route}) =>{
+const MockStudyScreen = ({route}) =>{
 
     // 문제구조 html 코드
     const [problemStructure, setProblemStructure] = useState([]); // component
@@ -120,10 +117,21 @@ const StudyScreen = ({route}) =>{
     const [loadedProblem, setLoadedProblem] = useState([]); // json
     // 다음 문제를 넘길 때 사용
     const [nextBtn, setNextBtn] = useState(0);
+
+
     // 4지선다 컴포넌트에서 사용자가 고른 답을 저장
     const choiceRef = useRef(0);
+    // 쓰기 문제에서 사용자가 제출한 입력을 저장
+    const textRef = useRef('');
+    
+    
     // 콜렉션 불러오기
     const problemCollection = firestore().collection('problems').doc('TEST').collection('problem-list');
+
+    // 사용자가 제출한 정답 배열 -> 결과 화면으로 넘기기
+    let [submitAnswers, setSubmitAnswers] = useState({});
+
+
 
     // MOUNT
     useEffect(() => {
@@ -134,7 +142,7 @@ const StudyScreen = ({route}) =>{
                 const data = await problemCollection.get();
                 
                 console.log(`data: ${data}`);
-                setLoadedProblem(data.docs.map(doc => ({...doc.data()})))
+                setLoadedProblem(data.docs.map(doc => ({...doc.data()})));
             } catch (error) {
                 console.log(error.message);
             }
@@ -148,61 +156,89 @@ const StudyScreen = ({route}) =>{
     // 모든 문제를 불러온 후 구조 만들기
     useEffect(()=>{
         // console.log(loadedProblem)
-        LoadProblemScreen(loadedProblem, setProblemStructure, choiceRef, setNextBtn);
+        LoadProblemScreen(loadedProblem, setProblemStructure, choiceRef, textRef, setNextBtn);
     }, [loadedProblem])
    
     
     // 문제 풀이 결과를 보냄 or 저장
     useEffect(()=>{
-        console.log(`
-            {   
-                userId: hello,
-                PRB_ID: AAAAAAAAAAAA,
-                elapsed_time(sec): 10,
-                Success: True,
-                Date: 2023-04-17,
-                Rank(1-5 level): 4 
+        
+        console.log(`nextBtn: ${nextBtn}`);
+
+        if (nextBtn !== 0) {
+            
+            let prbId = loadedProblem[nextBtn-1]['PRB_ID'];
+            let userAnswer = loadedProblem[nextBtn-1];
+                    
+            if (choiceRef.current !== 0) {
+                console.log(`choiceRef.current: ${choiceRef.current}`);
+                userAnswer['USER_CHOICE'] = choiceRef.current;
+                        
+                choiceRef.current = 0;
+
+            } else if (textRef !== '') {
+                console.log(`textRef.current: ${textRef.current}`);
+                userAnswer['USER_INPUT'] = textRef.current;
+                
+                textRef.current = '';
+                
             }
-        `);
+            
+            // 사용자 풀이 결과 저장
+            submitAnswers[prbId] = userAnswer;
 
-        console.log(choiceRef.current)
+            // #####################################################
+            // submitAnswers 구조 ##################################
+            // 
+            // submitAnswers: {
+            //     문제ID: {
+            //         사용자_정답: "",
+            //         사용자_서술형_정답: "",
+            //     }
+            // }
+            // #####################################################
 
-        choiceRef.current = 0;
+
+        }
+
     }, [nextBtn])
 
-    return (
-        <View style = {[styles.container, styles.containerPos]}>
-            <View style = {[styles.container, styles.containerPos]}>
-                
-                {problemStructure[nextBtn]}
-    
 
-                <Text>
-                    아이디 값은 {route.params.order}
-                    버튼 값은 {nextBtn}
-                </Text>
+    if (nextBtn === loadedProblem.length) {
+
+        return (
+            <View style = {{flex: 5}}>
+                <FlatList
+                    data={Object.keys(submitAnswers)}
+                    renderItem={({item}) =>
+                        <Text style = {styles.item}>
+                            {submitAnswers[item].PRB_ID}
+                            {submitAnswers[item].PRB_CORRT_ANSW}
+                            {submitAnswers[item].USER_CHOICE !== undefined ? submitAnswers[item].USER_CHOICE : submitAnswers[item].USER_INPUT}
+                            {submitAnswers[item].USER_CHOICE !== undefined &&
+                                submitAnswers[item].USER_CHOICE == submitAnswers[item].PRB_CORRT_ANSW ? '정답' : '오답'
+                            }
+                        </Text>
+                    }
+                />
             </View>
-        </View>
-    );
-
-    // return (
-    //     <View>
-    //         <AppNameHeader/>
-    //         <View>
-    //             <Text>
-    //                 문제 풀이 화면
+        );
+    }
+    else if (nextBtn !== loadedProblem.length) {        
+        return (
+            <View style = {[styles.container, styles.containerPos]}>
+                <View style = {[styles.container, styles.containerPos]}>
                     
-    //                 모의고사 형태의 문제
-               
-    //                 백엔드에 해당하는 문제를 요청하여 보여줌
-    //             </Text>
-
-    //             <Text>
-    //                 누른 회차 정보 {route.params.order}
-    //             </Text>
-    //         </View>
-    //     </View>
-    // );
+                        {problemStructure[nextBtn]}
+        
+                    <Text>
+                        아이디 값은 {route.params.order}
+                        버튼 값은 {nextBtn}
+                    </Text>
+                </View>
+            </View>
+        );
+    }
 }
 
 const styles = StyleSheet.create({
@@ -212,7 +248,12 @@ const styles = StyleSheet.create({
 
     containerPos: {
         flex:20
+    },
+
+    item: {
+        fontSize: 20,
+        color: "#A5a5a5",
     }
 })
 
-export default StudyScreen;
+export default MockStudyScreen;
