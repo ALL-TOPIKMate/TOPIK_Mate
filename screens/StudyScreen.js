@@ -113,7 +113,7 @@ const StudyScreen = ({route}) =>{
     
     // 모든 문제를 불러온 후 구조 만들기
     useEffect(()=>{
-        // console.log(loadedProblem)
+        console.log(loadedProblem)
         LoadProblemScreen(loadedProblem, setProblemStructure, choiceRef, setNextBtn);
     }, [loadedProblem])
    
@@ -136,9 +136,6 @@ const StudyScreen = ({route}) =>{
         choiceRef.current = 0;
     }, [nextBtn])
     
-
-
-
 
 
     return (
