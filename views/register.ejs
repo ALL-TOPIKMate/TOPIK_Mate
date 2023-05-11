@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <link rel="stylesheet" href="/stylesheet/style.css"/>
+    <title>register</title>
+</head>
+<body>
+    <div class="sign-up">
+        <form action="/register" method="post" class="form" enctype="application/json">
+            <h2>회원가입</h2>
+            <div class="text-form">
+                <input type="text" name="name" placeholder="아이디" required/>
+            </div>
+            <div class="text-form">
+                <input type="password" name="password" placeholder="비밀번호" required/>
+            </div>
+            <div class="text-form">
+                <input type="password" name="password-check" placeholder="비밀번호 확인" required/>
+            </div>
+            <div class="text-form">
+                <input type="text" name="email" placeholder="이메일" required/>
+            </div>
+
+            <input type="submit" class="btn" value="REGISTER"/>
+        </form>
+
+        <p>이미 회원이신가요? <a href="/login">로그인</a></p>
+    
+    </div>
+
+    <div class="box">
+    </div>
+    
+</body>
+</html>

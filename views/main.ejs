@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>TOPIK Mate - Admin Page</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+    <link rel="stylesheet" href="/stylesheet/main.css" />
+	<noscript><link rel="stylesheet" href="/stylesheet/noscript.css" /></noscript>
+</head>
+<body class="is-preload">
+    <!-- Sidebar -->
+        <section id="sidebar">
+            <div class="inner">
+                <a href="/logout">Logout</a>
+                <p class="welcome-message"><span id="user-name"><%=name%></span>님 환영합니다.</p>
+                <nav>
+                    <ul>
+                        <li><a href="#intro">TOPIK Mate</a></li>
+                        <li><a href="#one">Upload Dataset</a></li>
+                        <!-- <li><a href="#two">What we do</a></li> -->
+                        <!-- <li><a href="#three">Get in touch</a></li> -->
+                    </ul>
+                </nav>
+            </div>
+        </section>
+
+    <!-- Wrapper -->
+        <div id="wrapper">
+
+            <!-- Intro -->
+                <section id="intro" class="wrapper style1 fullscreen fade-up">
+                    <div class="inner">
+                        <h1>TOPIK Mate</h1>
+                        <p>TOPIK Mate 운영자 페이지에 대한 설명... 어떻게 사용하면 되는지 블라블라...
+                            옆링크를 통해 Play Store나 App Store로 연결될 수 있도록 합니다. <a href="http://html5up.net/license">다운로드</a>.</p>
+                        <ul class="actions">
+                            <li><a href="#one" class="button scrolly">Contact to developer</a></li>
+                        </ul>
+                    </div>
+                </section>
+
+            <!-- One -->
+                <section id="one" class="wrapper style2 spotlights">
+                    <section>
+                        <!-- <a href="#" class="image"><img src="/images/pic01.jpg" alt="" data-position="center center" /></a> -->
+                        <div class="content">
+                            <div class="inner">
+                                <h1>File Upload</h1>
+                                <!-- <div class="file-form">
+                                    
+                                    <label class="upload-label" for="dir-selec">Choose File</label>
+                                    <input class="upload-input" id="dir-selec" name="upload" type="file" webkitdirectory multiple/>
+                                </div>
+                                <input type="submit" class="btn" value="UPLOAD"/> -->
+                            <div id="root">
+                                <hr>
+                                <div class="contents">
+                                    <div class="upload-box">
+                                        <div id="drop-file" class="drag-file">
+                                            <img src="https://img.icons8.com/pastel-glyph/2x/image-file.png" alt="파일 아이콘" class="image">
+                                            <p class="message">Drag files to upload</p>
+                                        </div>
+                                            <form action="/process/file" method="post" class="form" enctype="multipart/form-data">
+                                                <label class="file-label" for="chooseFile">CHOOSE FILE</label>
+                                                <input class="file" id="chooseFile" type="file" multiple webkitdirectory onchange="dropFile.handleFiles(this.files)">
+                                                <input type="submit" class="btn" value="UPLOAD"/>
+                                            </form>
+                                        </div>
+                                        <div id="files" class="files">
+                                            <div class="file">
+                                                <!-- <div class="thumbnail">
+                                                    <img src="https://img.icons8.com/pastel-glyph/2x/image-file.png" alt="파일타입 이미지" class="image">
+                                                </div>
+                                                <div class="details">
+                                                    <header class="header">
+                                                        <span class="name">Photo.png</span>
+                                                        <span class="size">7.5 mb</span>
+                                                    </header>
+                                                    <div class="progress">
+                                                        <div class="bar"></div>
+                                                    </div>
+                                                    <div class="status">
+                                                        <span class="percent">37% done</span>
+                                                        <span class="speed">90KB/sec</span>
+                                                    </div>
+                                                </div> -->
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- <p>Phasellus convallis elit id ullamcorper pulvinar. Duis aliquam turpis mauris, eu ultricies erat malesuada quis. Aliquam dapibus.</p>
+                                <ul class="actions">
+                                    <li><a href="generic.html" class="button">Learn more</a></li>
+                                </ul> -->
+                            </div>
+                        </div>
+                    </section>
+                </section>
+
+        </div>
+
+    <!-- <div class="container">
+        <form action="/process/file" method="post" class="form" enctype="multipart/form-data">
+            <h2>문제 데이터 셋 업로드</h2>
+            <div class="file-form">
+                <label for="dir-selec">폴더선택</label>
+                <input id="dir-selec" name="upload" type="file" webkitdirectory multiple/>
+            </div>
+            <input type="submit" class="btn" value="UPLOAD"/>
+        </form>
+    </div> -->
+
+    <!-- Footer -->
+        <footer id="footer" class="wrapper style1-alt">
+            <div class="inner">
+                <ul class="menu">
+                    <li>&copy; Untitled. All rights reserved.</li><li>Design: <a href="http://html5up.net">HTML5 UP</a></li>
+                </ul>
+            </div>
+        </footer>
+
+    <!-- Scripts -->
+        <script src="/js/jquery.min.js"></script>
+        <script src="/js/jquery.scrollex.min.js"></script>
+        <script src="/js/jquery.scrolly.min.js"></script>
+        <script src="/js/browser.min.js"></script>
+        <script src="/js/breakpoints.min.js"></script>
+        <script src="/js/util.js"></script>
+        <script src="/js/main.js"></script>
+</body>
+</html>
+
+<script>
+    function DropFile(dropAreaId, fileListId) {
+        let dropArea = document.getElementById(dropAreaId);
+        let fileList = document.getElementById(fileListId);
+
+        function preventDefaults(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+
+        function highlight(e) {
+            preventDefaults(e);
+            dropArea.classList.add("highlight");
+        }
+
+        function unhighlight(e) {
+            preventDefaults(e);
+            dropArea.classList.remove("highlight");
+        }
+
+        function handleDrop(e) {
+            unhighlight(e);
+            let dt = e.dataTransfer;
+            let files = dt.files;
+
+            handleFiles(files);
+
+            const fileList = document.getElementById(fileListId);
+            if (fileList) {
+            fileList.scrollTo({ top: fileList.scrollHeight });
+            }
+        }
+
+        function handleFiles(files) {
+            files = [...files];
+            files.forEach(previewFile);
+        }
+
+        function previewFile(file) {
+            console.log(file);
+            fileList.appendChild(renderFile(file));
+        }
+
+        function renderFile(file) {
+            let fileDOM = document.createElement("div");
+            fileDOM.className = "file";
+            fileDOM.innerHTML = `
+            <div class="thumbnail">
+                <img src="https://img.icons8.com/pastel-glyph/2x/image-file.png" alt="파일타입 이미지" class="image">
+            </div>
+            <div class="details">
+                <header class="header">
+                <span class="name">${file.name}</span>
+                <span class="size">${file.size}KB</span>
+                </header>
+                <div class="progress">
+                <div class="bar"></div>
+                </div>
+                <div class="status">
+                <span class="percent">100% done</span>
+                <span class="speed">90KB/sec</span>
+                </div>
+            </div>
+            `;
+            return fileDOM;
+        }
+
+        dropArea.addEventListener("dragenter", highlight, false);
+        dropArea.addEventListener("dragover", highlight, false);
+        dropArea.addEventListener("dragleave", unhighlight, false);
+        dropArea.addEventListener("drop", handleDrop, false);
+
+        return {
+            handleFiles
+        };
+    }
+
+    const dropFile = new DropFile("drop-file", "files");
+
+</script>
