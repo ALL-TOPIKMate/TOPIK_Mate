@@ -1,0 +1,75 @@
+* {
+  margin: 0px;
+  padding: 0px;
+  text-decoration: none;
+  font-family:sans-serif;
+
+}
+
+body {
+  background-image:#34495e;
+}
+
+.sign-up,
+.sign-in {
+  position: absolute;
+  width:400px;
+  height:400px;
+  background-color:#FFFFFF;
+  top: 40%;
+  left: 50%;
+  transform: translate(-50%,-50%);
+}
+
+
+.form h2 {
+  text-align: center;
+  margin: 30px;
+}
+
+.text-form {
+  border-bottom: 2px solid #adadad;
+  margin: 30px;
+  padding: 10px 10px;
+}
+
+.text-form input {
+  width: 100%;
+  border:none;
+  outline:none;
+  color: #636e72;
+  font-size:16px;
+  height:25px;
+  background: none;
+}
+
+.btn {
+  position:relative;
+  left:50%;
+  transform: translateX(-50%);
+  margin-bottom: 40px;
+  width:80%;
+  height:40px;
+  background: linear-gradient(125deg, #AFD3E2, #146C94, #AFD3E2);
+  background-position: left;
+  background-size: 200%;
+  color:white;
+  font-weight: bold;
+  border:none;
+  cursor:pointer;
+  transition: 0.4s;
+  display:inline;
+}
+
+.btn:hover {
+  background-position: right;
+}
+
+.sign-up p,
+.sign-in p {
+  position:relative;
+  left:50%;
+  transform: translateX(-50%);
+  width:80%;
+  text-align: center;
+}

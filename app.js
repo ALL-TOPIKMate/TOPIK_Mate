@@ -1,41 +1,32 @@
-// app.js
-// 서버에서 사용할 미들웨어를 정의하는 곳
-const { connectFirebase, jsonToFirestore, jsonToFirestore2, imageToStorage } = require('./routes/import');
+const { connectFirebase, jsonToFirestore, jsonToFirestore2, imageToStorage, audioToStorage } = require('./routes/import');
 
 const express = require('express');
 const serveStatic = require('serve-static');
 
 const path = require('path');
 
+
 const fs = require('fs');
 const multer = require('multer');
 const csvtojson = require('csvtojson');
 
 
-// Firebase 관련 패키지
-const admin = require("firebase-admin");
-// const firestoreService = require('firestore-export-import');
-const firebaseConfig = require("./config");
-const serviceAccount = require('./serviceAccount.json');
-
 const app = express();
 const http = require('http').createServer(app);
 const port = 3000; // 서버 포트 번호
-
-// Firebase Cloud Database 
-const collectionName = 'problem-list';
-
-
+const router = require('./routes/index');
 
 // middleware 등록
 app.use(express.json());
 app.use(express.urlencoded( { extended: false } ));
 app.use(express.static(path.join(__dirname, "views")));
+app.use(express.static(path.join(__dirname, "public")));
 app.use("/upload", serveStatic(path.join(__dirname, "uploads"))); //use앞은 가상주소(upload) / 뒤에는 실제 주소 (uploads)
+app.use('/', router);
 
 
 
-//storage의 저장 기준 설정
+// multer - storage의 저장 기준 설정
 var storage = multer.diskStorage({
 
 	destination:function(req, file, callback) {
@@ -66,7 +57,7 @@ var storage = multer.diskStorage({
 });
 
 
-// 위에서 만든 storage를 기준으로 upload
+// 위에서 만든 storage를 기준으로 multer 인스턴스 upload 생성
 const upload = multer({
 	
 	storage:storage,
@@ -76,21 +67,13 @@ const upload = multer({
 	},
 
 });
- 
-
-// var errorHandler = expressErrorHandler({
-	
-// 	static : {
-// 		"404":"./views/404.html"
-// 	}
-	
-// });
 
 
 const assetsDirPath = path.join(__dirname, 'assets');
 const uploadsDirPath = path.join(__dirname, 'uploads');
 const uploadImgDirPath = path.join(uploadsDirPath, 'images');
 const uploadAudDirPath = path.join(uploadsDirPath, 'audios');
+
 
 
 // assects 디렉토리 생성 - 결과 JSON 저장 디렉토리
@@ -118,9 +101,11 @@ if (!fs.existsSync(uploadAudDirPath)) {
 }
 
 
+
+// csvtojson 인스턴스 생성
 const csvtojsonParser = csvtojson({
 
-  // 커스텀 파서 만들기 - 필드 타입 정의 가능
+  // 커스텀 파서 - 필드 타입 정의 가능
   colParser: {
     "PRB_ID": "string",
     "PRB_RSC": "string",
@@ -155,118 +140,123 @@ const csvtojsonParser = csvtojson({
 })
 
 
-// Firebase 커넥션 초기화
-// console.log('Initializing Firebase');
-// admin.initializeApp({
-//     credential: admin.credential.cert(serviceAccount),
-//     databaseURL: firebaseConfig.databaseURL
-// });
-// console.log('Firebase Initialized');
-
-
+// 폴더 업로드
 app.post('/process/file', upload.array("upload"), (req, res) => {
-
+	
 	if (!req.files) {
 		res.send("파일이 업로드되지 않았습니다.");
 	} else {
-
+		
 		let files = req.files;
+		let fileCnt = 0;
+		
+		files.forEach((file) => {
+			
+			let originalName = file.originalname;
+			let filePath = file.path;
+			let extension = path.extname(originalName);
+			let basename = path.basename(file.originalname, extension);
+			
+			console.log(`[${++fileCnt}] file.path ==> ${filePath}`);
+			
+			// json 저장
+			if (extension === ".csv") {
+				let dirpath = path.join(__dirname, 'assets'); // 저장 디렉토리 경로
+				let jsonfilepath = path.join(dirpath, `${basename}.json`); // 저장 파일 경로
+				
+				csvtojsonParser.fromFile(path.join(__dirname, filePath))
+				.then(data => {
+					
+					// data -> JSON 오브젝트로 사용하기
+					jsonStr = JSON.stringify(data);
+					jsonObj = JSON.parse(jsonStr); // 배열
+					
+					
+					// Firebase Cloud Database에 bulk할 JSON 형태
+					/**
+					 * *************** dataset *************** 
+					 * {
+					 *     "컬렉션 이름": {
+					 *         "도큐먼트ID": {
+					 *             "필드1": "값1",
+					 *             "필드2": "값2", ...
+					 *         },
+					 *         "도큐먼트ID": { 
+					 *             ... 
+					 *         },
+					 *     }
+					 * }
+					*/
+					let dataset = new Object();
+					let collection = new Object();
+					
+					// 문제 데이터 순회
+					// jsonObj.forEach(function(element, idx) {
+			
+					// 	// 각 도큐먼트(문제) ID를 PRB_ID로 지정
+						
+					// 	if (element.PRB_ID !== "") {
+							
+					// 		console.log(element.PRB_ID);
+					// 		let prbId = element.PRB_ID;
+							
+					// 		collection[`${prbId}`] = element;
+					// 	}
+						
+						
+					// });
+					
+					// dataset[`${collectionName}`] = collection;
+					
+					
+					// JSON 파일 저장
+					fs.writeFileSync(jsonfilepath, JSON.stringify(dataset, null, 4, (err) => {
+						if (err) {
+							console.log(`[Error] File write error - ${err.message}`);
+						}
+					}));
+					
+					
+					// Firebase에 JSON 적재
+					// jsonToFirestore(jsonfilepath);
+					jsonToFirestore2(jsonObj);
+				})
+			} else if (extension === ".png") {
+				
+				let dirpath = path.join(__dirname, 'uploads', 'images'); // 저장 디렉토리 경로
+				let filepath = path.join(dirpath, `${basename}${extension}`); // 저장 파일 경로
+				
+				// Firebase Storage에 적재
+				imageToStorage(filepath);
+			
+			} else if (extension === ".mp3") {
 
-    files.forEach((file) => {
+				let dirpath = path.join(__dirname, 'uploads', 'images'); // 저장 디렉토리 경로
+				let filepath = path.join(dirpath, `${basename}${extension}`); // 저장 파일 경로
 
-      let originalName = file.originalname;
-      let filePath = file.path;
-      let extension = path.extname(originalName);
-      var basename = path.basename(file.originalname, extension);
-  
-      console.log(`file.originalname: ${originalName}`);
-      console.log(`file.path: ${filePath}`);
+				// Firebase Storage에 적재
+				audioToStorage(filepath);
+			}
 
-      // json 저장
-      if (extension === ".csv") {
-        let dirpath = path.join(__dirname, 'assets'); // 저장 디렉토리 경로
-        let jsonfilepath = path.join(dirpath, `${basename}.json`); // 저장 파일 경로
-        
-        csvtojsonParser.fromFile(path.join(__dirname, filePath))
-          .then(data => {
-    
-            // data -> JSON 오브젝트로 사용하기
-            jsonStr = JSON.stringify(data);
-            jsonObj = JSON.parse(jsonStr); // 배열
-    
-    
-            // Firebase Cloud Database에 bulk할 JSON 형태
-            /**
-             * *************** dataset *************** 
-             * {
-             *     "컬렉션 이름": {
-             *         "도큐먼트ID": {
-             *             "필드1": "값1",
-             *             "필드2": "값2", ...
-             *         },
-             *         "도큐먼트ID": { 
-             *             ... 
-             *         },
-             *     }
-             * }
-             */
-            let dataset = new Object();
-            let collection = new Object();
-    
-            // 문제 데이터 순회
-            jsonObj.forEach(function(element, idx) {
-    
-              // 각 도큐먼트(문제) ID를 PRB_ID로 지정
+		});
 
-              if (element.PRB_ID !== "") {
-                
-                console.log(element.PRB_ID);
-                let prbId = element.PRB_ID;
-      
-                collection[`${prbId}`] = element;
-              }
-
-              
-            });
-    
-            dataset[`${collectionName}`] = collection;
-    
-    
-            // JSON 파일 저장
-            fs.writeFileSync(jsonfilepath, JSON.stringify(dataset, null, 4));
-            
-    
-            // Firebase에 JSON 적재
-            // jsonToFirestore(jsonfilepath);
-            jsonToFirestore2(jsonObj);
-          })
-      } else if (extension === ".png") {
-        
-        let dirpath = path.join(__dirname, 'uploads', 'images'); // 저장 디렉토리 경로
-        let filepath = path.join(dirpath, `${basename}${extension}`); // 저장 파일 경로
-
-        // Firebase Storage에 적재
-        imageToStorage(filepath);
-      
-      } else if (extension === ".mp3") {
-
-      }
-
-    });
-
-		res.sendStatus(200);
+		res.status(200).redirect('/');
 	}
 
 });
 
 
-// const firebase = require('./db-config');
+app.all('*', (req, res) => {
+  res.status(404).send('<h1>요청하신 페이지가 없습니다.</h1>');
+});
+
 
 //Express 서버 시작
 app.listen(port, () => {
   
   console.log(`서버가 실행됩니다. http:localhost:${port}`);
 
+  // Firebase 연결
   connectFirebase();
 
 });
