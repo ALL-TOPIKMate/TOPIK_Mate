@@ -4,21 +4,21 @@ import { Text, View, StyleSheet } from "react-native";
 
 export default ProbSub = (props) =>{
     return (
-        <View style = {{flex: 1}}>
+        <View>
             <View style = {styles.ContentBox}>
-                <Text>
+                <Text style = {{color: "#000000"}}>
                     {props.PRB_SUB_CONT}
                 </Text>
-                <Text/>
             </View>
+            
+            <Text/>
+            <Text/>
         </View>
     );
 }
 
 const styles = StyleSheet.create({
     ContentBox: {
-        backgroundColor: "#D9D9D9",
         padding: 5,
-        alignItems: "center"
     }
 })
