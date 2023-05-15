@@ -63,9 +63,9 @@ export default ProbChoice2 = (props) =>{
             </Text>
        </TouchableOpacity>
        <Text/>
-       <Button onPress={()=>{props.choiceRef.current = click; setsubBtn(true)}} disabled = {click==0} title = "SUBMIT"/>
+       <Button color="#94AF9F" onPress={()=>{props.choiceRef.current = click; setsubBtn(true)}} disabled = {click==0} title = "SUBMIT"/>
        <Text/>
-       <Button title = "다음" disabled={!nextBtn} onPress={()=>{props.setNextBtn(props.nextBtn+1);setsubBtn(false);setClick(0);setnextBtn(false)}}/>
+       <Button color="#739181" title = "다음" disabled={!nextBtn} onPress={()=>{props.setNextBtn(props.nextBtn+1);setsubBtn(false);setClick(0);setnextBtn(false)}}/>
       </View>  
     );
 }
@@ -74,7 +74,7 @@ export default ProbChoice2 = (props) =>{
 const styles = StyleSheet.create({
     button:{
         flex: 3,
-        
+
         flexDirection: "row",
         justifyContent: "center"
 
