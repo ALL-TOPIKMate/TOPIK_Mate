@@ -2,6 +2,7 @@ import React, {useState, useEffect, useRef} from 'react';
 
 import {View, Text, Button, StyleSheet, TouchableOpacity, ScrollView} from 'react-native'
 import AppNameHeader from './component/AppNameHeader'
+import firestore from '@react-native-firebase/firestore';
 
 
 const WrongScreen = ({navigation}) =>{
@@ -17,6 +18,9 @@ const WrongScreen = ({navigation}) =>{
     const [data, setData] = useState([]);
     const [render, reRender] = useState(false);
 
+    // 복습하기 documnet id 불러오기
+    const problemCollection = firestore().collection('problems');
+  
     // mount
     useEffect(()=>{
         // 유저의 모든 유형을 가져옴
@@ -28,17 +32,34 @@ const WrongScreen = ({navigation}) =>{
             {tag: "중심 생각 고르기5", PRB_RSC:"60회 TOPIK 2",rating: "0", section: "읽기", choice: false},
             {tag: "중심 생각 고르기6", PRB_RSC:"60회 TOPIK 2",rating: "0", section: "읽기", choice: false},
             {tag: "중심 생각 고르기7", PRB_RSC:"60회 TOPIK 2",rating: "0/10", section: "쓰기", choice: false},
-            {tag: "중심 생각 고르기8", PRB_RSC:"60회 TOPIK 2",rating: "0/10", section: "쓰기", choice: false},
+            {tag: "중심 생각 고르기8", PRB_RSC:"63회 TOPIK 2",rating: "0/10", section: "쓰기", choice: false},
             {tag: "중심 생각 고르기9", PRB_RSC:"60회 TOPIK 2",rating: "0", section: "듣기", choice: false},
             {tag: "중심 생각 고르기10", PRB_RSC:"60회 TOPIK 2",rating: "0" , section: "듣기", choice: false},
             {tag: "중심 생각 고르기11", PRB_RSC:"60회 TOPIK 2",rating: "0", section: "듣기", choice: false},
             {tag: "중심 생각 고르기12", PRB_RSC:"60회 TOPIK 2",rating: "0", section: "읽기", choice: false},
             {tag: "중심 생각 고르기13", PRB_RSC:"60회 TOPIK 2",rating: "0", section: "읽기", choice: false},
             {tag: "중심 생각 고르기14", PRB_RSC:"60회 TOPIK 2",rating: "0", section: "읽기", choice: false},
-            {tag: "중심 생각 고르기15", PRB_RSC:"60회 TOPIK 2",rating: "0/10", section: "쓰기", choice: false},
-            {tag: "중심 생각 고르기16", PRB_RSC:"60회 TOPIK 2",rating: "0/10", section: "쓰기", choice: false},
+            {tag: "중심 생각 고르기15", PRB_RSC:"58회 TOPIK 2",rating: "0/10", section: "쓰기", choice: false},
+            {tag: "중심 생각 고르기16", PRB_RSC:"63회 TOPIK 2",rating: "0/10", section: "쓰기", choice: false},
         ])
+
+        async function dataLoading(){
+            try{
+                // 복습하기 콜렉션의 모든 유형 도큐먼트을 불러옴
+                const data = await problemCollection.get();
+                setData(data.docs.map((doc)=> {return {...doc.data(), choice: false}}))
+            }catch(error){
+                console.log(error.message);
+            }    
+        }
+
+        // dataLoading();
+
     }, [])
+
+    // useEffect(()=>{
+    //     console.log(data)
+    // }, [data])
 
 
     const userSelectedTag = () =>{
@@ -84,7 +105,7 @@ const WrongScreen = ({navigation}) =>{
             })
         }else if(randomList.current){
             return (
-            <TouchableOpacity onPress={()=>{navigation.push("WrongStudy", {key: 0, userTag: userAllTag()})}} style = {styles.btnBox}>
+            <TouchableOpacity onPress={()=>{navigation.push("WrongStudy", {key: "random", userTag: userAllTag()})}} style = {styles.btnBox}>
                 <Text style = {{fontWeight: "bold", fontSize: 16}}>
                     랜덤 학습
                 </Text>
@@ -94,7 +115,7 @@ const WrongScreen = ({navigation}) =>{
             return (data.map((data, index) => {
                         if(data.section == "쓰기"){
                             return (
-                                <TouchableOpacity key = {index} onPress = {() => {navigation.push("WriteHistory", {userTag: data.PRB_RSC})}} style = {[styles.tagList]}>
+                                <TouchableOpacity key = {index} onPress = {() => {navigation.push("WriteHistory", {key: 2, userTag: data.PRB_RSC})}} style = {[styles.tagList]}>
                                     <Text style = {{flex: 5}}>
                                         {data.PRB_RSC} 
                                     </Text>
@@ -170,7 +191,7 @@ const WrongScreen = ({navigation}) =>{
             {
                 selectList.current ? (
                     <View style = {{flex: 2}}>
-                        <TouchableOpacity onPress={()=>{navigation.push("WrongStudy", {key: 1, userTag: userSelectedTag()})}} style = {styles.btnBox}>
+                        <TouchableOpacity onPress={()=>{navigation.push("WrongStudy", {key: "select", userTag: userSelectedTag()})}} style = {styles.btnBox}>
                             <Text style = {{fontWeight: "bold", fontSize: 16}}>
                                 선택 학습
                             </Text>

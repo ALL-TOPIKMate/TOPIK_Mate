@@ -34,7 +34,9 @@ export default ProbChoice = (props) =>{
     }
 
     return (
-      <View style = {{flex: 5}}>
+      <View>
+        <Text /><Text />
+        
         <TouchableOpacity onPress = {() => {setClick(1)}} disabled = {subBtn} style = {[styles.button, {backgroundColor: setBtnColor(1)}]}>
             <Text>
                 {props.PRB_CHOICE1}
@@ -78,11 +80,11 @@ export default ProbChoice = (props) =>{
 
 const styles = StyleSheet.create({
     button:{
-        flex: 3,
-        
         flexDirection: "row",
         justifyContent: "center",
         alignItems: "center",
-        borderRadius: 10
+        borderRadius: 10,
+
+        padding: 16
     }
 })

@@ -21,7 +21,7 @@ const AudRef = (props) =>{
     }
 
     return (    
-        <View style = {{flex: 3}}>
+        <View>
             <View style = {styles.btnBox}>
                 <TouchableOpacity onPress={()=>{!isRunning ? start() : stop()}} style = {styles.btnPlay}>
                     <Text style = {{color: "#F6F1F1", fontSize: 20, textAlign: "center"}}>
@@ -30,6 +30,7 @@ const AudRef = (props) =>{
                 </TouchableOpacity>
             </View>   
 
+            <Text/>
             <Text/>
         </View>
     );
@@ -42,9 +43,8 @@ const styles = StyleSheet.create({
     justifyContent: "center",
 
     alignItems: "center",
-    
 
-    flex: 2
+    paddingVertical: 30
    }, 
 
    btnPlay:{

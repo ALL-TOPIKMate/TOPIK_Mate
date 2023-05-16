@@ -1,5 +1,5 @@
 import React, {useState, useEffect, useRef} from 'react';
-import {View, Text, StyleSheet} from 'react-native';
+import {View, Text, StyleSheet, ScrollView} from 'react-native';
 import firestore from '@react-native-firebase/firestore';
 
 
@@ -19,39 +19,30 @@ const LoadProblemScreen = (loadedProblem, setProblemStructure, choiceRef, setNex
 
     
     for(var i=0; i<loadedProblem.length; i++){
-        let cnt = 0;
         question = []
 
         // component화 하기
 
         // PRB_MAIN_CONT: 메인 문제
-        question.push(<ProbMain PRB_MAIN_CONT = {loadedProblem[i].PRB_MAIN_CONT} PRB_NUM = {loadedProblem[i].PRB_NUM} key = {i*7+0}/>)
+        question.push(<ProbMain PRB_MAIN_CONT = {loadedProblem[i].PRB_MAIN_CONT} PRB_NUM = {loadedProblem[i].PRB_NUM} key = {i*6+0}/>)
         if(loadedProblem[i].PRB_SECT == "듣기"){
-            question.push(<AudRef AUD_REF = {loadedProblem[i].AUD_REF} key = {i*7+1}/>)
-            
+            question.push(<AudRef AUD_REF = {loadedProblem[i].AUD_REF} key = {i*6+1}/>)
+
             // PRB_SUB_CONT: 서브 문제
             if(loadedProblem[i].PRB_SUB_CONT){
-              question.push(<ProbSub PRB_SUB_CONT = {loadedProblem[i].PRB_SUB_CONT} key = {i*7+2}/>)
-            }else{
-                question.push(<View style = {{flex: 1}} key = {i*7+2}/>)
+                question.push(<ProbSub PRB_SUB_CONT = {loadedProblem[i].PRB_SUB_CONT} key = {i*6+2}/>)
             }
 
         }else if(loadedProblem[i].PRB_SECT == "읽기"){
             // PRB_TXT: 지문
-            question.push(<ProbTxt PRB_TXT = {loadedProblem[i].PRB_TXT} key = {i*7+3}/>)
-        
+            question.push(<ProbTxt PRB_TXT = {loadedProblem[i].PRB_TXT} key = {i*6+1}/>)
+
              // PRB_SUB_CONT: 서브 문제
             if(loadedProblem[i].PRB_SUB_CONT){
-                cnt++;
-                question.push(<ProbSub PRB_SUB_CONT = {loadedProblem[i].PRB_SUB_CONT} key = {i*7+4}/>)
+                question.push(<ProbSub PRB_SUB_CONT = {loadedProblem[i].PRB_SUB_CONT} key = {i*6+2}/>)
             }// PRB_SCRPT: 서브 지문
             if(loadedProblem[i].PRB_SCRPT){
-                cnt++;
-                question.push(<ProbScrpt PRB_SCRPT = {loadedProblem[i].PRB_SCRPT} key = {i*7+5} />)
-            }
-
-            if(cnt<2){
-                question.push(<View style = {{flex: 1}} />)
+                question.push(<ProbScrpt PRB_SCRPT = {loadedProblem[i].PRB_SCRPT} key = {i*6+3} />)
             }
         }
 
@@ -67,11 +58,12 @@ const LoadProblemScreen = (loadedProblem, setProblemStructure, choiceRef, setNex
             nextBtn = {i}
             setNextBtn = {setNextBtn}
 
-            key = {i*7+6}
+            key = {i*6+4}
         />)
 
-        problemStructures.push(<View style = {styles.containerPos}>{question}</View>)
+        problemStructures.push(<ScrollView style = {styles.container} key = {i*6+5}>{question}</ScrollView>)
     }
+
 
     setProblemStructure(problemStructures)
 }
@@ -88,7 +80,7 @@ const StudyScreen = ({route}) =>{
     // 4지선다 컴포넌트에서 사용자가 고른 답을 저장
     const choiceRef = useRef(0);
     // 콜렉션 불러오기
-    const problemCollection = firestore().collection('problems');
+    const problemCollection = firestore().collection('problems').doc("EQ60LV2RDG46");
     
 
     // MOUNT 
@@ -96,8 +88,10 @@ const StudyScreen = ({route}) =>{
         // promise 객체를 반환하는 함수
         async function dataLoading(){
             try{
-                const data = await problemCollection.limit(10).get(); // 요청한 데이터가 반환되면 다음 줄 실행
-                setLoadedProblem(data.docs.map(doc => ({...doc.data()})))
+                const data = await problemCollection.get(); // 요청한 데이터가 반환되면 다음 줄 실행
+
+                // setLoadedProblem(data.docs.map(doc => ({...doc.data()})))
+                setLoadedProblem([data._data])
             }catch(error){
                 console.log(error.message);
             }    
@@ -135,29 +129,16 @@ const StudyScreen = ({route}) =>{
     
 
     return (
-        <View style = {[styles.container, styles.containerPos]}>
-            <View style = {[styles.container, styles.containerPos]}>
-                
-                {problemStructure[nextBtn]}
-    
-
-                <Text>
-                    아이디 값은 {route.params.id}
-                    버튼 값은 {nextBtn}
-                </Text>
-            </View>
+        <View>
+            {problemStructure[nextBtn]}
         </View>
     );
 }
 
 const styles = StyleSheet.create({
     container:{
-        padding: 10,
+        padding: 20,
     },
-
-    containerPos: {
-        flex:20
-    }
 })
 
 export default StudyScreen;
