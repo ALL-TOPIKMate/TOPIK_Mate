@@ -12,46 +12,49 @@ const WriteHistoryScreen = ({route, navigation}) =>{
     useEffect(()=>{
         setData([
             {
-                date: "20230510",
-                score: "15/20",
-                PRB_WRITED_ID: "aaaaaa", // 고유값, 유저가 쓴 답안을 저장하는 도큐먼트 네임
-                PRB_RSC: "60회 TOPIK 2",   
+                PRB_RSC: "60회 TOPIK 2",
+                PRB_NUM: "51"  
             },
             {
-                date: "20230510",
-                score: "15/20",
-                PRB_WRITED_ID: "aaaaab", // 고유값, 유저가 쓴 답안을 저장하는 도큐먼트 네임
                 PRB_RSC: "60회 TOPIK 2",   
+                PRB_NUM: "52"
             },
             {
-                date: "20230510",
-                score: "15/20",
-                PRB_WRITED_ID: "aaaaac", // 고유값, 유저가 쓴 답안을 저장하는 도큐먼트 네임
                 PRB_RSC: "60회 TOPIK 2",   
+                PRB_NUM: "51"
             },
             {
-                date: "20230510",
-                score: "15/20",
-                PRB_WRITED_ID: "aaaaaa", // 고유값, 유저가 쓴 답안을 저장하는 도큐먼트 네임
                 PRB_RSC: "60회 TOPIK 2",   
+                PRB_NUM: "52"
             },
             {
-                date: "20230510",
-                score: "15/20",
-                PRB_WRITED_ID: "aaaaab", // 고유값, 유저가 쓴 답안을 저장하는 도큐먼트 네임
                 PRB_RSC: "60회 TOPIK 2",   
+                PRB_NUM: "51"   
             },
             {
-                date: "20230510",
-                score: "15/20",
-                PRB_WRITED_ID: "aaaaac", // 고유값, 유저가 쓴 답안을 저장하는 도큐먼트 네임
                 PRB_RSC: "60회 TOPIK 2",   
+                PRB_NUM: "52"   
+            },{
+                PRB_RSC: "60회 TOPIK 2",   
+                PRB_NUM: "51"
+            },
+            {
+                PRB_RSC: "60회 TOPIK 2",   
+                PRB_NUM: "52"
+            },
+            {
+                PRB_RSC: "60회 TOPIK 2",   
+                PRB_NUM: "51"
+            },
+            {
+                PRB_RSC: "60회 TOPIK 2",   
+                PRB_NUM: "52"
             }
         ])
 
 
 
-        // route.params.tag와 일치하는 쓰기 문제 불러오기
+        // route.params.userTag와 일치하는 쓰기 문제 불러오기
         async function dataLoading(){
             try{
                 const data = await problemCollection.where("PRB_SECT", "==", "쓰기").get().limit(10); // 요청한 데이터가 반환되면 다음 줄 실행
@@ -72,7 +75,12 @@ const WriteHistoryScreen = ({route, navigation}) =>{
         <View style = {{flex: 1, padding: 20}}>
             <View style = {{flex: 1}}>
                 <Text style = {{fontWeight: "bold", fontSize: 20}}>
-                    쓰기 히스토리
+                    {route.params.userTag}
+                </Text>
+            </View>
+            <View style = {{flex: 0.5}}>
+                <Text>
+                    문제 회차를 선택하세요
                 </Text>
             </View>
             <View style = {{flex: 8}}>
@@ -80,9 +88,8 @@ const WriteHistoryScreen = ({route, navigation}) =>{
                     {
                         data.map((data, index)=>{
                             return (
-                                <TouchableOpacity key = {index} style = {styles.buttonList} onPress = {() => navigation.push("WrongStudy", {key: "write", userTag: data.PRB_RSC, userSelect: data.PRB_WRITED_ID})}>
-                                    <Text>{data.date}</Text>
-                                    <Text>{data.score}</Text>
+                                <TouchableOpacity key = {index} style = {styles.buttonList} onPress = {() => navigation.push("WriteHistoryList", {userTag: route.params.userTag, userRsc: data.PRB_RSC, userPrbNum: data.PRB_NUM})} >
+                                    <Text>{data.PRB_RSC} {data.PRB_NUM}번</Text>
                                 </TouchableOpacity>
                             )
                         })
@@ -96,7 +103,7 @@ const WriteHistoryScreen = ({route, navigation}) =>{
 const styles = StyleSheet.create({
     buttonList: {
         backgroundColor: "#D9D9D9",
-        padding: 16,
+        padding: 28,
         marginVertical: 2,
     }
 })
