@@ -1,14 +1,24 @@
-import React, {useState, useEffect, useRef} from 'react';
-import {View, Text, StyleSheet, FlatList} from 'react-native'
+import React, {useState, useEffect, useRef, useLayoutEffect} from 'react';
+import {View, Text, StyleSheet, Button, ScrollView} from 'react-native'
 import firestore from '@react-native-firebase/firestore';
 
 import ProbMain from "./component/ProbMain";
 import AudRef from "./component/AudRef";
-import ProbChoice from "./component/ProbChoice";
+import MockProbChoice from "./component/MockProbChoice";
 import ProbWrite from "./component/ProbWrite";
+import MockResultTable from './component/MockResultTable';
+import MockWriteResult from './component/MockWriteResult';
 
 
-const LoadProblemScreen = (loadedProblem, setProblemStructure, choiceRef, textRef, setNextBtn) => {
+const LoadProblemScreen = (
+    loadedProblem, 
+    setProblemStructure, 
+    choiceRef, 
+    textRef, 
+    setNextBtn, 
+    setTarget, 
+    submitAnswers) => {
+
     // MOUNT시 실행되는 함수
     // 모든 문제에 대해서 구조화
   
@@ -33,7 +43,7 @@ const LoadProblemScreen = (loadedProblem, setProblemStructure, choiceRef, textRe
             }
 
             // PRB_CHOICE1 ~ 4: 4지 선다
-            question.push(<ProbChoice
+            question.push(<MockProbChoice
                 PRB_CHOICE1= {loadedProblem[i].PRB_CHOICE1} 
                 PRB_CHOICE2={loadedProblem[i].PRB_CHOICE2} 
                 PRB_CHOICE3= {loadedProblem[i].PRB_CHOICE3} 
@@ -43,6 +53,17 @@ const LoadProblemScreen = (loadedProblem, setProblemStructure, choiceRef, textRe
                 choiceRef = {choiceRef}
                 nextBtn = {i}
                 setNextBtn = {setNextBtn}
+
+                // 재확인하는 문제인지
+                // targetRef = {targetRef}
+                setTarget = {setTarget}
+
+                // 이전 문제로 돌아가거나, 결과 화면에서 재확인 시 필요
+                userChoice = {submitAnswers[loadedProblem[i]] !== undefined 
+                    ? submitAnswers[loadedProblem[i].PRB_ID].USER_CHOICE
+                    : undefined}
+
+                // userChoice = {5}
 
                 key = {i*7+6}
             />)
@@ -60,7 +81,7 @@ const LoadProblemScreen = (loadedProblem, setProblemStructure, choiceRef, textRe
             }
 
             // PRB_CHOICE1 ~ 4: 4지 선다
-            question.push(<ProbChoice
+            question.push(<MockProbChoice
                 PRB_CHOICE1= {loadedProblem[i].PRB_CHOICE1} 
                 PRB_CHOICE2={loadedProblem[i].PRB_CHOICE2} 
                 PRB_CHOICE3= {loadedProblem[i].PRB_CHOICE3} 
@@ -70,6 +91,16 @@ const LoadProblemScreen = (loadedProblem, setProblemStructure, choiceRef, textRe
                 choiceRef = {choiceRef}
                 nextBtn = {i}
                 setNextBtn = {setNextBtn}
+
+                // 재확인하는 문제인지
+                setTarget = {setTarget}
+                // setTargetProblem = {setTargetProblem}
+
+                userChoice = {submitAnswers[loadedProblem[i]] !== undefined 
+                    ? submitAnswers[loadedProblem[i].PRB_ID].USER_CHOICE
+                    : undefined}
+
+                // userChoice = {5}
 
                 key = {i*7+6}
             />)
@@ -109,7 +140,7 @@ const LoadProblemScreen = (loadedProblem, setProblemStructure, choiceRef, textRe
 }
 
 
-const MockStudyScreen = ({route}) =>{
+const MockStudyScreen = ({navigation, route}) =>{
 
     // 문제구조 html 코드
     const [problemStructure, setProblemStructure] = useState([]); // component
@@ -117,10 +148,15 @@ const MockStudyScreen = ({route}) =>{
     const [loadedProblem, setLoadedProblem] = useState([]); // json
     // 다음 문제를 넘길 때 사용
     const [nextBtn, setNextBtn] = useState(0);
+    
+    const choiceRef = useRef(0);
+    // 풀었던 문제를 확인할 때 사용
+    // const targetRef = useRef(-1);
+    const [target, setTarget] = useState(-1);
 
 
     // 4지선다 컴포넌트에서 사용자가 고른 답을 저장
-    const choiceRef = useRef(0);
+    const [choice, setChoice] = useState(0);
     // 쓰기 문제에서 사용자가 제출한 입력을 저장
     const textRef = useRef('');
     
@@ -153,16 +189,16 @@ const MockStudyScreen = ({route}) =>{
     }, []);
 
 
-    // 모든 문제를 불러온 후 구조 만들기
-    useEffect(()=>{
+    // 모든 문제를 불러온 후 구조 만들기 useEffect -> useLayoutEffect
+    useLayoutEffect(()=>{
         // console.log(loadedProblem)
-        LoadProblemScreen(loadedProblem, setProblemStructure, choiceRef, textRef, setNextBtn);
+        LoadProblemScreen(loadedProblem, setProblemStructure, choiceRef, textRef, setNextBtn, setTarget, submitAnswers);
     }, [loadedProblem])
    
     
     // 문제 풀이 결과를 보냄 or 저장
-    useEffect(()=>{
-        
+    useLayoutEffect(()=>{
+    
         console.log(`nextBtn: ${nextBtn}`);
 
         if (nextBtn !== 0) {
@@ -170,90 +206,190 @@ const MockStudyScreen = ({route}) =>{
             let prbId = loadedProblem[nextBtn-1]['PRB_ID'];
             let userAnswer = loadedProblem[nextBtn-1];
                     
-            if (choiceRef.current !== 0) {
-                console.log(`choiceRef.current: ${choiceRef.current}`);
-                userAnswer['USER_CHOICE'] = choiceRef.current;
-                        
-                choiceRef.current = 0;
+            console.log(`choice: ${choiceRef.current}`);
+            userAnswer['USER_CHOICE'] = choiceRef.current;
+                    
+            choiceRef.current = 0;
 
-            } else if (textRef !== '') {
+            console.log(`choiceRef init. choiceRef: ${choiceRef.current}`);
+
+            if (textRef.current !== '') {
                 console.log(`textRef.current: ${textRef.current}`);
                 userAnswer['USER_INPUT'] = textRef.current;
                 
                 textRef.current = '';
-                
+
+                console.log(`textRef init. textRef.current: ${textRef.current}`);                
             }
+
+            userAnswer['_display_seq_num'] = nextBtn - 1;
             
-            // 사용자 풀이 결과 저장
-            submitAnswers[prbId] = userAnswer;
+            // 사용자 풀이 결과 - React native setState Dynamic key 설정
+            // [변수]: value
+            setSubmitAnswers({...submitAnswers, [prbId]: userAnswer});
+
 
             // #####################################################
             // submitAnswers 구조 ##################################
             // 
             // submitAnswers: {
-            //     문제ID: {
-            //         사용자_정답: "",
-            //         사용자_서술형_정답: "",
-            //     }
-            // }
-            // #####################################################
-
-
+                //     ABDADFA: {
+                    //         사용자_정답: "",
+                    //         사용자_서술형_정답: "",
+                    //     }
+                    // }
+                    // #####################################################
+                    
+                    
         }
-
+        
     }, [nextBtn])
-
-
-    if (nextBtn === loadedProblem.length) {
+    
+    
+    if (nextBtn !== loadedProblem.length) {
 
         return (
-            <View style = {{flex: 5}}>
-                <FlatList
-                    data={Object.keys(submitAnswers)}
-                    renderItem={({item}) =>
-                        <Text style = {styles.item}>
-                            {submitAnswers[item].PRB_ID}
-                            {submitAnswers[item].PRB_CORRT_ANSW}
-                            {submitAnswers[item].USER_CHOICE !== undefined ? submitAnswers[item].USER_CHOICE : submitAnswers[item].USER_INPUT}
-                            {submitAnswers[item].USER_CHOICE !== undefined &&
-                                submitAnswers[item].USER_CHOICE == submitAnswers[item].PRB_CORRT_ANSW ? '정답' : '오답'
-                            }
-                        </Text>
-                    }
-                />
+            <View style = {[styles.container, styles.containerPos]}>
+                
+                    {problemStructure[nextBtn]}
+    
+                <Text>
+                    아이디 값은 {route.params.order}
+                    버튼 값은 {nextBtn}
+                </Text>
             </View>
         );
     }
-    else if (nextBtn !== loadedProblem.length) {        
+    else if (nextBtn === loadedProblem.length && target !== -1) {
         return (
             <View style = {[styles.container, styles.containerPos]}>
-                <View style = {[styles.container, styles.containerPos]}>
-                    
-                        {problemStructure[nextBtn]}
-        
-                    <Text>
-                        아이디 값은 {route.params.order}
-                        버튼 값은 {nextBtn}
-                    </Text>
-                </View>
+                
+                    {problemStructure[target]}
+    
+                <Text>
+                    아이디 값은 {route.params.order}
+                    {/* 확인하고 있는 문제 번호 {targetRef} */}
+                </Text>
             </View>
+        );
+    }
+    else if (nextBtn === loadedProblem.length) {
+
+        const lProblems = [];
+        const wProblems = [];
+        const rProblems = [];
+
+        let lProblemsScore = 0;
+        let wProblemsScore = 0;
+        let rProblemsScore = 0;
+
+        Object.keys(submitAnswers).map((pid) => {
+
+            if (submitAnswers[pid].PRB_SECT === '듣기') {
+                lProblems.push(submitAnswers[pid]);
+                
+                lProblemsScore += 
+                    submitAnswers[pid].USER_CHOICE == submitAnswers[pid].PRB_CORRT_ANSW 
+                    ? submitAnswers[pid].PRB_POINT 
+                    : 0;
+            } else if (submitAnswers[pid].PRB_SECT === '쓰기') {
+                wProblems.push(submitAnswers[pid]);
+            } else if (submitAnswers[pid].PRB_SECT === '읽기') {
+                rProblems.push(submitAnswers[pid]);
+
+                rProblemsScore += 
+                    submitAnswers[pid].USER_CHOICE == submitAnswers[pid].PRB_CORRT_ANSW 
+                    ? submitAnswers[pid].PRB_POINT 
+                    : 0;
+            }
+
+            console.log(submitAnswers[pid].PRB_SECT);
+
+        });
+
+        console.log(`lProblemsScore: ${lProblemsScore}`);
+        console.log(`wProblemsScore: ${wProblemsScore}`);
+        console.log(`rProblemsScore: ${rProblemsScore}`);
+
+        // 필요에 따라 문항 번호 순으로 문제 정렬할 것(파이어베이스에서 document는 id순으로 자동 정렬됨)
+        // lProblems.sort((a, b) => a.PRB_ID > b.PRB_ID ? 1 : -1)
+        // console.log(lProblems)
+
+        // lProblems.sort()
+
+        return (
+            <ScrollView style = {[styles.container, styles.containerPos]}>
+                <View style = {styles.resultSummary}>
+                    <Text>회차정보</Text>
+                    <Text>Total {lProblemsScore + wProblemsScore + rProblems} score</Text>
+                </View>
+
+                {/* 듣기 영역 */}
+                <View style = {styles.resultSummary}>
+                    <Text style = {styles.problemSection}>듣기 영역</Text>
+                    <Text>{lProblemsScore} Score</Text>
+                </View>
+                <MockResultTable results={lProblems} setTarget={setTarget}/>
+
+                {/* 쓰기 영역 */}
+                <Text style = {styles.problemSection}>쓰기 영역</Text>
+                <MockWriteResult results={wProblems}/>
+                {/* <FlatList
+                    data={wProblems}
+                    renderItem={({item}) =>
+                        <Text style = {styles.item}>
+                            {item.PRB_ID}
+                            {item.PRB_CORRT_ANSW}
+                            {item.USER_INPUT}
+                        </Text>
+                    }
+                /> */}
+
+                {/* 읽기 영역 */}
+                <Text style = {styles.problemSection}>읽기 영역</Text>
+                <MockResultTable results={rProblems} setTarget={setTarget}/>
+
+                <Button 
+                    title='End mock test'
+                    style={styles.button} 
+                    onPress={() => navigation.goBack()}/>
+
+            </ScrollView>
         );
     }
 }
 
 const styles = StyleSheet.create({
     container:{
-        padding: 10,
+        padding: 20,
     },
 
     containerPos: {
-        flex:20
+        flex: 20
     },
 
+    resultSummary: {
+        flexDirection: 'row'
+    },
+    
+    problemSection: {
+        fontSize: 20,
+        marginTop: 10,
+        marginBottom: 10,
+    },
     item: {
         fontSize: 20,
         color: "#A5a5a5",
-    }
+    },
+    button:{
+        flex: 3,
+        borderRadius: 10,
+        padding: 16,
+        backgroundColor: '#BBD6B8',
+        // flexDirection: "row",
+        // justifyContent: "center"
+
+    },
 })
 
 export default MockStudyScreen;

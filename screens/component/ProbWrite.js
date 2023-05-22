@@ -16,7 +16,10 @@ export default ProbWrite = (props) => {
                 style = {styles.input}
                 placeholder='Enter your answer here' />
     
-            <Button onPress = {() => {props.textRef.current = input; props.setNextBtn(props.nextBtn+1)}} title='SUBMIT'/>
+            <Button 
+                onPress = {() => {props.textRef.current = input; props.setNextBtn(props.nextBtn+1)}} 
+                title='SUBMIT'
+                style={styles.button}/>
             {/* {!subBtn ? <Button title = "SUBMIT"/> :  <Button onPress = {() => {props.setNextBtn(props.nextBtn+1)}} title = "NEXT TO"/>} */}
           
         </View>  
@@ -27,10 +30,11 @@ export default ProbWrite = (props) => {
 const styles = StyleSheet.create({
     button:{
         flex: 3,
-        
-        flexDirection: "row",
-        justifyContent: "center"
-
+        // flexDirection: "row",
+        // justifyContent: "center",
+        borderRadius: 10,
+        padding: 16,
+        backgroundColor: '#BBD6B8',
     },
 
     input: {
