@@ -2,6 +2,7 @@ import React from 'react';
 
 import {View, Text, Button} from 'react-native';
 import AppNameHeader from './component/AppNameHeader'
+import firestore from '@react-native-firebase/firestore';
 
 const MockListScreen = ({navigation, route}) => {
     return (
