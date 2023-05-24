@@ -13,8 +13,12 @@ import MockProbModal from './component/MockProbModal';
 const MockStudyScreen = ({navigation, route}) =>{
     
     // 콜렉션 불러오기
-    const problemCollection = firestore().collection('problems').doc('TEST').collection('problem-list');
-
+    const problemCollection = firestore()
+                                .collection('problems')
+                                .doc(route.params.level)
+                                .collection('PQ')
+                                .doc(route.params.order)
+                                .collection('problem-list');
     const [problems, setProblems] = useState([]); // json
 
     // MOUNT - data load
