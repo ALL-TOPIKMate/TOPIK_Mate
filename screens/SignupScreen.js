@@ -25,12 +25,19 @@ const SignupScreen = ({navigation}) =>{
         const {email, password} = form;
         const info = {email, password};
         const nickname=(random(10));
+        const my_level = 1;
 
         try {
           const {user} = await signUp(info);
+          const u_uid = user.uid
           console.log(user);
-          console.log('닉네임',nickname)
-          await firestore().collection("users").doc(user.uid).set({ email, nickname});
+          console.log('닉네임',nickname);
+          console.log('나의 레벨', my_level);
+          
+          await firestore().collection("users").doc(user.uid).set({ email, nickname, my_level, u_uid});
+          await firestore().collection("users").doc(user.uid).collection("wrong_lv1").doc('복습').set({ Type: 'Wrong' });
+          await firestore().collection("users").doc(user.uid).collection("wrong_lv2").doc('복습').set({ Type: 'Wrong' });
+          await firestore().collection("users").doc(user.uid).collection("recommend").doc('추천').set({ Type: 'Recom' });
           navigation.navigate('Home')
           return user;
           
