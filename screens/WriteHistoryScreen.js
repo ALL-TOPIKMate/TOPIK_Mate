@@ -4,67 +4,67 @@ import firestore from '@react-native-firebase/firestore';
 
 
 const WriteHistoryScreen = ({route, navigation}) =>{
-    // 유저가 고른 유형에 해당하는 쓰기 목록을 가져옴
     const [data, setData] = useState([]);
-    const problemCollection = firestore().collection('problems');
+    // 유저가 고른 유형의 도큐먼트를 가져옴 route.params.userTag
+    const problemCollection = route.params.problemCollection.doc("oKtSOMagB4yv7oG25RDS").collection("problem-rsc");
     
     
     useEffect(()=>{
-        setData([
-            {
-                PRB_RSC: "60회 TOPIK 2",
-                PRB_NUM: "51"  
-            },
-            {
-                PRB_RSC: "60회 TOPIK 2",   
-                PRB_NUM: "52"
-            },
-            {
-                PRB_RSC: "60회 TOPIK 2",   
-                PRB_NUM: "51"
-            },
-            {
-                PRB_RSC: "60회 TOPIK 2",   
-                PRB_NUM: "52"
-            },
-            {
-                PRB_RSC: "60회 TOPIK 2",   
-                PRB_NUM: "51"   
-            },
-            {
-                PRB_RSC: "60회 TOPIK 2",   
-                PRB_NUM: "52"   
-            },{
-                PRB_RSC: "60회 TOPIK 2",   
-                PRB_NUM: "51"
-            },
-            {
-                PRB_RSC: "60회 TOPIK 2",   
-                PRB_NUM: "52"
-            },
-            {
-                PRB_RSC: "60회 TOPIK 2",   
-                PRB_NUM: "51"
-            },
-            {
-                PRB_RSC: "60회 TOPIK 2",   
-                PRB_NUM: "52"
-            }
-        ])
+        // setData([
+        //     {
+        //         PRB_RSC: "60회 TOPIK 2",
+        //         PRB_NUM: "51"  
+        //     },
+        //     {
+        //         PRB_RSC: "60회 TOPIK 2",   
+        //         PRB_NUM: "52"
+        //     },
+        //     {
+        //         PRB_RSC: "60회 TOPIK 2",   
+        //         PRB_NUM: "51"
+        //     },
+        //     {
+        //         PRB_RSC: "60회 TOPIK 2",   
+        //         PRB_NUM: "52"
+        //     },
+        //     {
+        //         PRB_RSC: "60회 TOPIK 2",   
+        //         PRB_NUM: "51"   
+        //     },
+        //     {
+        //         PRB_RSC: "60회 TOPIK 2",   
+        //         PRB_NUM: "52"   
+        //     },{
+        //         PRB_RSC: "60회 TOPIK 2",   
+        //         PRB_NUM: "51"
+        //     },
+        //     {
+        //         PRB_RSC: "60회 TOPIK 2",   
+        //         PRB_NUM: "52"
+        //     },
+        //     {
+        //         PRB_RSC: "60회 TOPIK 2",   
+        //         PRB_NUM: "51"
+        //     },
+        //     {
+        //         PRB_RSC: "60회 TOPIK 2",   
+        //         PRB_NUM: "52"
+        //     }
+        // ])
 
 
 
         // route.params.userTag와 일치하는 쓰기 문제 불러오기
         async function dataLoading(){
             try{
-                const data = await problemCollection.where("PRB_SECT", "==", "쓰기").get().limit(10); // 요청한 데이터가 반환되면 다음 줄 실행
+                const data = await problemCollection.get(); // 요청한 데이터가 반환되면 다음 줄 실행
                 setData(data.docs.map(doc => ({...doc.data(), tag: route.params.userTag})))
             }catch(error){
                 console.log(error.message);
             }    
         }
 
-        // dataLoading();
+        dataLoading();
     }, [])
 
     // useEffect(()=>{
@@ -88,7 +88,7 @@ const WriteHistoryScreen = ({route, navigation}) =>{
                     {
                         data.map((data, index)=>{
                             return (
-                                <TouchableOpacity key = {index} style = {styles.buttonList} onPress = {() => navigation.push("WriteHistoryList", {userTag: route.params.userTag, userRsc: data.PRB_RSC, userPrbNum: data.PRB_NUM})} >
+                                <TouchableOpacity key = {index} style = {styles.buttonList} onPress = {() => navigation.push("WriteHistoryList", {userTag: route.params.userTag, userRsc: data.PRB_RSC, userPrbNum: data.PRB_NUM, problemCollection: problemCollection})} >
                                     <Text>{data.PRB_RSC} {data.PRB_NUM}번</Text>
                                 </TouchableOpacity>
                             )

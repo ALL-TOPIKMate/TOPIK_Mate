@@ -18,29 +18,28 @@ const WrongScreen = ({navigation}) =>{
     const [data, setData] = useState([]);
     const [render, reRender] = useState(false);
 
-    // 복습하기 documnet id 불러오기
-    const problemCollection = firestore().collection('problems');
-  
+    // User Wrong documnet 불러오기
+    const problemCollection = firestore().collection('users').doc("5H75B8CFTMZLd8efbldwxqnIMxC3").collection("wrong");
     // mount
     useEffect(()=>{
         // 유저의 모든 유형을 가져옴
-        setData([
-            {tag: "중심 생각 고르기", PRB_RSC:"60회 TOPIK 2", rating: "0", section: "듣기", choice: false},
-            {tag: "그림보고 대화상황 파악하기", PRB_RSC:"60회 TOPIK 2",rating: "0" , section: "듣기", choice: false},
-            {tag: "듣고 이어지는 말 고르기", PRB_RSC:"60회 TOPIK 2",rating: "0", section: "듣기", choice: false},
-            {tag: "비슷한 의미의 문형 고르기", PRB_RSC:"60회 TOPIK 2",rating: "0", section: "읽기", choice: false},
-            {tag: "광고, 안내문 등 실용문을 읽고 무엇에 대한 글인지 고르기", PRB_RSC:"60회 TOPIK 2",rating: "0", section: "읽기", choice: false},
-            {tag: "글의 순서에 맞게 문장을 배열한 것 고르기", PRB_RSC:"60회 TOPIK 2",rating: "0", section: "읽기", choice: false},
-            {tag: "빈칸에 들어갈 문장 쓰기", PRB_RSC:"60회 TOPIK 2",rating: "0/10", section: "쓰기", choice: false},
-            {tag: "주제에 맞는 글 쓰기", PRB_RSC:"63회 TOPIK 2",rating: "0/30", section: "쓰기", choice: false},
-            {tag: "듣고 이어지는 행동 고르기", PRB_RSC:"60회 TOPIK 2",rating: "0", section: "듣기", choice: false},
-            {tag: "세부 내용 파악하기", PRB_RSC:"60회 TOPIK 2",rating: "0" , section: "듣기", choice: false},
-            {tag: "중심 생각 파악하기", PRB_RSC:"60회 TOPIK 2",rating: "0", section: "듣기", choice: false},
-            {tag: "글의 순서에 맞게 문장을 배열한 것 고르기", PRB_RSC:"60회 TOPIK 2",rating: "0", section: "읽기", choice: false},
-            {tag: "빈칸에 들어갈 알맞은 내용 고르기", PRB_RSC:"60회 TOPIK 2",rating: "0", section: "읽기", choice: false},
-            {tag: "글의 내용과 같은 것 고르기", PRB_RSC:"60회 TOPIK 2",rating: "0", section: "읽기", choice: false},
-            {tag: "내 생각 쓰기", PRB_RSC:"58회 TOPIK 2",rating: "0/50", section: "쓰기", choice: false},
-        ])
+        // setData([
+        //     {tag: "중심 생각 고르기", rating: "0", section: "듣기", choice: false},
+        //     {tag: "그림보고 대화상황 파악하기", rating: "0" , section: "듣기", choice: false},
+        //     {tag: "듣고 이어지는 말 고르기", rating: "0", section: "듣기", choice: false},
+        //     {tag: "비슷한 의미의 문형 고르기", rating: "0", section: "읽기", choice: false},
+        //     {tag: "광고, 안내문 등 실용문을 읽고 무엇에 대한 글인지 고르기", rating: "0", section: "읽기", choice: false},
+        //     {tag: "글의 순서에 맞게 문장을 배열한 것 고르기", rating: "0", section: "읽기", choice: false},
+        //     {tag: "빈칸에 들어갈 문장 쓰기", rating: "0/10", section: "쓰기", choice: false},
+        //     {tag: "주제에 맞는 글 쓰기", rating: "0/30", section: "쓰기", choice: false},
+        //     {tag: "듣고 이어지는 행동 고르기", rating: "0", section: "듣기", choice: false},
+        //     {tag: "세부 내용 파악하기", rating: "0" , section: "듣기", choice: false},
+        //     {tag: "중심 생각 파악하기", rating: "0", section: "듣기", choice: false},
+        //     {tag: "글의 순서에 맞게 문장을 배열한 것 고르기", rating: "0", section: "읽기", choice: false},
+        //     {tag: "빈칸에 들어갈 알맞은 내용 고르기", rating: "0", section: "읽기", choice: false},
+        //     {tag: "글의 내용과 같은 것 고르기", rating: "0", section: "읽기", choice: false},
+        //     {tag: "내 생각 쓰기", rating: "0/50", section: "쓰기", choice: false},
+        // ])
 
         async function dataLoading(){
             try{
@@ -52,7 +51,7 @@ const WrongScreen = ({navigation}) =>{
             }    
         }
 
-        // dataLoading();
+        dataLoading();
 
     }, [])
 
@@ -104,7 +103,7 @@ const WrongScreen = ({navigation}) =>{
             })
         }else if(randomList.current){
             return (
-            <TouchableOpacity onPress={()=>{navigation.push("WrongStudy", {key: "random", userTag: userAllTag()})}} style = {styles.btnBox}>
+            <TouchableOpacity onPress={()=>{navigation.push("WrongStudy", {key: "random", userTag: userAllTag(), order: 0, problemCollection: problemCollection})}} style = {styles.btnBox}>
                 <Text style = {{fontWeight: "bold", fontSize: 16}}>
                     랜덤 학습
                 </Text>
@@ -114,7 +113,7 @@ const WrongScreen = ({navigation}) =>{
             return (data.map((data, index) => {
                         if(data.section == "쓰기"){
                             return (
-                                <TouchableOpacity key = {index} onPress = {() => {navigation.push("WriteHistory", {key: 2, userTag: data.tag})}} style = {[styles.tagList]}>
+                                <TouchableOpacity key = {index} onPress = {() => {navigation.push("WriteHistory", {key: 2, userTag: data.tag, problemCollection: problemCollection})}} style = {[styles.tagList]}>
                                     <Text style = {{flex: 5}}>
                                         {data.tag} 
                                     </Text>
@@ -190,7 +189,7 @@ const WrongScreen = ({navigation}) =>{
             {
                 selectList.current ? (
                     <View style = {{flex: 2}}>
-                        <TouchableOpacity onPress={()=>{navigation.push("WrongStudy", {key: "select", userTag: userSelectedTag()})}} style = {styles.btnBox}>
+                        <TouchableOpacity onPress={()=>{navigation.push("WrongStudy", {key: "select", userTag: userSelectedTag(), order: 0, problemCollection: problemCollection})}} style = {styles.btnBox}>
                             <Text style = {{fontWeight: "bold", fontSize: 16}}>
                                 선택 학습
                             </Text>
