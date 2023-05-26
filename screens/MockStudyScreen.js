@@ -8,6 +8,7 @@ import { Table, TableWrapper, Row, Cell } from 'react-native-table-component'
 
 import MockProb from './component/MockProb';
 import MockProbModal from './component/MockProbModal';
+import MockTimer from './component/MockTimer';
 
 
 const MockStudyScreen = ({navigation, route}) =>{
@@ -115,26 +116,27 @@ const MockStudyScreen = ({navigation, route}) =>{
 
     useEffect(() => {
         if (direction !== 0) {
-        console.log(`current index: ${index}`);
-        console.log(`current choice: ${choice}`);
-        console.log(`current direction: ${direction}`);
+            console.log(`current index: ${index}`);
+            console.log(`current choice: ${choice}`);
+            console.log(`current direction: ${direction}`);
 
-        let newArr = [...problems];
-        newArr[index + direction]['USER_CHOICE'] = choice;
-        setProblems(newArr);
+            let newArr = [...problems];
+            newArr[index + direction]['USER_CHOICE'] = choice;
+            setProblems(newArr);
 
-        console.log(
-            `updated ${index + direction}: ${newArr[index + direction].USER_CHOICE}`
-        );
+            console.log(
+                `updated ${index + direction}: ${newArr[index + direction].USER_CHOICE}`
+            );
 
         }
     }, [index]);
 
 
 
-    console.log(audios)
     
     /* 결과 화면 만들기 */
+    const [isEnd, setIsEnd] = useState(false);
+
     const [listen, setListen] = useState([]);
     const [write, setWrite] = useState([]);
     const [read, setRead] = useState([]);
@@ -143,23 +145,23 @@ const MockStudyScreen = ({navigation, route}) =>{
     const headers = ['No.', 'Your answer', 'Correct Answer', 'Result', 'See...'];
 
     useEffect(() => {
-        if (index === problems.length) {
-        problems.map((problem) => {
+        if (isEnd || index === problems.length) {
+            problems.map((problem) => {
 
-            switch (problem.PRB_SECT) {
-            case '듣기':
-                setListen((prevList) => [...prevList, problem]);
-                break;
-            case '읽기':
-                setRead((prevList) => [...prevList, problem]);
-                break;
-            case '쓰기':
-                setWrite((prevList) => [...prevList, problem]);
-                break;
-            }
-        });
+                switch (problem.PRB_SECT) {
+                case '듣기':
+                    setListen((prevList) => [...prevList, problem]);
+                    break;
+                case '읽기':
+                    setRead((prevList) => [...prevList, problem]);
+                    break;
+                case '쓰기':
+                    setWrite((prevList) => [...prevList, problem]);
+                    break;
+                }
+            });
         }
-    }, [index]);
+    }, [isEnd, index]);
 
 
 
@@ -210,7 +212,7 @@ const MockStudyScreen = ({navigation, route}) =>{
         )
         }
         
-    } else if (index === problems.length) {
+    } else if (isEnd || index === problems.length) {
         return (
         <ScrollView>
             {/* 듣기 */}
@@ -281,6 +283,12 @@ const MockStudyScreen = ({navigation, route}) =>{
         // 문제 풀이 화면
         return (
         <View style={styles.container}>
+            {/* 타이머 */}
+            <MockTimer
+            setIsEnd={setIsEnd}
+            />
+
+            {/* 문제 풀이 영역 */}
             <MockProb
             problem={problems[index]}
             choice={problems[index].USER_CHOICE}
