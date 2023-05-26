@@ -40,14 +40,16 @@ const MockStudyScreen = ({navigation, route}) =>{
 
 
 
-    // 멀티미디어 로드
-    const multimediaRef = storage.ref().child(`/images/${route.params.level}PQ${route.params.order}/`);
+    /* 멀티미디어 로드 */
+    
+    // 이미지 로드
+    const imageRef = storage.ref().child(`/images/${route.params.level}PQ${route.params.order}/`);
     const [images, setImages] = useState({});
 
     useEffect(() => {
-        async function mediaLoading() {
+        async function imagesLoading() {
             try {
-                multimediaRef.listAll().then(res => {
+                imageRef.listAll().then(res => {
 
                     const data = {}
 
@@ -56,9 +58,7 @@ const MockStudyScreen = ({navigation, route}) =>{
                             
                             data[item.name] = {};
                             data[item.name].url = url;
-                            console.log(`data[${item.name}]: ${data[item.name]}`);
-                            // data.push(url)
-                            // setImages({...images, [item.name]: {url: url}})
+
                         })
                     })
 
@@ -71,71 +71,40 @@ const MockStudyScreen = ({navigation, route}) =>{
             }
         }
 
-        mediaLoading();
+        imagesLoading();
     }, []);
 
+    // 오디오 로드
+    const audioRef = storage.ref().child(`/audios/${route.params.level}PQ${route.params.order}/`);
+    const [audios, setAudios] = useState({});
 
-
-
-    /* 문제 - 이미지 매핑 */
     useEffect(() => {
+        async function audiosLoading() {
+            try {
+                audioRef.listAll().then(res => {
 
-        // 이미지가 로드되었는지 확인
-        if (Object.keys(images).length !== 0) {
+                    const data = {}
 
-            problems.map(problem => {
-    
-                /* 본문 이미지 */
-                if (problem.IMG_REF !== '') {
-                    try {
-                        problem.IMG_REF = images[problem.IMG_REF].url;
-                    } catch(err) {
-                        console.log(`Multimedia File does not exist on Firebase Storage. Filename: ${problem.IMG_REF}`);
-                    }
-                }
-    
-    
-                /* 오디오 */
-    
-    
-                /* 4지선다 이미지 */
-                if (problem.PRB_CHOICE1.includes('png')) {
-                    try {
-                        problem.PRB_CHOICE1 = images[problem.PRB_CHOICE1].url;
-                    } catch(err) {
-                        console.log(`Multimedia File does not exist on Firebase Storage. Filename: ${problem.PRB_CHOICE1}`);
-                    }
-                }
-    
-                if (problem.PRB_CHOICE2.includes('png')) {
-                    try {
-                        problem.PRB_CHOICE2 = images[problem.PRB_CHOICE2].url;
-                    } catch(err) {
-                        console.log(`Multimedia File does not exist on Firebase Storage. Filename: ${problem.PRB_CHOICE2}`);
-                    }
-                }
-    
-                if (problem.PRB_CHOICE3.includes('png')) {
-                    try {
-                        problem.PRB_CHOICE3 = images[problem.PRB_CHOICE3].url;
-                    } catch(err) {
-                        console.log(`Multimedia File does not exist on Firebase Storage. Filename: ${problem.PRB_CHOICE3}`);
-                    }
-                }
-    
-                if (problem.PRB_CHOICE4.includes('png')) {
-                    try {
-                        problem.PRB_CHOICE4 = images[problem.PRB_CHOICE4].url;
-                    } catch(err) {
-                        console.log(`Multimedia File does not exist on Firebase Storage. Filename: ${problem.PRB_CHOICE4}`);
-                    }
-                }
-    
-            })
+                    res.items.forEach(item => {
+                        item.getDownloadURL().then(url => {
+                            
+                            data[item.name] = {};
+                            data[item.name].url = url;
+                            
+                        })
+                    })
+
+                    setAudios(data);
+                    
+                });
+
+            } catch(err) {
+                console.log(err);
+            }
         }
 
-
-    }, [images])
+        audiosLoading();
+    }, []);
 
    
 
@@ -162,6 +131,8 @@ const MockStudyScreen = ({navigation, route}) =>{
     }, [index]);
 
 
+
+    console.log(audios)
     
     /* 결과 화면 만들기 */
     const [listen, setListen] = useState([]);
@@ -190,10 +161,8 @@ const MockStudyScreen = ({navigation, route}) =>{
         }
     }, [index]);
 
-    console.log(images);
 
 
-    
     /* 푼 문제 재확인(결과화면 모달) */
     // 모달 창 여닫기
     const [modal, setModal] = useState({
@@ -320,6 +289,7 @@ const MockStudyScreen = ({navigation, route}) =>{
             index={index}
             setDirection={setDirection}
             images={images}
+            audios={audios}
             />
         </View>
         );

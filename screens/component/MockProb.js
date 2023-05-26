@@ -1,10 +1,9 @@
 import React, { useState, useEffect } from 'react'
 import { View, Text, Image, Button, TextInput, StyleSheet, TouchableOpacity } from 'react-native';
-import filebase from '@react-native-firebase/app';
 
 import AudRef from './AudRef';
 
-const MockProb = ({ problem, choice, setChoice, index, setIndex, setDirection, images }) => {
+const MockProb = ({ problem, choice, setChoice, index, setIndex, setDirection, images, audios }) => {
 
     // 사용자 선택 저장
     const [click, setClick] = useState(choice);
@@ -16,7 +15,13 @@ const MockProb = ({ problem, choice, setChoice, index, setIndex, setDirection, i
     return (
         <View>
             {/* 오디오 */}
-
+            {
+              problem.AUD_REF in audios
+              ? <AudRef
+                source={audios[problem.AUD_REF].url}
+              />
+              : null
+            }
 
             {/* ProbMain */}
             <View style={styles.probMain}>
