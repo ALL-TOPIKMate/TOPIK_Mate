@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useState, useEffect} from 'react';
 import {signIn } from "../lib/auth";
 import {Button, View ,TextInput, StyleSheet, Text, Alert} from 'react-native'
 import AppNameHeader from './component/AppNameHeader'
@@ -10,6 +10,12 @@ const SigninScreen = ({navigation}) =>{
         password: "",
         
     });
+    useEffect(() => {
+        return () => {
+          // 컴포넌트가 언마운트될 때 상태 초기화
+          setForm({ email: "", password: "" });
+        };
+      }, []);
     const resultMessages = {
         "auth/email-already-in-use": "이미 가입된 이메일입니다.",
         "auth/wrong-password": "잘못된 비밀번호입니다.",
@@ -36,13 +42,13 @@ const SigninScreen = ({navigation}) =>{
             <View>
                 <TextInput
                     style={styles.input}
-                    onChangeText={(value)=>setForm({email: value, password: form.password})}
-                    value={form.email}
+                    onChangeText={(value)=>setForm({ ...form, email: value})}
+                    value={form.email} placeholder="이메일"
                 />
                 <TextInput
                     style={styles.input}
-                    onChangeText={(value)=>setForm({email: form.email, password: value})}
-                    value={form.password}
+                    onChangeText={(value)=>setForm({ ...form, password: value})}
+                    value={form.password} placeholder="비밀번호"
                 />
                 
                 

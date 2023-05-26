@@ -1,14 +1,15 @@
 import React, { useState, useEffect} from 'react';
-import { View, Text, Image, StyleSheet, Pressable, Modal} from 'react-native';
+import { View, Text, Image, StyleSheet, Pressable, Modal,Button} from 'react-native';
 import { launchImageLibrary } from 'react-native-image-picker';
 import firebase from '@react-native-firebase/app';
 import '@react-native-firebase/storage';
 import {subscribeAuth } from "../lib/auth";
 import firestore from '@react-native-firebase/firestore';
 import DropDownPicker from 'react-native-dropdown-picker';
+//import AppNameHeader from './component/AppNameHeader';
 
 // 내정보
-const InfoScreen = () => {
+const InfoScreen = ({ navigation }) => {
   const [userEmail, setUserEmail] = useState(null); // 이메일
   const [nickname, setNickname] = useState(null); // 닉네임
   const [my_level, setmy_level] = useState(null); // 나의 레벨
@@ -170,75 +171,77 @@ const InfoScreen = () => {
   
   return (
     <View>
+      <View>
+      <Button title = "설정" onPress={() => {navigation.navigate('InfoSetting') }}/> 
+      </View>
       <View style={styles.circleContainer}>
-      <Text>내 정보</Text>
-        <Pressable
-          style={[
-            styles.circle,
-            !imageUrl && styles.circleDefaultImage,
-            { overflow: 'hidden' },
-          ]}
-          onPress={onSelectImage}
-        >
-          {imageUrl ? (
-            <Image source={{ uri: imageUrl }} style={styles.circleImage} />
-          ) : (
-            <View style={styles.circleDefaultImageTextContainer}>
-              <Text style={styles.circleDefaultImageText}>+</Text>
-            </View>
-          )}
-        </Pressable>
+        <Text>내 정보</Text>
+          <Pressable
+            style={[
+              styles.circle,
+              !imageUrl && styles.circleDefaultImage,
+              { overflow: 'hidden' },
+            ]}
+            onPress={onSelectImage}
+          >
+            {imageUrl ? (
+              <Image source={{ uri: imageUrl }} style={styles.circleImage} />
+            ) : (
+              <View style={styles.circleDefaultImageTextContainer}>
+                <Text style={styles.circleDefaultImageText}>+</Text>
+              </View>
+            )}
+          </Pressable>
         
-        <Text> 이메일 : {userEmail}</Text>  
+          <Text> 이메일 : {userEmail}</Text>  
       </View>
     
-    <Text> 나의 레벨 </Text>
-    <Modal
-      animationType="slide"
-      transparent={true}
-      visible={isModalVisible}
-      onRequestClose={() => {
-      Alert.alert('Modal has been closed.');
-      setIsModalVisible(!isModalVisible);
-      }}
-    >
-  <View style={styles.centeredView}>
-    <View style={styles.modalView}>
-      <Text style={styles.modalText}>레벨 수정하기</Text>
-      <DropDownPicker
-        open={open}
-        value={value}
-        items={items}
-        setOpen={setOpen}
-        setValue={setValue}
-        setItems={setItems}
-        placeholder="레벨을 선택해 주세요"
-        listMode="FLATLIST"
-        modalProps={{
-        animationType: 'fade',
-        }}
-        modalTitle="레벨 선택"
-      />
-      <Pressable
-        style={[styles.button, styles.buttonClose]}
-        onPress={() => {
-          setIsModalVisible(!isModalVisible);
-          saveLevelToFirebase(value);
+      <Text> 나의 레벨 </Text>
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={isModalVisible}
+        onRequestClose={() => {
+        Alert.alert('Modal has been closed.');
+        setIsModalVisible(!isModalVisible);
         }}
       >
-        <Text style={styles.textStyle}>저장</Text>
-      </Pressable>
-    </View>
-  </View>
-</Modal>
+        <View style={styles.centeredView}>
+          <View style={styles.modalView}>
+            <Text style={styles.modalText}>레벨 수정하기</Text>
+            <DropDownPicker
+              open={open}
+              value={value}
+              items={items}
+              setOpen={setOpen}
+              setValue={setValue}
+              setItems={setItems}
+              placeholder="레벨을 선택해 주세요"
+              listMode="FLATLIST"
+              modalProps={{
+              animationType: 'fade',
+              }}
+              modalTitle="레벨 선택"
+            />
+            <Pressable
+              style={[styles.button, styles.buttonClose]}
+              onPress={() => {
+                setIsModalVisible(!isModalVisible);
+                saveLevelToFirebase(value);
+              }}
+            >
+              <Text style={styles.textStyle}>저장</Text>
+            </Pressable>
+          </View>
+        </View>
+      </Modal>
       <Pressable
         style={[styles.button, styles.buttonOpen]}
         onPress={() => setIsModalVisible(true)}>
         <Text style={styles.textStyle}>수정하기</Text>
       </Pressable>
-      <Text> {my_level}</Text>  
-      
-  </View>
+      <Text> {my_level}</Text>
+    </View>
  
     
   );

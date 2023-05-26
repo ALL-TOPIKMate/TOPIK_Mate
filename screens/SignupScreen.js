@@ -1,8 +1,8 @@
 import React, {useState} from 'react';
-import {Alert, Text} from 'react-native';
+
 import {signUp } from "../lib/auth";
 import firestore from '@react-native-firebase/firestore';
-import {Button, View ,TextInput, StyleSheet} from 'react-native'
+import {Button, View ,TextInput, StyleSheet, Text} from 'react-native'
 import AppNameHeader from './component/AppNameHeader'
 
 
@@ -35,8 +35,11 @@ const SignupScreen = ({navigation}) =>{
           console.log('나의 레벨', my_level);
           
           await firestore().collection("users").doc(user.uid).set({ email, nickname, my_level, u_uid});
-          await firestore().collection("users").doc(user.uid).collection("wrong_lv1").doc('복습').set({ Type: 'Wrong' });
-          await firestore().collection("users").doc(user.uid).collection("wrong_lv2").doc('복습').set({ Type: 'Wrong' });
+          await firestore().collection("users").doc(user.uid).collection("wrong_lv1").doc('LS_TAG').set({ Type: 'Wrong' });
+          await firestore().collection("users").doc(user.uid).collection("wrong_lv1").doc('RD_TAG').set({ Type: 'Wrong' });
+          await firestore().collection("users").doc(user.uid).collection("wrong_lv2").doc('LS_TAG').set({ Type: 'Wrong' });
+          await firestore().collection("users").doc(user.uid).collection("wrong_lv2").doc('RD_TAG').set({ Type: 'Wrong' });
+          await firestore().collection("users").doc(user.uid).collection("wrong_lv2").doc('WR_TAG').set({ Type: 'Wrong' });
           await firestore().collection("users").doc(user.uid).collection("recommend").doc('추천').set({ Type: 'Recom' });
           navigation.navigate('Home')
           return user;
