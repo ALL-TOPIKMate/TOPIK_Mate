@@ -44,14 +44,16 @@ const MockTimer = ({ setIsEnd, level }) => {
 
     return (
         <View>
-            <Text>{time}</Text>
+            <Text style={styles.timeText}>Left Time: {time}</Text>
         </View>
     )
 
 }
 
 const styles = StyleSheet.create({
-
+    timeText: {
+        fontSize: 20,
+    }
 })
 
 export default MockTimer;

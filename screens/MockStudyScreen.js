@@ -187,29 +187,29 @@ const MockStudyScreen = ({navigation, route}) =>{
     if (modal.open) {
 
         if (modal.sect === '듣기') {
-        return (
-            <MockProbModal
-            problem={listen[modal.index]}
-            modal={modal}
-            setModal={setModal}
-            />
-        )
+            return (
+                <MockProbModal
+                problem={listen[modal.index]}
+                modal={modal}
+                setModal={setModal}
+                />
+            )
         } else if (modal.sect === '읽기') {
-        return (
-            <MockProbModal
-            problem={read[modal.index]}
-            modal={modal}
-            setModal={setModal}
-            />
-        )
+            return (
+                <MockProbModal
+                problem={read[modal.index]}
+                modal={modal}
+                setModal={setModal}
+                />
+            )
         } else if (modal.sect === '쓰기') {
-        return (
-            <MockProbModal
-            problem={write[modal.index]}
-            modal={modal}
-            setModal={setModal}
-            />
-        )
+            return (
+                <MockProbModal
+                problem={write[modal.index]}
+                modal={modal}
+                setModal={setModal}
+                />
+            )
         }
         
     } else if (isEnd || index === problems.length) {
@@ -239,21 +239,25 @@ const MockStudyScreen = ({navigation, route}) =>{
 
 
             {/* 쓰기 */}
-            <View>
-            <Text>쓰기</Text>
-            <View>
-                {
-                write.map((rowData, rowIndex) => {
-                    return (
-                    <View key={rowIndex}>
-                        <Text>{rowData['PRB_NUM']}</Text>
-                        <Text>{rowData['USER_CHOICE']}</Text>
-                    </View>
-                    )
-                })
-                }
-            </View>
-            </View>
+            {
+                route.params.length === 'LV2'
+                ? <View>
+                <Text>쓰기</Text>
+                <View>
+                    {
+                    write.map((rowData, rowIndex) => {
+                        return (
+                        <View key={rowIndex}>
+                            <Text>{rowData['PRB_NUM']}</Text>
+                            <Text>{rowData['USER_CHOICE']}</Text>
+                        </View>
+                        )
+                    })
+                    }
+                </View>
+                </View>
+                : null
+            }
             
             
 
@@ -284,10 +288,10 @@ const MockStudyScreen = ({navigation, route}) =>{
         return (
         <View style={styles.container}>
             {/* 타이머 */}
-            <MockTimer
+            {/* <MockTimer
                 level={route.params.level}
                 setIsEnd={setIsEnd}
-            />
+            /> */}
 
             {/* 문제 풀이 영역 */}
             <MockProb
