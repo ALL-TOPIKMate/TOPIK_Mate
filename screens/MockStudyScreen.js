@@ -1,10 +1,8 @@
 import React, {useState, useEffect, } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native'
 import firestore from '@react-native-firebase/firestore';
-import { Table, TableWrapper, Row, Cell } from 'react-native-table-component';
+import { Table, TableWrapper, Row, Cell } from 'react-native-table-component'
 
-import ProbMain from "./component/ProbMain";
-import AudRef from "./component/AudRef";
 
 import MockProb from './component/MockProb';
 import MockProbModal from './component/MockProbModal';
@@ -142,11 +140,11 @@ const MockStudyScreen = ({navigation, route}) =>{
                 listen.map((rowData, rowIndex) => {
                     return (
                     <TableWrapper key={rowIndex} style={styles.row} >
-                        <Cell data={rowData['PRB_NUM']} textStyle={styles.text} />
-                        <Cell data={rowData['USER_CHOICE']} textStyle={styles.text} />
-                        <Cell data={rowData['PRB_CORRT_ANSW']} textStyle={styles.text} />
+                        <Cell data={rowData['PRB_NUM']} style={styles.text} />
+                        <Cell data={rowData['USER_CHOICE']} style={styles.text} />
+                        <Cell data={rowData['PRB_CORRT_ANSW']} style4={styles.text} />
                         <Cell data={rowData['USER_CHOICE'] === rowData['PRB_CORRT_ANSW'] ? '정답' : '오답'} textStyle={styles.text} />
-                        <Cell data={element('듣기', rowIndex)} textStyle={styles.text} />
+                        <Cell data={element('듣기', rowIndex)} style={styles.text} />
                     </TableWrapper>
                     )
                 })
