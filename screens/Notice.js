@@ -46,9 +46,8 @@ const Notice = ({ navigation }) => {
     },
     titleBig:{
       fontSize: 30,
-      boldText: {
-        fontWeight: 'bold'
-      },
+      fontWeight: 'bold',
+
     },
     title: {
       fontSize: 25,
