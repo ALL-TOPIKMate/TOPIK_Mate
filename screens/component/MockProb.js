@@ -1,45 +1,93 @@
 import React, { useState, useEffect } from 'react'
-import { View, Text, Button, TextInput, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, Image, Button, TextInput, StyleSheet, TouchableOpacity } from 'react-native';
 
-const MockProb = ({ problem, choice, setChoice, index, setIndex, setDirection }) => {
+import AudRef from './AudRef';
 
-    console.log(`problem.PRB_NUM: ${problem.PRB_NUM}, problem.USER_CHOICE: ${problem.USER_CHOICE}, choice: ${choice}`); 
-    
-    // const click = 0;
+const MockProb = ({ problem, choice, setChoice, index, setIndex, setDirection, images, audios }) => {
+
+    // 사용자 선택 저장
     const [click, setClick] = useState(choice);
     
     useEffect(() => {
       setClick(choice);
     }, [choice]);
 
-
-    console.log(`current click: ${click}`);
-
     return (
         <View>
+            {/* 오디오 */}
+            {
+              problem.AUD_REF in audios
+              ? <AudRef
+                source={audios[problem.AUD_REF].url}
+              />
+              : null
+            }
+
             {/* ProbMain */}
             <View style={styles.probMain}>
                 <Text>{ problem.PRB_NUM }</Text>
                 <Text>{ problem.PRB_MAIN_CONT}</Text>
             </View>
 
+            
+            {/* 이미지 */}
+            {
+              problem.IMG_REF in images
+              ? <Image
+                style={{ width: 100, height: 100 }}
+                source={{ uri: images[problem.IMG_REF].url }}
+              />
+              : null
+            }
+
+
+
             <Text>{ problem.PRB_TXT }</Text>
             <Text>{ problem.PRB_SUB_CONT }</Text> 
+            <Text>{ problem.PRB_SCRPT }</Text>
 
             {
                 problem.PRB_SECT === "듣기" || problem.PRB_SECT === "읽기"
                 ? <View>
                     <TouchableOpacity onPress = {() => {setClick("1");}} style={[styles.choiceButton, {backgroundColor: click === "1" ? "#BBD6B8" : "#D9D9D9"}]}>
-                      <Text>{ problem.PRB_CHOICE1 }</Text>
+                      {
+                        problem.PRB_CHOICE1 in images
+                        ? <Image
+                          style={{width: 50, height: 50}}
+                          source={{uri: images[problem.PRB_CHOICE1].url}}
+                        />
+                        : <Text>{ problem.PRB_CHOICE1 }</Text>
+                      }
                     </TouchableOpacity>
                     <TouchableOpacity onPress = {() => {setClick("2");}} style={[styles.choiceButton, {backgroundColor: click === "2" ? "#BBD6B8" : "#D9D9D9"}]}>
-                      <Text>{ problem.PRB_CHOICE2 }</Text>
+                      {
+                        problem.PRB_CHOICE2 in images
+                        ? <Image
+                          style={{width: 50, height: 50}}
+                          source={{uri: images[problem.PRB_CHOICE2].url}}
+                        />
+                        : <Text>{ problem.PRB_CHOICE2 }</Text>
+                      }
                     </TouchableOpacity>
                     <TouchableOpacity onPress = {() => {setClick("3");}} style={[styles.choiceButton, {backgroundColor: click === "3" ? "#BBD6B8" : "#D9D9D9"}]}>
-                      <Text>{ problem.PRB_CHOICE3 }</Text>
+                      {
+                        problem.PRB_CHOICE3 in images
+                        ? <Image
+                          style={{width: 50, height: 50}}
+                          source={{uri: images[problem.PRB_CHOICE3].url}}
+                        />
+                        : <Text>{ problem.PRB_CHOICE3 }</Text>
+                      }
                     </TouchableOpacity>
                     <TouchableOpacity onPress = {() => {setClick("4");}} style={[styles.choiceButton, {backgroundColor: click === "4" ? "#BBD6B8" : "#D9D9D9"}]}> 
-                      <Text>{ problem.PRB_CHOICE4 }</Text>
+                      {
+                        problem.PRB_CHOICE4 in images
+                        ? <Image
+                          style={{width: 50, height: 50}}
+                          source={{uri: images[problem.PRB_CHOICE4].url}}
+                        />
+                        : <Text>{ problem.PRB_CHOICE4 }</Text>
+                      }
                     </TouchableOpacity>
                 </View>
                 : <View>

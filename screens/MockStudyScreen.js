@@ -1,10 +1,10 @@
 import React, {useState, useEffect, } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native'
+import firebase from '@react-native-firebase/app';
 import firestore from '@react-native-firebase/firestore';
-import { Table, TableWrapper, Row, Cell } from 'react-native-table-component';
+import { getStorage } from '@react-native-firebase/storage'; // include storage module besides Firebase core(firebase/app)
+import { Table, TableWrapper, Row, Cell } from 'react-native-table-component'
 
-import ProbMain from "./component/ProbMain";
-import AudRef from "./component/AudRef";
 
 import MockProb from './component/MockProb';
 import MockProbModal from './component/MockProbModal';
@@ -12,6 +12,8 @@ import MockProbModal from './component/MockProbModal';
 
 const MockStudyScreen = ({navigation, route}) =>{
     
+    const storage = getStorage(firebase);
+
     // 콜렉션 불러오기
     const problemCollection = firestore()
                                 .collection('problems')
@@ -21,7 +23,7 @@ const MockStudyScreen = ({navigation, route}) =>{
                                 .collection('problem-list');
     const [problems, setProblems] = useState([]); // json
 
-    // MOUNT - data load
+    // MOUNT - 문제 로드
     useEffect(() => {
         async function dataLoading() {
     
@@ -35,7 +37,78 @@ const MockStudyScreen = ({navigation, route}) =>{
         
         dataLoading();
     }, []);
+
+
+
+    /* 멀티미디어 로드 */
+    
+    // 이미지 로드
+    const imageRef = storage.ref().child(`/images/${route.params.level}PQ${route.params.order}/`);
+    const [images, setImages] = useState({});
+
+    useEffect(() => {
+        async function imagesLoading() {
+            try {
+                imageRef.listAll().then(res => {
+
+                    const data = {}
+
+                    res.items.forEach(item => {
+                        item.getDownloadURL().then(url => {
+                            
+                            data[item.name] = {};
+                            data[item.name].url = url;
+
+                        })
+                    })
+
+                    setImages(data);
+                    
+                });
+
+            } catch(err) {
+                console.log(err);
+            }
+        }
+
+        imagesLoading();
+    }, []);
+
+    // 오디오 로드
+    const audioRef = storage.ref().child(`/audios/${route.params.level}PQ${route.params.order}/`);
+    const [audios, setAudios] = useState({});
+
+    useEffect(() => {
+        async function audiosLoading() {
+            try {
+                audioRef.listAll().then(res => {
+
+                    const data = {}
+
+                    res.items.forEach(item => {
+                        item.getDownloadURL().then(url => {
+                            
+                            data[item.name] = {};
+                            data[item.name].url = url;
+                            
+                        })
+                    })
+
+                    setAudios(data);
+                    
+                });
+
+            } catch(err) {
+                console.log(err);
+            }
+        }
+
+        audiosLoading();
+    }, []);
+
    
+
+    /* 사용자 답안 저장 */
     const [choice, setChoice] = useState(0);
     const [direction, setDirection] = useState(0);
     const [index, setIndex] = useState(0);
@@ -57,6 +130,11 @@ const MockStudyScreen = ({navigation, route}) =>{
         }
     }, [index]);
 
+
+
+    console.log(audios)
+    
+    /* 결과 화면 만들기 */
     const [listen, setListen] = useState([]);
     const [write, setWrite] = useState([]);
     const [read, setRead] = useState([]);
@@ -84,6 +162,8 @@ const MockStudyScreen = ({navigation, route}) =>{
     }, [index]);
 
 
+
+    /* 푼 문제 재확인(결과화면 모달) */
     // 모달 창 여닫기
     const [modal, setModal] = useState({
         'open': false,
@@ -137,16 +217,16 @@ const MockStudyScreen = ({navigation, route}) =>{
             <View>
             <Text>듣기</Text>
             <Table>
-                <Row data={headers} style={styles.row} textStyle={styles.text} />
+                <Row data={headers} style={styles.row} />
                 {
                 listen.map((rowData, rowIndex) => {
                     return (
                     <TableWrapper key={rowIndex} style={styles.row} >
-                        <Cell data={rowData['PRB_NUM']} textStyle={styles.text} />
-                        <Cell data={rowData['USER_CHOICE']} textStyle={styles.text} />
-                        <Cell data={rowData['PRB_CORRT_ANSW']} textStyle={styles.text} />
+                        <Cell data={rowData['PRB_NUM']} style={styles.text} />
+                        <Cell data={rowData['USER_CHOICE']} style={styles.text} />
+                        <Cell data={rowData['PRB_CORRT_ANSW']} style4={styles.text} />
                         <Cell data={rowData['USER_CHOICE'] === rowData['PRB_CORRT_ANSW'] ? '정답' : '오답'} textStyle={styles.text} />
-                        <Cell data={element('듣기', rowIndex)} textStyle={styles.text} />
+                        <Cell data={element('듣기', rowIndex)} style={styles.text} />
                     </TableWrapper>
                     )
                 })
@@ -183,12 +263,12 @@ const MockStudyScreen = ({navigation, route}) =>{
                 {
                 read.map((rowData, rowIndex) => {
                     return (
-                    <TableWrapper key={rowIndex} flexArr={[1, 1, 1, 1, 1]} style={styles.row} >
-                        <Cell data={rowData['PRB_NUM']} textStyle={styles.text} />
-                        <Cell data={rowData['USER_CHOICE']} textStyle={styles.text} />
-                        <Cell data={rowData['PRB_CORRT_ANSW']} textStyle={styles.text} />
-                        <Cell data={rowData['USER_CHOICE'] === rowData['PRB_CORRT_ANSW'] ? '정답' : '오답'} textStyle={styles.text} />
-                        <Cell data={element('읽기', rowIndex)} textStyle={styles.text} />
+                    <TableWrapper key={rowIndex} style={styles.row} >
+                        <Cell data={rowData['PRB_NUM']} style={styles.text} />
+                        <Cell data={rowData['USER_CHOICE']} style={styles.text} />
+                        <Cell data={rowData['PRB_CORRT_ANSW']} style={styles.text} />
+                        <Cell data={rowData['USER_CHOICE'] === rowData['PRB_CORRT_ANSW'] ? '정답' : '오답'} style={styles.text} />
+                        <Cell data={element('읽기', rowIndex)} style={styles.text} />
                     </TableWrapper>
                     )
                 })
@@ -208,6 +288,8 @@ const MockStudyScreen = ({navigation, route}) =>{
             setIndex={setIndex}
             index={index}
             setDirection={setDirection}
+            images={images}
+            audios={audios}
             />
         </View>
         );
@@ -240,9 +322,10 @@ const styles = StyleSheet.create({
         height: 40,
         flexDirection: 'row',
         backgroundColor: '#f6f8fa',
+        textAlign: 'center',
     },
 
-    text: { textAlign: 'center' },
+    // text: { textAlign: 'center' },
 })
 
 export default MockStudyScreen;
