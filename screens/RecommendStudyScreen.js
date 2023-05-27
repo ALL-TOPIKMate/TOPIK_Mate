@@ -70,7 +70,7 @@ const LoadProblemScreen = (loadedProblem, setProblemStructure, choiceRef, setNex
 
 
 
-const StudyScreen = ({route}) =>{
+const RecommendStudyScreen = ({route}) =>{
     // 문제구조 html 코드
     const [problemStructure, setProblemStructure] = useState([]); // component
     // 백엔드에서 불러온 json 문제
@@ -98,6 +98,7 @@ const StudyScreen = ({route}) =>{
         }
 
         dataLoading();
+        
     }, []);
     // setState 실행
 
@@ -141,4 +142,4 @@ const styles = StyleSheet.create({
     },
 })
 
-export default StudyScreen;
+export default RecommendStudyScreen;

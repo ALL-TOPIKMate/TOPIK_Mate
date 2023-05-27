@@ -5,60 +5,21 @@ import firestore from '@react-native-firebase/firestore';
 
 const WriteHistoryScreen = ({route, navigation}) =>{
     const [data, setData] = useState([]);
-    // 유저가 고른 유형의 도큐먼트를 가져옴 route.params.userTag
-    const problemCollection = route.params.problemCollection.doc("oKtSOMagB4yv7oG25RDS").collection("problem-rsc");
+
+
+    const querySnapshot = route.params.querySnapshot
+    const wrongCollection = querySnapshot.doc(route.params.userInfo.userId).collection(`wrong_lv${route.params.userInfo.myLevel}`).doc("WR_TAG").collection("PRB_TAG").doc(route.params.userTag.tagName).collection("PRB_RSC_LIST")
     
     
     useEffect(()=>{
-        // setData([
-        //     {
-        //         PRB_RSC: "60회 TOPIK 2",
-        //         PRB_NUM: "51"  
-        //     },
-        //     {
-        //         PRB_RSC: "60회 TOPIK 2",   
-        //         PRB_NUM: "52"
-        //     },
-        //     {
-        //         PRB_RSC: "60회 TOPIK 2",   
-        //         PRB_NUM: "51"
-        //     },
-        //     {
-        //         PRB_RSC: "60회 TOPIK 2",   
-        //         PRB_NUM: "52"
-        //     },
-        //     {
-        //         PRB_RSC: "60회 TOPIK 2",   
-        //         PRB_NUM: "51"   
-        //     },
-        //     {
-        //         PRB_RSC: "60회 TOPIK 2",   
-        //         PRB_NUM: "52"   
-        //     },{
-        //         PRB_RSC: "60회 TOPIK 2",   
-        //         PRB_NUM: "51"
-        //     },
-        //     {
-        //         PRB_RSC: "60회 TOPIK 2",   
-        //         PRB_NUM: "52"
-        //     },
-        //     {
-        //         PRB_RSC: "60회 TOPIK 2",   
-        //         PRB_NUM: "51"
-        //     },
-        //     {
-        //         PRB_RSC: "60회 TOPIK 2",   
-        //         PRB_NUM: "52"
-        //     }
-        // ])
-
-
-
-        // route.params.userTag와 일치하는 쓰기 문제 불러오기
         async function dataLoading(){
             try{
-                const data = await problemCollection.get(); // 요청한 데이터가 반환되면 다음 줄 실행
-                setData(data.docs.map(doc => ({...doc.data(), tag: route.params.userTag})))
+                let problemList = []
+                const data = await wrongCollection.get(); // 요청한 데이터가 반환되면 다음 줄 실행
+                
+                data.docs.forEach((doc) => {if(doc._data.PRB_ID) problemList.push(doc._data)})
+            
+                setData(problemList)
             }catch(error){
                 console.log(error.message);
             }    
@@ -67,15 +28,15 @@ const WriteHistoryScreen = ({route, navigation}) =>{
         dataLoading();
     }, [])
 
-    // useEffect(()=>{
-    //     console.log(data)
-    // }, [data])
+    useEffect(()=>{
+        console.log(data)
+    }, [data])
 
     return (
         <View style = {{flex: 1, padding: 20}}>
             <View style = {{flex: 1}}>
                 <Text style = {{fontWeight: "bold", fontSize: 20}}>
-                    {route.params.userTag}
+                    {route.params.userTag.tag}
                 </Text>
             </View>
             <View style = {{flex: 0.5}}>
@@ -88,7 +49,7 @@ const WriteHistoryScreen = ({route, navigation}) =>{
                     {
                         data.map((data, index)=>{
                             return (
-                                <TouchableOpacity key = {index} style = {styles.buttonList} onPress = {() => navigation.push("WriteHistoryList", {userTag: route.params.userTag, userRsc: data.PRB_RSC, userPrbNum: data.PRB_NUM, problemCollection: problemCollection})} >
+                                <TouchableOpacity key = {index} style = {styles.buttonList} onPress = {() => navigation.push("WriteHistoryList", {userTag: route.params.userTag, userRsc: {PRB_NUM: data.PRB_NUM, PRB_RSC: data.PRB_RSC},PRB_ID: data.PRB_ID, querySnapshot: wrongCollection})} >
                                     <Text>{data.PRB_RSC} {data.PRB_NUM}번</Text>
                                 </TouchableOpacity>
                             )

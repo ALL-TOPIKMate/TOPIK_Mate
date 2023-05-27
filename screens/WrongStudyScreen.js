@@ -3,7 +3,7 @@ import {View, Text, StyleSheet, ScrollView} from 'react-native';
 
 import firestore from '@react-native-firebase/firestore';
 
-import WrongProb from './WrongProb';
+import WrongProb from './component/WrongProb';
 
 
 // route.params.key = {"select", "random", "write"}
@@ -19,19 +19,18 @@ const WrongStudyScreen = ({route, navigation}) =>{
     const [nextBtn, setNextBtn] = useState(route.params.order);
     const choiceRef = useRef(0);
 
+    // 유저 답안 기록
     const answerRef = useRef([]);
 
-    // 현재 유형의 인덱스를 가르킴
+    // 현재 userTag의 인덱스를 가르킴 ex. [{tagName: 001, section: "LS_TAG"} ,{tagName: 003, section: "LS_TAG"}, {tagName: 002, section: "RD_TAG"}]
     const typeRef = useRef(0);
-    // 현재 듣기, 읽기 영역을 가르킴
-    const sectionRef = useRef(0);
     // 로드한 데이터의 마지막 문제를 가르킴
     const lastVisible = useRef(0);
 
     
     // 유저의 복습하기 콜렉션을 load
     const querySnapshot = route.params.querySnapshot
-    const wrongCollection = querySnapshot.doc(route.params.userInfo.userId).collection(`wrong_lv${route.params.userInfo.myLevel}`);
+    const wrongCollection = (route.params.key !== "write") ? (querySnapshot.doc(route.params.userInfo.userId).collection(`wrong_lv${route.params.userInfo.myLevel}`)) : null
     
 
     useEffect(()=>{
@@ -40,63 +39,79 @@ const WrongStudyScreen = ({route, navigation}) =>{
         }else if(route.params.key =="write"){
             allLoadProblem();
         }
+
+        return () => {
+            console.log("복습하기 화면에서 나감")
+            /* 
+                풀었는데 맞은 문제 LIST: [
+                    {
+                        PRB_ID(document ID, primary key): 
+                        tagName: 
+                        section: 
+                    }, ...
+                ]
+
+                - LIST에 있는 문제들을 wrong collection에서 제거
+            */
+        }
     }, [])
 
 
     // 쓰기 영역 - 최대 10문제를 한번에 불러옴
-    // const allLoadProblem = () =>{
+    const allLoadProblem = () =>{
         
-    //     async function dataLoading(){
-    //         try{
-    //             const data = await problemCollection.get(); // 요청한 데이터가 반환되면 다음 줄 실행
-    //             setLoadedProblem(data.docs.map(doc => ({...doc.data(), tag: route.params.userTag})))
-    //         }catch(error){
-    //             console.log(error.message);
-    //         }    
-    //     }
+        async function dataLoading(){
+            try{
+                let problemList = []
+                const data = await querySnapshot.get(); // 요청한 데이터가 반환되면 다음 줄 실행
+                
+                data.docs.forEach((doc) => {if(doc._data.date) problemList.push(doc._data)})
+            
+                setLoadedProblem(problemList)
+            }catch(error){
+                console.log(error.message);
+            }    
+        }
 
-    //     dataLoading();
-    // }
+        dataLoading();
+    }
 
 
     // 듣기, 읽기 영역 - 한 유형에 대해 5문제씩 불러옴
     const loadProblem = () =>{
         async function dataLoading(){
             try{
-                console.log(route.params.userTag)
                 // 1. startAfter 사용시 orderBy와 함께 사용
                 // 2. where절에서 지정한 column과 orderBy에서 지정한 column은 동일한 column을 가져야 함
                 // 3. where에서는 범위를 지정해야 한다. (== 연산자 사용 불가)
-                const data = await wrongCollection.doc(route.params.userTag[sectionRef.current].section).collection("PRB_TAG").doc(route.params.userTag[typeRef.current].tagName).collection("PRB_LIST")
+                const data = await wrongCollection.doc(route.params.userTag[typeRef.current].section).collection("PRB_TAG").doc(route.params.userTag[typeRef.current].tagName).collection("PRB_LIST")
                     .where("PRB_NUM", ">=", "1").orderBy("PRB_NUM").startAfter(lastVisible.current).limit(3).get();
                     
 
 
-                const rawData = data.docs.map((doc, index)=> {return {...doc.data()}})
+                let rawData = data.docs.map((doc, index)=> {return {...doc.data()}})
                 
-                console.log(rawData)
-                // 한 유형 문제를 다 풀었을 경우 다음 유형 문제로 이동, 새로운 collection load
-                if(rawData.length == 0){ // collection loading
-                    typeRef.current++;
+                if(rawData.length == 0){ 
+                    typeRef.current++ // 다른 유형의 문제를 load
+                    lastVisible.current = 0
 
-                    if(typeRef.current>=route.params.userTag.length){ // 이제 그만풀어라
-                        console.log("선택한 모든 유형의 문제를 풀었습니다.")
-                        sectionRef.current++;
-                        
-                        return ;
+
+                    if(typeRef.current==route.params.userTag.length){  // 유저가 선택한 모든 유형의 문제를 푼 경우
+                        setNextBtn(-1)
+                        console.log("모든 문제를 풀었습니다.")
+
+                        return 
                     }
-
-                    console.log(route.params.userTag[typeRef.current].tagName)
-                    const data = await wrongCollection.doc(route.params.userTag[sectionRef.current].section).collection("PRB_TAG").doc(route.params.userTag[typeRef.current].tagName).collection("PRB_LIST")
-                        .limit(3).get();
                 
-                    const rawData = data.docs.map((doc, index)=> {return {...doc.data()}})
+                    const data = await wrongCollection.doc(route.params.userTag[typeRef.current].section).collection("PRB_TAG").doc(route.params.userTag[typeRef.current].tagName).collection("PRB_LIST")
+                        .where("PRB_NUM", ">=", "1").orderBy("PRB_NUM").startAfter(lastVisible.current).limit(3).get();
+                    
+
+                    rawData = data.docs.map((doc, index)=> {return {...doc.data()}})
                 }
 
+                
                 lastVisible.current = rawData[rawData.length-1].PRB_NUM
-
-                console.log(rawData)
-                // console.log(lastVisible.current)
                 setLoadedProblem([...loadedProblem, ...rawData])
             }catch(error){
                 console.log(error.message);
@@ -108,16 +123,21 @@ const WrongStudyScreen = ({route, navigation}) =>{
 
 
     useEffect(()=>{
-        if(nextBtn == loadedProblem.length && nextBtn > 0){
+        if(route.params.key === "write"){
+            return 
+        }
+
+        if(nextBtn == loadedProblem.length && nextBtn > 0){ // 문제를 다 풀었을 경우, 더 가져옴
             loadProblem()
         }
-        if(loadedProblem.length && nextBtn > 0 && loadedProblem[nextBtn-1].choice===undefined && choiceRef.current !== 0){ // 유저 답안을 기록
+        if(loadedProblem.length && nextBtn > 0 && loadedProblem[nextBtn-1].choice===undefined){ // 다음 문제를 풀기 전전 유저 답안을 기록
             answerRef.current.push(choiceRef.current)
             loadedProblem[nextBtn-1].choice = answerRef.current[nextBtn-1]
 
             console.log(loadedProblem[nextBtn-1].choice)
         }
         
+        console.log(nextBtn >= 0 ?  loadedProblem[nextBtn] : null)
         choiceRef.current = 0;
 
 
@@ -125,19 +145,27 @@ const WrongStudyScreen = ({route, navigation}) =>{
 
     return (
         <View>
-            {
-                (loadedProblem.length && nextBtn < loadedProblem.length ? 
-                    <WrongProb 
-                        problem = {loadedProblem[nextBtn]}
-                        nextBtn = {nextBtn}
-                        setNextBtn = {setNextBtn}
+            {   
+                (nextBtn == -1) ? (
+                    <View>
+                        <Text>
+                            모든 문제를 다 풀었습니다.
+                        </Text>
+                    </View>
+                ): 
+                ((loadedProblem.length && nextBtn < loadedProblem.length) ? 
+                        <WrongProb 
+                            problem = {loadedProblem[nextBtn]}
+                            nextBtn = {nextBtn}
+                            setNextBtn = {setNextBtn}
+    
+                            choiceRef = {choiceRef}
+                            key = {nextBtn}
 
-                        choiceRef = {choiceRef}
-
-                        key = {nextBtn}
-                    />
-                : null    
-                )
+                            section = {route.params.key}
+                            size = {loadedProblem.length}
+                        />
+                    : null) 
             }
             
         </View>

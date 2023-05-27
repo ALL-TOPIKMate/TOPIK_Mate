@@ -122,8 +122,10 @@ const WrongScreen = ({navigation}) =>{
         var list = []
 
         for(var i=0; i<data.length; i++){
-            if(data[i].choice && data[i].section !== "쓰기"){
-                list.push(data[i].tagName)
+            if(data[i].section == "듣기"){
+                list.push({tagName: data[i].tagName, section: "LS_TAG"})
+            }else if(data[i].section == "읽기"){
+                list.push({tagName: data[i].tagName, section: "RD_TAG"})
             }
         }
 
@@ -135,32 +137,32 @@ const WrongScreen = ({navigation}) =>{
             return data.map((data,index) => {
                 if((data.section == "듣기" && listen) || (data.section == "읽기" && read)){
                     return (
-                            <TouchableOpacity key = {index} onPress = {() => {data.choice = !(data.choice); reRender(!render);}} style = {[styles.tagList, {backgroundColor: data.choice ? "#BBD6B8" : "#D9D9D9"}]}>
-                                <Text style = {{flex: 5}}>
-                                    {data.tag} 
+                        <TouchableOpacity key = {index} onPress = {() => {data.choice = !(data.choice); reRender(!render);}} style = {[styles.tagList, {backgroundColor: data.choice ? "#BBD6B8" : "#D9D9D9"}]}>
+                            <Text style = {{flex: 5}}>
+                                {data.tag} 
+                            </Text>
+                            <View style = {{flex: 1, flexDirection: "column"}}>
+                                <Text style = {{flex: 1}}/>
+                                <Text style = {{fontSize: 10}}>
+                                오답률 {data.score}%
                                 </Text>
-                                <View style = {{flex: 1, flexDirection: "column"}}>
-                                    <Text style = {{flex: 1}}/>
-                                    <Text style = {{fontSize: 10}}>
-                                    오답률 {data.score}%
-                                    </Text>
-                                </View>
-                            </TouchableOpacity>   
+                            </View>
+                        </TouchableOpacity>  
                     )}
-            })
+            }) 
         }else if(randomList.current){
             return (
-            <TouchableOpacity onPress={()=>{navigation.push("WrongStudy", {key: "random", userTag: userAllTag(), order: 0, userInfo: userInfo})}} style = {styles.btnBox}>
-                <Text style = {{fontWeight: "bold", fontSize: 16}}>
-                    랜덤 학습
-                </Text>
-            </TouchableOpacity>
+                <TouchableOpacity onPress={()=>{navigation.push("WrongStudy", {key: "random", userTag: userAllTag(), order: 0, userInfo: userInfo, querySnapshot: querySnapshot})}} style = {styles.btnBox}>
+                    <Text style = {{fontWeight: "bold", fontSize: 16}}>
+                        랜덤 학습
+                    </Text>
+                </TouchableOpacity>
             )
         }else{ // write history
             return (data.map((data, index) => {
                         if(data.section == "쓰기"){
                             return (
-                                <TouchableOpacity key = {index} onPress = {() => {navigation.push("WriteHistory", {key: 2, userTag: data.tag, userInfo: userInfo})}} style = {[styles.tagList]}>
+                                <TouchableOpacity key = {index} onPress = {() => {navigation.push("WriteHistory", {userTag: {tagName: data.tagName, section: "WR_TAG", tag: data.tag}, userInfo: userInfo, querySnapshot: querySnapshot})}} style = {[styles.tagList]}>
                                     <Text style = {{flex: 5}}>
                                         {data.tag} 
                                     </Text>
@@ -178,7 +180,7 @@ const WrongScreen = ({navigation}) =>{
     }
 
     return (
-        <View style = {{flexDirection: "column", flex: 10}}>
+        <View style = {{flexDirection: "column", flex: 1}}>
             <View style = {{flexDirection: "row"}}>
                 <View style = {{flex: 0.2}}/>
                 <TouchableOpacity onPress = {() => {reRender(!render); selectList.current = true; if(selectList.current){randomList.current = false; writeList.current = false;} }} style = {[styles.listBox, {backgroundColor: selectList.current ? "#A4BAA1" : "#D9D9D9"}]}>
@@ -195,7 +197,7 @@ const WrongScreen = ({navigation}) =>{
                 <View style = {{flex: 0.2}}/>
             </View>            
 
-            <View style ={{flex: 6, padding: 16}}>
+            <View style ={{padding: 16}}>
                 {
                     selectList.current?(<>
                         <Text style = {{fontSize: 20, fontWeight: "bold"}}>선택 학습</Text>
@@ -226,26 +228,25 @@ const WrongScreen = ({navigation}) =>{
                         
                     </>): null 
                 }
+
+            <View style = {{height: 300}}>
                 <ScrollView>
                     { 
                         showUserList()
                     }
-                    
-                </ScrollView>                
+                </ScrollView> 
             </View>
+            </View> 
             {
                 selectList.current ? (
-                    <View style = {{flex: 2}}>
-                        <TouchableOpacity onPress={()=>{navigation.push("WrongStudy", {key: "select", userTag: userSelectedTag(), order: 0, userInfo: userInfo, querySnapshot: querySnapshot})}} style = {styles.btnBox}>
-                            <Text style = {{fontWeight: "bold", fontSize: 16}}>
-                                선택 학습
-                            </Text>
-                        </TouchableOpacity>
-
-                        <View style ={{flex: 0.2}}/>
-                    </View>
-                ) : null
+                    <TouchableOpacity onPress={()=>{navigation.push("WrongStudy", {key: "select", userTag: userSelectedTag(), order: 0, userInfo: userInfo, querySnapshot: querySnapshot})}} style = {styles.btnBox}>
+                        <Text style = {{fontWeight: "bold", fontSize: 16}}>
+                            선택 학습
+                        </Text>
+                    </TouchableOpacity>
+                ) : null         
             }
+
         </View>
     );
 }
@@ -259,7 +260,6 @@ const styles = StyleSheet.create({
 
         backgroundColor: "#A4BAA1",
         borderRadius: 25,
-        flex: 1,
 
         justifyContent: "center", 
         alignItems: "center"
@@ -273,7 +273,7 @@ const styles = StyleSheet.create({
         borderRadius: 15,
     },
     tagList:{
-        flex: 1,
+        // flex: 1,
         marginVertical: 2,
         padding: 16,
 

@@ -8,17 +8,19 @@ const WriteHistoryListScreen = ({route, navigation}) => {
 
     // 최대 10문제까지만 저장 
     // 유저가 고른 회차의 문제 도큐먼트를 불러옴 route.params.userRsc+route.params.userPrbNum
-    const problemCollection = route.params.problemCollection.doc("0RGalF2flVmY8L4ro8Lw").collection("problem-history")
-   
+    const querySnapshot = route.params.querySnapshot
+    const wrongCollection = querySnapshot.doc(route.params.PRB_ID).collection("PRB_LIST")
    
    
     useEffect(()=>{
-
-        // route.params.userTag와 일치하는 쓰기 문제 불러오기
         async function dataLoading(){
             try{
-                const data = await problemCollection.get(); // 요청한 데이터가 반환되면 다음 줄 실행
-                setData(data.docs.map(doc => ({...doc.data(), tag: route.params.userTag})))
+                let problemList = []
+                const data = await wrongCollection.get(); // 요청한 데이터가 반환되면 다음 줄 실행
+                
+                data.docs.forEach((doc) => {if(doc._data.date) problemList.push(doc._data)})
+            
+                setData(problemList)
             }catch(error){
                 console.log(error.message);
             }    
@@ -31,12 +33,12 @@ const WriteHistoryListScreen = ({route, navigation}) => {
         <View style = {{flex: 1, padding: 20}}>
             <View style = {{flex: 1}}>
                 <Text style = {{fontWeight: "bold", fontSize: 20}}>
-                    {route.params.userTag}
+                    {route.params.userTag.tag}
                 </Text>
             </View>
             <View style = {{flex: 0.5}}>
                 <Text>
-                    선택한 문제는 {route.params.userRsc} {route.params.userPrbNum}번 입니다
+                    선택한 문제는 {route.params.userRsc.PRB_RSC} {route.params.userRsc.PRB_NUM}번 입니다
                 </Text>
             </View> 
 
@@ -45,7 +47,7 @@ const WriteHistoryListScreen = ({route, navigation}) => {
                     {
                         data.map((data, index)=>{
                             return (
-                                <TouchableOpacity key = {index} style = {styles.tagList} onPress = {()=>{navigation.push("WrongStudy", {key: "write", userTag: route.params.userTag, order: index, problemCollection: problemCollection})}}>
+                                <TouchableOpacity key = {index} style = {styles.tagList} onPress = {()=>{navigation.push("WrongStudy", {key: "write", order: index, querySnapshot: wrongCollection})}}>
                                     <Text style = {{flex: 5}}>
                                         {data.date}
                                     </Text>

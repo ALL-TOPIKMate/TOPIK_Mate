@@ -19,7 +19,7 @@ import InfoScreen from "./screens/InfoScreen";
 
 import SigninScreen from "./screens/SigninScreen";
 import SignupScreen from "./screens/SignupScreen";
-import StudyScreen from "./screens/StudyScreen";
+import RecommendStudyScreen from "./screens/RecommendStudyScreen";
 import MockStudyScreen from "./screens/MockStudyScreen";
 import MockListScreen from "./screens/MockListScreen";
 import TypeQuestScreen from "./screens/TypeQuestScreen";
@@ -52,7 +52,7 @@ const App = () => {
           <Stack.Screen name = "Home" component = {Home}/>
           <Stack.Screen name = "Signin" component = {SigninScreen}/>
           <Stack.Screen name = "Signup" component = {SignupScreen}/>
-          <Stack.Screen name = "Study" component = {StudyScreen}/>
+          <Stack.Screen name = "RecommendStudy" component = {RecommendStudyScreen}/>
           <Stack.Screen name="MockStudy" component = {MockStudyScreen}/>
           <Stack.Screen name = "MockList" component = {MockListScreen}/>
           <Stack.Screen name="TypeQuest" component = {TypeQuestScreen}/>
