@@ -9,30 +9,72 @@ import ProbTxt from "./ProbTxt"
 import ProbScrpt from './ProbScrpt';
 import ProbChoiceWritePrev from './ProbChoiceWritePrev';
 
-const ischoiceComponent = () =>{
+const ischoiceComponent = (props) =>{
+    // 제출 여부를 확인하여 렌더링
+    const [subBtn, setSubBtn] = useState(props.problem.choice === undefined ? false : true);
+    // 유저가 누르는 버튼 
+    const [click, setClick] = useState(0);
+
+
+
+    function setBtnColor(btn){
+        if(subBtn){ // 4지선다 비활성화 (사용자 정답 결과)
+            if(btn == click){ // 유저가 고른 버튼
+                if(btn == props.problem.PRB_CORRT_ANSW){ // 정답일경우
+                    return "#BAD7E9"
+                }
+                
+                return "#FFACAC" // 정답이 아닐 경우
+            }else{ // 유저가 고른 버튼이 아닌 경우
+                if(btn == props.problem.PRB_CORRT_ANSW){
+                    return "#BAD7E9" // 정답을 표시
+                }
+
+                return "#D9D9D9"
+            }
+            
+        }
+        // 4지선다 활성화
+        
+        return (btn == click ? "#BBD6B8" : "#D9D9D9")
+        
+    }
+
+    // Prev 버튼 클릭시 4시선다 
+    function setBtnColorStop(btn){
+        if(btn == props.problem.PRB_CORRT_ANSW){
+            return "#BAD7E9"
+        } else if(btn == props.problem.choice){
+            return "#FFACAC"
+        }else{
+            return "#D9D9D9"
+        }
+    }
+
+
     return (
         <>
         <Text /><Text />
         
-        <TouchableOpacity onPress = {() => {setClick(1)}} disabled = {subBtn} style = {[styles.button, {backgroundColor: props.problem.choice ? setBtnColorStop(1) : setBtnColor(1)}]}>
+        <TouchableOpacity onPress = {() => {setClick(1)}} disabled = {subBtn || props.problem.choice} style = {[styles.button, {backgroundColor: props.problem.choice ? setBtnColorStop(1) : setBtnColor(1)}]}>
             <Text>
                 {props.problem.PRB_CHOICE1 ? props.problem.PRB_CHOICE1 : "그림1"}
             </Text>
        </TouchableOpacity>
        <Text/>
-       <TouchableOpacity onPress = {() => {setClick(2)}} disabled = {subBtn} style = {[styles.button, {backgroundColor: props.problem.choice ? setBtnColorStop(2) :setBtnColor(2)}]}>
+       <TouchableOpacity onPress = {() => {setClick(2)}} disabled = {subBtn || props.problem.choice} style = {[styles.button, {backgroundColor: props.problem.choice ? setBtnColorStop(2) :setBtnColor(2)}]}>
             <Text>
                 {props.problem.PRB_CHOICE2? props.problem.PRB_CHOICE2 : "그림2"}
             </Text>
        </TouchableOpacity>
        <Text/>
-       <TouchableOpacity onPress = {() => {setClick(3)}} disabled = {subBtn} style = {[styles.button, {backgroundColor: props.problem.choice ? setBtnColorStop(3) :setBtnColor(3)}]}>
+       <TouchableOpacity onPress = {() => {setClick(3)}} disabled = {subBtn || props.problem.choice} style = {[styles.button, {backgroundColor: props.problem.choice ? setBtnColorStop(3) :setBtnColor(3)}]}>
             <Text>
                 {props.problem.PRB_CHOICE3? props.problem.PRB_CHOICE3 : "그림3"}
             </Text>
        </TouchableOpacity>
        <Text/>
-       <TouchableOpacity onPress = {() => {setClick(4)}} disabled = {subBtn} style = {[styles.button, {backgroundColor: props.problem.choice ? setBtnColorStop(4) :setBtnColor(4)}]}>
+       <TouchableOpacity onPress = {() => {setClick(4)}} disabled = {subBtn || props.problem.choice} style = {[styles.button, {backgroundColor: props.problem.choice ? setBtnColorStop(4) :setBtnColor(4)}]}>
             <Text>
                 {props.problem.PRB_CHOICE4 ? props.problem.PRB_CHOICE4 : "그림4"}
             </Text>
@@ -65,7 +107,13 @@ const ischoiceComponent = () =>{
     )
 } 
 
-const problemStructure = (loadedProblem, setNextBtn, nextBtn, size) => {
+const problemStructure = (props) => {
+    const loadedProblem = props.problem
+    const setNextBtn = props.setNextBtn
+    const nextBtn = props.nextBtn
+    const size = props.size
+
+
     let question = []
 
     question.push(<ProbMain PRB_MAIN_CONT = {loadedProblem.PRB_MAIN_CONT} PRB_NUM = {loadedProblem.PRB_NUM}/>)
@@ -78,7 +126,7 @@ const problemStructure = (loadedProblem, setNextBtn, nextBtn, size) => {
             question.push(<ProbSub PRB_SUB_CONT = {loadedProblem.PRB_SUB_CONT}/>)
         }
 
-        ischoiceComponent()
+        question.push(ischoiceComponent(props))
     }else if(loadedProblem.PRB_SECT == "읽기"){
         // PRB_TXT: 지문
         question.push(<ProbTxt PRB_TXT = {loadedProblem.PRB_TXT}/>)
@@ -91,7 +139,7 @@ const problemStructure = (loadedProblem, setNextBtn, nextBtn, size) => {
             question.push(<ProbScrpt PRB_SCRPT = {loadedProblem.PRB_SCRPT}/>)
         }
 
-        ischoiceComponent()
+        question.push(ischoiceComponent(props))
     }else if(loadedProblem.PRB_SECT == "쓰기"){
         if(loadedProblem.IMG_REF){
             question.push(<View style = {{backgroundColor: "#D9D9D9", paddingVertical: 64, borderWidth: 1, borderColor: "black", flexShrink: 1}} key = {i*6+1}><Text>이미지</Text></View>)
@@ -114,53 +162,11 @@ const problemStructure = (loadedProblem, setNextBtn, nextBtn, size) => {
 
 
 export default WrongProb = (props) =>{
-    // 제출 여부를 확인하여 렌더링
-    const [subBtn, setSubBtn] = useState(props.problem.choice === undefined ? false : true);
-    // 유저가 누르는 버튼 
-    const [click, setClick] = useState(0);
-
- 
-
-    function setBtnColor(btn){
-        if(subBtn){ // 4지선다 비활성화 (사용자 정답 결과)
-            if(btn == click){ // 유저가 고른 버튼
-                if(btn == props.problem.PRB_CORRT_ANSW){ // 정답일경우
-                    return "#BAD7E9"
-                }
-                
-                return "#FFACAC" // 정답이 아닐 경우
-            }else{ // 유저가 고른 버튼이 아닌 경우
-                if(btn == props.problem.PRB_CORRT_ANSW){
-                    return "#BAD7E9" // 정답을 표시
-                }
-
-                return "#D9D9D9"
-            }
-            
-        }
-        // 4지선다 활성화
-        
-        return (btn == click ? "#BBD6B8" : "#D9D9D9")
-        
-    }
-
-    function setBtnColorStop(btn){
-
-        if(btn == props.problem.PRB_CORRT_ANSW){
-            return "#BAD7E9"
-        } else if(btn == props.problem.choice){
-            return "#FFACAC"
-        }else{
-            return "#D9D9D9"
-        }
-    }
-
-
     return (
       <View>
         <ScrollView style = {styles.container}>    
             {
-                problemStructure(props.problem, props.setNextBtn, props.nextBtn, props.size)
+                problemStructure(props)
             }
         </ScrollView>
       </View>  

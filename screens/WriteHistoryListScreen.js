@@ -36,7 +36,7 @@ const WriteHistoryListScreen = ({route, navigation}) => {
                     {route.params.userTag.tag}
                 </Text>
             </View>
-            <View style = {{flex: 0.5}}>
+            <View style = {{flex: 1}}>
                 <Text>
                     선택한 문제는 {route.params.userRsc.PRB_RSC} {route.params.userRsc.PRB_NUM}번 입니다
                 </Text>
