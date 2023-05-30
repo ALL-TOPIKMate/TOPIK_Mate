@@ -226,8 +226,8 @@ const MockStudyScreen = ({navigation, route}) =>{
                     <TableWrapper key={rowIndex} style={styles.row} >
                         <Cell data={rowData['PRB_NUM']} style={styles.text} />
                         <Cell data={rowData['USER_CHOICE']} style={styles.text} />
-                        <Cell data={rowData['PRB_CORRT_ANSW']} style4={styles.text} />
-                        <Cell data={rowData['USER_CHOICE'] === rowData['PRB_CORRT_ANSW'] ? '정답' : '오답'} textStyle={styles.text} />
+                        <Cell data={rowData['PRB_CORRT_ANSW']} style={styles.text} />
+                        <Cell data={rowData['USER_CHOICE'] === rowData['PRB_CORRT_ANSW'] ? '정답' : '오답'} style={styles.text} />
                         <Cell data={element('듣기', rowIndex)} style={styles.text} />
                     </TableWrapper>
                     )
@@ -288,10 +288,10 @@ const MockStudyScreen = ({navigation, route}) =>{
         return (
         <View style={styles.container}>
             {/* 타이머 */}
-            {/* <MockTimer
+            <MockTimer
                 level={route.params.level}
                 setIsEnd={setIsEnd}
-            /> */}
+            />
 
             {/* 문제 풀이 영역 */}
             <MockProb
