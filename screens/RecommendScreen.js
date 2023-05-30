@@ -20,7 +20,7 @@ const RecommendScreen = ({navigation}) =>{
                 
                 
                 <View style = {[styles.recommend, {flex: 2,}]}>
-                    <TouchableOpacity style = {styles.recommendBtn} onPress={()=> navigation.push("Study", {id: 1})}>
+                    <TouchableOpacity style = {styles.recommendBtn} onPress={()=> navigation.push("RecommendStudy")}>
                         <Text style = {{color: "#F6F1F1", fontSize: 24, fontWeight: "bold", paddingVertical: 5}}>
                             추천 문제 풀기
                         </Text>
