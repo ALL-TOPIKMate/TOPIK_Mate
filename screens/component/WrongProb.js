@@ -142,7 +142,7 @@ const problemStructure = (props) => {
         question.push(ischoiceComponent(props))
     }else if(loadedProblem.PRB_SECT == "쓰기"){
         if(loadedProblem.IMG_REF){
-            question.push(<View style = {{backgroundColor: "#D9D9D9", paddingVertical: 64, borderWidth: 1, borderColor: "black", flexShrink: 1}} key = {i*6+1}><Text>이미지</Text></View>)
+            question.push(<View style = {{backgroundColor: "#D9D9D9", paddingVertical: 64, borderWidth: 1, borderColor: "black", flexShrink: 1}}><Text>이미지</Text></View>)
         }
         // PRB_TXT: 지문
         if(loadedProblem.PRB_TXT){
@@ -167,7 +167,7 @@ export default WrongProb = (props) =>{
         <ScrollView style = {styles.container}>    
             {
                 problemStructure(props)
-            }
+            } 
         </ScrollView>
       </View>  
     );

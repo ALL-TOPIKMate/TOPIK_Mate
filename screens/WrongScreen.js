@@ -180,8 +180,8 @@ const WrongScreen = ({navigation}) =>{
     }
 
     return (
-        <View style = {{flexDirection: "column", flex: 1}}>
-            <View style = {{flexDirection: "row"}}>
+        <View style = {{flexDirection: "column", flex: 1 ,justifyContent: "space-between"}}>
+            <View style = {{flexDirection: "row", marginTop: 20}}>
                 <View style = {{flex: 0.2}}/>
                 <TouchableOpacity onPress = {() => {reRender(!render); selectList.current = true; if(selectList.current){randomList.current = false; writeList.current = false;} }} style = {[styles.listBox, {backgroundColor: selectList.current ? "#A4BAA1" : "#D9D9D9"}]}>
                     <Text style = {{fontWeight: "bold"}}>선택 학습</Text>
@@ -244,7 +244,7 @@ const WrongScreen = ({navigation}) =>{
                             선택 학습
                         </Text>
                     </TouchableOpacity>
-                ) : null         
+                ) : <View style = {{flex: 8}}/>         
             }
 
         </View>

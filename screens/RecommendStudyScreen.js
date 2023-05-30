@@ -9,6 +9,7 @@ import ProbChoice from "./component/ProbChoice";
 import ProbSub from "./component/ProbSub";
 import ProbTxt from "./component/ProbTxt"
 import ProbScrpt from './component/ProbScrpt';
+import Result from './component/Result';
 
 const LoadProblemScreen = (loadedProblem, setProblemStructure, choiceRef, setNextBtn) => {
     // MOUNT시 실행되는 함수
@@ -70,15 +71,23 @@ const LoadProblemScreen = (loadedProblem, setProblemStructure, choiceRef, setNex
 
 
 
-const RecommendStudyScreen = ({route}) =>{
+const RecommendStudyScreen = ({route, navigation}) =>{
     // 문제구조 html 코드
     const [problemStructure, setProblemStructure] = useState([]); // component
     // 백엔드에서 불러온 json 문제
     const [loadedProblem, setLoadedProblem] = useState([]); // json
     // 다음 문제를 넘길 때 사용
     const [nextBtn, setNextBtn] = useState(0);
+
+    // 맞춘 답 개수 
+    const [correct, setCorrect] = useState(-1);
+
     // 4지선다 컴포넌트에서 사용자가 고른 답을 저장
     const choiceRef = useRef(0);
+    // 유저 답안 기록
+    const answerRef = useRef([]);
+
+
     // 콜렉션 불러오기
     const problemCollection = firestore().collection('problems').doc("EQ60LV2RDG46");
     
@@ -98,7 +107,10 @@ const RecommendStudyScreen = ({route}) =>{
         }
 
         dataLoading();
-        
+
+        return () => {
+            console.log("문제 풀이 완료")
+        }
     }, []);
     // setState 실행
 
@@ -123,15 +135,33 @@ const RecommendStudyScreen = ({route}) =>{
         //     }
         // `);
 
-        console.log(choiceRef.current)
+        if(nextBtn>0){
+            console.log(choiceRef.current)
+            answerRef.current.push({USER_CORRT_ANSW: choiceRef.current})
+        }
+        
+        if(nextBtn > 0 && nextBtn == loadedProblem.length){
+            let correct_cnt = 0
+            loadedProblem.forEach((data, index) => {
+                if(data.PRB_CORRT_ANSW == answerRef.current[index].USER_CORRT_ANSW)
+                    correct_cnt++
+            })
+
+            setCorrect(correct_cnt)
+            return 
+        }
 
         choiceRef.current = 0;
     }, [nextBtn])
     
 
     return (
-        <View>
-            {problemStructure[nextBtn]}
+        <View style = {{flex: 1}}>
+            {
+                correct == -1 ? (
+                problemStructure[nextBtn]) :(
+                <Result CORRT_CNT = {correct} ALL_CNT = {answerRef.current.length} navigation = {navigation} PATH = "Recommend"/>)
+            }
         </View>
     );
 }

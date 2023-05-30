@@ -4,7 +4,7 @@ import {View, Text, StyleSheet, TouchableOpacity} from 'react-native';
 import firestore from '@react-native-firebase/firestore';
 
 import WrongProb from './component/WrongProb';
-
+import Result from "./component/Result";
 
 // route.params.key = {"select", "random", "write"}
 // route.params.userTag로 유형을 나눔
@@ -17,8 +17,10 @@ const WrongStudyScreen = ({route, navigation}) =>{
     const [loadedProblem, setLoadedProblem] = useState([]); // json
     // 다음 문제를 넘길 때 사용
     const [nextBtn, setNextBtn] = useState(route.params.order);
+    // 문제 풀이 후 맞은 문제 카운팅
     const [correct, setCorrect] = useState(0);
-
+    
+    // 4지선다 컴포넌트에서 사용자가 고른 답을 저장
     const choiceRef = useRef(0);
 
     // 유저 답안 기록
@@ -128,7 +130,7 @@ const WrongStudyScreen = ({route, navigation}) =>{
         if(route.params.key === "write"){
             return 
         }else if(nextBtn === -1){ // 모든 문제를 풀었을 경우
-            let correct_answ = 0; 
+            let correct_answ = 0
             answerRef.current.forEach((data, index)=>{
                if(data.PRB_USER_ANSW == loadedProblem[index].PRB_CORRT_ANSW){
                     correct_answ++
@@ -136,6 +138,7 @@ const WrongStudyScreen = ({route, navigation}) =>{
             })
 
             setCorrect(correct_answ)
+
             return
         }
 
@@ -160,27 +163,7 @@ const WrongStudyScreen = ({route, navigation}) =>{
         <View style = {{flex: 1}}>
             {   
                 (nextBtn == -1) ? (
-                    <View style = {{flex: 1, padding: 14, alignItems: "center", justifyContent: "space-between"}}>
-                        <View style = {{marginTop: 32}}>
-                            <Text style = {[styles.text, {fontSize: 20}]}>
-                                이번 학습에서 문제 {correct}개를 풀었습니다    
-                            </Text>
-                        </View>
-                        <View style = {{width: 250, height: 250, borderRadius: 125, borderColor: "#BBD6B8", borderWidth: 5, alignItems: "center", justifyContent: "center"}}>
-                            <Text style = {[styles.text, {fontSize: 32}]}>
-                                {correct} / {answerRef.current.length}
-                            </Text>
-                        </View>
-                        <Text style = {[styles.text, {fontSize: 20}]}>
-                            잘하고 있어요!    
-                        </Text>
-
-                        <TouchableOpacity onPress = {() => navigation.navigate("Wrong")} style = {{backgroundColor: "#94AF9F", padding: 20, borderRadius: 20, width: 300}}>
-                            <Text style = {[styles.text, {color: "white"}]}>
-                                END LEARNING
-                            </Text>
-                        </TouchableOpacity>
-                    </View>
+                    <Result CORRT_CNT = {correct} ALL_CNT = {answerRef.current.length} navigation = {navigation} PATH = "Wrong"/>
                 ): 
                 ((loadedProblem.length && nextBtn < loadedProblem.length) ? 
                         <WrongProb 
@@ -190,6 +173,7 @@ const WrongStudyScreen = ({route, navigation}) =>{
     
                             choiceRef = {choiceRef}
                             key = {nextBtn}
+                            index = {nextBtn}
 
                             section = {route.params.key}
                             size = {loadedProblem.length}
@@ -200,20 +184,6 @@ const WrongStudyScreen = ({route, navigation}) =>{
         </View>
     );
 }
-
-
-const styles = StyleSheet.create({
-    container:{
-        padding: 20,
-    },
-
-    text:{
-        textAlign: "center", 
-        fontWeight: "bold",
-
-    }
-})
-
 
 
 export default WrongStudyScreen;
