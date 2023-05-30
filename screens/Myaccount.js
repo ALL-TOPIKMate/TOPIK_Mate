@@ -1,7 +1,9 @@
 import React, { useState, useEffect} from 'react';
 import {Text,View, TouchableOpacity, StyleSheet, Modal, Pressable, TextInput, Alert} from 'react-native';
-import {subscribeAuth, signOut, updateUserPassword } from "../lib/auth";
+import {subscribeAuth, signOut, updateUserPassword, deleteAccount } from "../lib/auth";
 import { CommonActions } from '@react-navigation/native'; // CommonActions 추가
+import firestore from '@react-native-firebase/firestore';
+import firebase from '@react-native-firebase/app';
 const Myaccount = ({navigation}) => {
   const [userEmail, setUserEmail] = useState(null); // 이메일
   const [currentPassword, setCurrentPassword] = useState('');
@@ -60,6 +62,56 @@ const Myaccount = ({navigation}) => {
           console.log('로그아웃 실패', error);
         });
     };
+  //탈퇴기능 추가
+  const deleteUser = async (email) => {
+    try {
+      const userRef = firestore().collection('users');
+      const querySnapshot = await userRef.where('email', '==', email).get();
+  
+      querySnapshot.forEach(async (documentSnapshot) => {
+        const u_uid = documentSnapshot.data().u_uid;
+        await userRef.doc(u_uid).delete();
+      });
+  
+      console.log('하위 문서 삭제 완료');
+    } catch (error) {
+      console.error('문서 삭제 오류:', error);
+    }
+  };
+
+  const handleDeleteAccount = () => {
+    Alert.alert(
+      '계정 삭제',
+      '정말로 계정을 삭제하시겠습니까?',
+      [
+        { text: '취소', style: 'cancel' },
+        {
+          text: '삭제',
+          onPress: () => {
+            const email = userEmail;
+            deleteAccount(email)
+              .then(() => {
+                console.log('계정 삭제 성공');
+                //const userUid = firebase.auth().currentUser.uid;//null 값 가져온다고 뜬다.
+                deleteUser(email);
+                navigation.dispatch(
+                  CommonActions.reset({
+                    index: 0,
+                    routes: [{ name: 'Signin' }],
+                  })
+                );
+              })
+              .catch((error) => {
+                console.log('계정 삭제 실패', error);
+                Alert.alert('에러:', error.message);
+              });
+            },
+          },
+        ],
+        { cancelable: false }
+      );
+    };
+    
   
     return (
       <View style={styles.container}>
@@ -118,6 +170,9 @@ const Myaccount = ({navigation}) => {
           <Text style={styles.textStyle2}>비밀번호 변경</Text>
         </Pressable>
         </View>
+        <TouchableOpacity style={styles.button} onPress={handleDeleteAccount}>
+          <Text style={styles.buttonText}>회원 탈퇴</Text>
+        </TouchableOpacity>
       </View>
     );
 };
