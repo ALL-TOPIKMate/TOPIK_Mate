@@ -1,133 +1,143 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, Button, StyleSheet } from 'react-native';
+import React, { useState, useEffect,useRef } from 'react';
+import { View, Text, Button, StyleSheet,TouchableOpacity } from 'react-native';
 import AppNameHeader from './component/AppNameHeader';
 import firestore from '@react-native-firebase/firestore';
-const Box = ({ text }) => {
-  return (
-    <View style={styles.box}>
-      <Text>{text}</Text>
-    </View>
-  );
-};
-const TypeQuestScreen = ({ navigation }) => {
-  const [selectedOption, setSelectedOption] = useState(null);
-  const [submitted, setSubmitted] = useState(false);
-  const [answer2Color, setAnswer2Color] = useState("#8A2BE2");
-  useEffect(() => {
-    console.log(answer2Color);
-  }, [answer2Color]);
-  const handleOptionSelect = (optionNumber) => {
-    setSelectedOption(optionNumber);
-  }
-  const handleSubmit = () => {
-    setSubmitted(true);
-    console.log(`선택한 보기: ${selectedOption}`);
-    if (selectedOption === 2) {
-      setAnswer2Color("#0000FF");
-      console.log(answer2Color) // 여기서 바뀐거는 확인되는데 화면상 보이지 않음.
-    } else {
-      setAnswer2Color("#696969");
-      console.log(answer2Color) // 여기서 바뀐거는 확인되는데 화면상 보이지 않음.
+
+import ProbMain from "./component/ProbMain";
+import AudRef from "./component/AudRef";
+import ProbChoice2 from "./component/ProbChoice2";
+
+const LoadTypeScreen = (loadedProblem,setProblemStructure, choiceRef, setNextBtn) => {
+  let question = []
+  let problemStructures = [];
+  for(var i=0;i<loadedProblem.length;i++){
+    question = []
+    //문제 모아 놓는곳
+    question.push(<ProbMain PRB_MAIN_CONT = {loadedProblem[i].PRB_MAIN_CONT} PRB_NUM = {loadedProblem[i].PRB_NUM} key = {i*7+0}/>)
+    if(loadedProblem[i].PRB_SECT == '듣기'){
+      question.push(<AudRef AUD_REF = {loadedProblem[i].AUD_REF} key = {i*7+1}/>)
+      if(loadedProblem[i].PRB_SUB_CONT){
+        question.push(<Text style = {{flex: 3}} key = {i*7+2}>{loadedProblem[i].PRB_SUB_CONT}</Text>)
+      }
     }
-    
-  };
+    else if(loadedProblem[i].PRB_SECT == "읽기"){
+      // PRB_TXT: 지문
+      question.push(<Text style = {{flex: 3}} key = {i*7+3}>{loadedProblem[i].PRB_TXT}</Text>)
+
+      // PRB_SUB_CONT: 서브 문제
+      if(loadedProblem[i].PRB_SUB_CONT){
+        question.push(<Text style = {{flex: 3}} key = {i*7+4}>{loadedProblem[i].PRB_SUB_CONT}</Text>)
+      }// PRB_SCRPT: 서브 지문
+      if(loadedProblem[i].PRB_SCRPT){
+        question.push(<Text style = {{flex: 3}} key = {i*7+5}>{loadedProblem[i].PRB_SCRPT}</Text>)  
+      }
+    }
+    //위에는 문제, 아래는 보기 처리
+    question.push(<ProbChoice2
+      PRB_CHOICE1= {loadedProblem[i].PRB_CHOICE1} 
+      PRB_CHOICE2={loadedProblem[i].PRB_CHOICE2} 
+      PRB_CHOICE3= {loadedProblem[i].PRB_CHOICE3} 
+      PRB_CHOICE4={loadedProblem[i].PRB_CHOICE4} 
+      PRB_CORRT_ANSW = {loadedProblem[i].PRB_CORRT_ANSW}
+
+      choiceRef = {choiceRef}
+      nextBtn = {i}
+      setNextBtn = {setNextBtn}
+
+      key = {i*7+6}
+    />)
+    problemStructures.push(<View style = {styles.containerPos}>{question}</View>)
+  }
+  
+  
+  
+  
+  // 비동기 setstate를 동기 방식으로 처리하기
+  const help = () => {
+    setProblemStructure(problemStructures)
+
+  }
+
+  help();
+};
+
+
+const TypeQuestScreen = () =>{
+  // 문제구조 html 코드
+  const [problemStructure, setProblemStructure] = useState([]); // component
+  // 백엔드에서 불러온 json 문제
+  const [loadedProblem, setLoadedProblem] = useState([]); // json
+  // 다음 문제를 넘길 때 사용
+  const [nextBtn, setNextBtn] = useState(0);
+  // 4지선다 컴포넌트에서 사용자가 고른 답을 저장
+  const choiceRef = useRef(0);
+  // 콜렉션 불러오기
+  const problemCollection = firestore().collection('problems');
+  
+  // MOUNT 
+  useEffect(()=> {
+      // promise 객체를 반환하는 함수
+      async function dataLoading(){
+          try{
+              const data = await problemCollection.limit(10).get(); // 요청한 데이터가 반환되면 다음 줄 실행
+              setLoadedProblem(data.docs.map(doc => ({...doc.data()})))
+          }catch(error){
+              console.log(error.message);
+          }
+      
+      }
+
+      dataLoading();
+  }, []);
+  // setState 실행
+
+
+  
+// 모든 문제를 불러온 후 구조 만들기
+useEffect(() => {
+  console.log(loadedProblem);
+  LoadTypeScreen(loadedProblem, setProblemStructure, choiceRef,setNextBtn);
+}, [loadedProblem]);
+ 
+  
+  // 문제 풀이 결과를 보냄 or 저장
+  useEffect(()=>{
+      // console.log(`
+      //     {   
+      //         userId: hello,
+      //         PRB_ID: AAAAAAAAAAAA,
+      //         elapsed_time(sec): 10,
+      //         Success: True,
+      //         Date: 2023-04-17,
+      //         Rank(1-5 level): 4 
+      //     }
+      // `);
+
+      console.log(choiceRef.current)
+
+      choiceRef.current = 0;
+  })
   
   return (
-    <View>
-      <AppNameHeader />
-      <View>
-        <Text>문제1. ( )에 들어갈 가장 알맞은 단어를 고르시오.</Text>
+    <View style={[styles.container, styles.containerPos]}>
+      <View style={[styles.container, styles.containerPos]}>
+        {problemStructure[nextBtn]}
+        <Text>
+          아이디 값은 버튼 값은
+        </Text>
       </View>
-      <View style={styles.container}>
-        <Box text="밖에서 시끄럽게 공사를 (  ) 잠을 잘 수가 없다." />
-      </View>
-      <View style={styles.buttonContainer}>
-      <Button
-          title="보기 1"
-          color={selectedOption === 1 ? '#F5B7B1' : '#A9DFBF'}
-          onPress={() => handleOptionSelect(1)} //disabled={submitted}
-        />
-        <Button
-          title="보기 2"
-          color={selectedOption === 2 ? '#F5B7B1' : '#A9DFBF'}
-          onPress={() => handleOptionSelect(2)} //disabled={submitted}
-        />
-        <Button
-          title="보기 3"
-          color={selectedOption === 3 ? '#F5B7B1' : '#A9DFBF'}
-          onPress={() => handleOptionSelect(3)} //disabled={submitted}
-        />
-        <Button
-          title="보기 4"
-          color={selectedOption === 4 ? '#F5B7B1' : '#A9DFBF'}
-          onPress={() => handleOptionSelect(4)} //disabled={submitted}
-        />
-      </View>
-      <View style={styles.bottomButtonContainer3}>
-      <Button title="제출" onPress={handleSubmit}
-          disabled={!selectedOption} />
-      </View>
-      <View style={styles.bottomButtonContainer}>
-        <Button title="이전" onPress={() => console.log("이전 선택됨") } />
-        <Button title="다음" onPress={() => navigation.navigate('TypeQuestLc')} disabled={!submitted}  />
-      </View>
-      
     </View>
-    
+  
   );
-};
+}
 const styles = StyleSheet.create({
-    container: {
-      flex: 1,
-      backgroundColor: '#fff',
-      alignItems: 'flex-start',
-      justifyContent: 'flex-start',
-      flexDirection: 'row',
-      flexWrap: 'wrap',
-      marginBottom: 330, // 하단에 마진 추가
-    },
-    box: {
-      backgroundColor: '#D4EFDF',
-      borderWidth: 1,
-      borderColor: 'black',
-      justifyContent: 'center',
-      alignItems: 'center',
-      width: 390,
-      height: 100,
-      margin: 10,
-    },
-    buttonContainer: {
-      position: 'absolute',
-      top: 200,
-      left: 30,
-      width: 350,
-      justifyContent: 'flex-start', // 추가
-    },
-    button: {
-      width: 100,
-      height: 50,
-      backgroundColor:'blue',
-      justifyContent: 'center',
-      alignItems: 'center',
-    },
-    buttonText: {
-      color: 'white',
-      fontWeight: 'bold',
-    },
-    bottomButtonContainer: {
-      flexDirection: 'row',
-      top: 70,
-      justifyContent: 'space-between',
-      flexWrap: 'nowrap',
-      paddingHorizontal: 30,
-    },
-    bottomButtonContainer3: {
-      position: "absolute",
-      top: 380,
-      left: 150,
-      width: 100,
-      justifyContent: 'center',
-    },
+  container:{
+    padding: 10,
+  },
+  containerPos: {
+    flex:20
+  },
+
     
 });
 export default TypeQuestScreen;
