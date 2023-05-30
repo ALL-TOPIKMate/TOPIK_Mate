@@ -22,6 +22,7 @@ const MockProbModal = ({ problem, modal, setModal }) => {
             <Text>{ problem.PRB_MAIN_CONT}</Text>
         </View>
 
+
         <Text>{ problem.PRB_TXT }</Text>
         <Text>{ problem.PRB_SUB_CONT }</Text>
 

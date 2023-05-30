@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react'
 import { View, Text, Image, Button, TextInput, StyleSheet, TouchableOpacity } from 'react-native';
 
-import AudRef from './AudRef';
+// import AudRef from './AudRef';
+// import MockAudRef from './MockAudRef';
 
 const MockProb = ({ problem, choice, setChoice, index, setIndex, setDirection, images, audios }) => {
 
@@ -15,13 +16,13 @@ const MockProb = ({ problem, choice, setChoice, index, setIndex, setDirection, i
     return (
         <View>
             {/* 오디오 */}
-            {
+            {/* {
               problem.AUD_REF in audios
-              ? <AudRef
+              ? <MockAudRef
                 source={audios[problem.AUD_REF].url}
               />
               : null
-            }
+            } */}
 
             {/* ProbMain */}
             <View style={styles.probMain}>
