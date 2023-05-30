@@ -3,7 +3,7 @@ import {Text,View, TouchableOpacity, StyleSheet, Modal, Pressable, TextInput, Al
 import {subscribeAuth, signOut, updateUserPassword, deleteAccount } from "../lib/auth";
 import { CommonActions } from '@react-navigation/native'; // CommonActions 추가
 import firestore from '@react-native-firebase/firestore';
-import firebase from '@react-native-firebase/app';
+import storage from '@react-native-firebase/storage';
 const Myaccount = ({navigation}) => {
   const [userEmail, setUserEmail] = useState(null); // 이메일
   const [currentPassword, setCurrentPassword] = useState('');
@@ -66,11 +66,14 @@ const Myaccount = ({navigation}) => {
   const deleteUser = async (email) => {
     try {
       const userRef = firestore().collection('users');
+      const storageRef = storage().ref().child('profile');
       const querySnapshot = await userRef.where('email', '==', email).get();
   
       querySnapshot.forEach(async (documentSnapshot) => {
         const u_uid = documentSnapshot.data().u_uid;
         await userRef.doc(u_uid).delete();
+        const imageRef = storageRef.child(`${email}.jpg`);
+        await imageRef.delete();
       });
   
       console.log('하위 문서 삭제 완료');
