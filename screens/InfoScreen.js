@@ -1,5 +1,5 @@
 import React, { useState, useEffect} from 'react';
-import { View, Text, Image, StyleSheet, Pressable, Modal,Button} from 'react-native';
+import { View, Text, Image, StyleSheet, Pressable, Modal,Button, TouchableOpacity} from 'react-native';
 import { launchImageLibrary } from 'react-native-image-picker';
 import firebase from '@react-native-firebase/app';
 import '@react-native-firebase/storage';
@@ -171,9 +171,18 @@ const InfoScreen = ({ navigation }) => {
   
   return (
     <View>
+      <TouchableOpacity
+        style={styles.settingsButton}
+        onPress={() => { navigation.navigate('InfoSetting') }}
+      >
       <View>
-      <Button title = "설정" onPress={() => {navigation.navigate('InfoSetting') }}/> 
+        <Image
+          source={require('../assets/settings-icon.png')}
+          style={styles.settingsIcon}
+        />
       </View>
+      
+</TouchableOpacity>
       <View style={styles.circleContainer}>
         <Text>내 정보</Text>
           <Pressable
@@ -335,6 +344,18 @@ const styles = StyleSheet.create({
     top: 150,
     left: 130,
   },
+  settingsButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'flex-end',
+    marginRight: 10,
+  },
+  settingsIcon: {
+    width: 20,
+    height: 20,
+    top: 10,
+  },
+  
 
 });
 
