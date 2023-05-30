@@ -1,5 +1,5 @@
 import React, { useState, useEffect} from 'react';
-import {Text,View, TouchableOpacity, StyleSheet, Modal, Pressable, TextInput, Alert} from 'react-native';
+import {Text,View, TouchableOpacity, StyleSheet, Modal, Pressable, TextInput, Alert, Button} from 'react-native';
 import {subscribeAuth, signOut, updateUserPassword, deleteAccount } from "../lib/auth";
 import { CommonActions } from '@react-navigation/native'; // CommonActions 추가
 import firestore from '@react-native-firebase/firestore';
@@ -10,11 +10,15 @@ const Myaccount = ({navigation}) => {
   const [newPassword, setNewPassword] = useState('');
   const [error, setError] = useState(null);
   const [isModalVisible, setIsModalVisible] = useState(false); //모달창
+  const [currentNickname, setCurrentNickname] = useState('');//기존 닉네임
+  const [newNickname, setNewNickname] = useState('');//새로운 닉네임
+  const [isNicknameModalVisible, setIsNicknameModalVisible] = useState(false);
   useEffect(() => {
     const handleAuthStateChanged = (user) => {
       if (user) {
         //console.log('로그인', user.email);
         setUserEmail(user.email);
+        getNicknameByEmail(user.email);
       }
     };
 
@@ -61,6 +65,10 @@ const Myaccount = ({navigation}) => {
         .catch((error) => {
           console.log('로그아웃 실패', error);
         });
+    };
+    const handleUpdateNickname = async () => {
+      await updateNicknameByEmail(userEmail, newNickname);
+      setIsNicknameModalVisible(false);
     };
   //탈퇴기능 추가
   const deleteUser = async (email) => {
@@ -114,7 +122,43 @@ const Myaccount = ({navigation}) => {
         { cancelable: false }
       );
     };
+    //닉네임 가져오기
+    const getNicknameByEmail = async (email) => {
+      try {
+        const userRef = firestore().collection('users');
+        const querySnapshot = await userRef.where('email', '==', email).get();
     
+        if (!querySnapshot.empty) {
+          const documentSnapshot = querySnapshot.docs[0];
+          const nickname = documentSnapshot.data().nickname;
+          setCurrentNickname(nickname);
+          return nickname;
+        }
+    
+        return null; // 이메일에 해당하는 사용자가 없을 경우 null 반환
+      } catch (error) {
+        console.error('닉네임 가져오기 오류:', error);
+        return null;
+      }
+    };
+    //닉네임 적용
+    const updateNicknameByEmail = async (email, nickname) => {
+      try {
+        const userRef = firestore().collection('users');
+        const querySnapshot = await userRef.where('email', '==', email).get();
+  
+        querySnapshot.forEach(async (documentSnapshot) => {
+          const u_uid = documentSnapshot.data().u_uid;
+          await userRef.doc(u_uid).update({ nickname: nickname });
+        });
+  
+        console.log('닉네임 변경 완료');
+        setCurrentNickname(newNickname);
+        setNewNickname('');
+      } catch (error) {
+        console.error('닉네임 변경 오류:', error);
+      }
+    };
   
     return (
       <View style={styles.container}>
@@ -172,11 +216,48 @@ const Myaccount = ({navigation}) => {
           onPress={() => setIsModalVisible(true)}>
           <Text style={styles.textStyle2}>비밀번호 변경</Text>
         </Pressable>
-        </View>
         <TouchableOpacity style={styles.button} onPress={handleDeleteAccount}>
           <Text style={styles.buttonText}>회원 탈퇴</Text>
         </TouchableOpacity>
+        <Modal
+            animationType="slide"
+            transparent={true}
+            visible={isNicknameModalVisible}
+            onRequestClose={() => setIsNicknameModalVisible(false)}
+            
+          >
+        
+          <View style={styles.modalView}>
+            <Text style={styles.modalText}> 닉네임 변경 </Text>
+            <View style={styles.passwordContainer}>
+            <Text>현재 닉네임: {currentNickname}</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="새로운 닉네임"
+              value={newNickname}
+              onChangeText={setNewNickname}
+            />
+            
+            <Pressable
+              style={[styles.button, styles.buttonClose]}
+              onPress={() => {
+                handleUpdateNickname(newNickname)
+              }}
+            >
+              <Text style={styles.textStyle}>변경하기</Text>
+              {error && <Text style={styles.errorText}>{error}</Text>}
+            </Pressable>
+            </View>
+          </View>
+        </Modal>
+        <Pressable
+          style={[styles.button, styles.buttonOpen]}
+          onPress={() => setIsNicknameModalVisible(true)}>
+          <Text style={styles.textStyle2}>닉네임 변경</Text>
+        </Pressable>
+        </View>
       </View>
+      
     );
 };
 const styles = StyleSheet.create({
