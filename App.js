@@ -16,6 +16,7 @@ import MocktestScreen from "./screens/MocktestScreen";
 import TypeScreen from "./screens/TypeScreen";
 import WrongScreen from "./screens/WrongScreen";
 import InfoScreen from "./screens/InfoScreen";
+import InfoSetting from "./screens/InfoSetting";
 
 import SigninScreen from "./screens/SigninScreen";
 import SignupScreen from "./screens/SignupScreen";
@@ -26,6 +27,10 @@ import TypeQuestScreen from "./screens/TypeQuestScreen";
 import TypeQuestScreenLc from "./screens/TypeQuestScreenLc";
 import WrongStudyScreen from './screens/WrongStudyScreen';
 import WriteHistoryScreen from "./screens/WriteHistoryScreen";
+import Notice from "./screens/Notice";
+import Myaccount from "./screens/Myaccount";
+import Inquiry from "./screens/Inquiry";
+import InfoApp from './screens/InfoApp';
 import WriteHistoryListScreen from './screens/WriteHistoryListScreen';
 
 const Tab = createBottomTabNavigator();
@@ -52,6 +57,8 @@ const App = () => {
           <Stack.Screen name = "Home" component = {Home} options = {({route})=>({headerBackVisible: false})}/>
           <Stack.Screen name = "Signin" component = {SigninScreen}/>
           <Stack.Screen name = "Signup" component = {SignupScreen}/>
+          <Stack.Screen name="InfoSetting" component = {InfoSetting}/>
+
 
           <Stack.Screen name = "RecommendStudy" component = {RecommendStudyScreen}/>
           <Stack.Screen name="MockStudy" component = {MockStudyScreen}/>
@@ -60,6 +67,10 @@ const App = () => {
           <Stack.Screen name="TypeQuestLc" component = {TypeQuestScreenLc}/>
           <Stack.Screen name="WrongStudy" component = {WrongStudyScreen}/>
           <Stack.Screen name="WriteHistory" component = {WriteHistoryScreen}/>
+          <Stack.Screen name="Notice" component={Notice}/>
+          <Stack.Screen name="Myaccount" component={Myaccount}/>
+          <Stack.Screen name="Inquiry" component={Inquiry}/>
+          <Stack.Screen name="InfoApp" component={InfoApp}/>
           <Stack.Screen name="WriteHistoryList" component = {WriteHistoryListScreen}/>
         </Stack.Navigator>
       </NavigationContainer>    

@@ -1,27 +1,26 @@
 import React, { useState, useEffect} from 'react';
-import { View, Text, Image, StyleSheet, Pressable, TouchableOpacity, Modal} from 'react-native';
+import { View, Text, Image, StyleSheet, Pressable, Modal,Button, TouchableOpacity} from 'react-native';
 import { launchImageLibrary } from 'react-native-image-picker';
 import firebase from '@react-native-firebase/app';
 import '@react-native-firebase/storage';
 import {subscribeAuth } from "../lib/auth";
 import firestore from '@react-native-firebase/firestore';
 import DropDownPicker from 'react-native-dropdown-picker';
+//import AppNameHeader from './component/AppNameHeader';
 
-//import Modal from 'react-native-simple-modal';
-//import Modal from './component/Modall'
-//import { ViewPropTypes } from 'deprecated-react-native-prop-types';
 // 내정보
-const InfoScreen = () => {
+const InfoScreen = ({ navigation }) => {
   const [userEmail, setUserEmail] = useState(null); // 이메일
   const [nickname, setNickname] = useState(null); // 닉네임
   const [my_level, setmy_level] = useState(null); // 나의 레벨
   const [imageUrl, setImageUrl] = useState(null); // 이미지
   const [defaultImageUrl, setDefaultImageUrl] = useState('URL_OF_DEFAULT_IMAGE');
   const [isModalVisible, setIsModalVisible] = useState(false); //모달창
-  const [selectedLevel, setSelectedLevel] = useState(null);
-  const [level, setLevel] = useState([
-    { label: "TOPIK 1", value: "TOPIK 1" },
-    { label: "TOPIK 2", value: "TOPIK 2" },
+  const [open, setOpen] = useState(false);
+  const [value, setValue] = useState(null);
+  const [items, setItems] = useState([
+    {label: 'TOPIK 1', value: '1'},
+    {label: 'TOPIK 2', value: '2'},
   ]);
   
   //이미지 선택
@@ -97,10 +96,7 @@ const InfoScreen = () => {
       setImageUrl(defaultImageUrl);
     }
   };
-  //레벨 선택 시 실행
-  const handleLevelSelect = (value) => {
-    setSelectedLevel(value);
-  };
+
 //닉네임이랑 이메일 얻어오기
   const getNicknameByEmail = async (email) => {
     try {
@@ -148,63 +144,101 @@ const InfoScreen = () => {
     }
     
   };
+
+  //나의 레벨 파이어베이스 적용하기
+  const updateUserLevel = async (email, newLevel) => {
+    try {
+      const userRef = firestore().collection('users').where('email', '==', email);
+      const querySnapshot = await userRef.get();
+  
+      if (!querySnapshot.empty) {
+        const userDoc = querySnapshot.docs[0];
+        await userDoc.ref.update({ my_level: newLevel });
+        console.log('my_level 업데이트 완료');
+      } else {
+        console.log('사용자를 찾을 수 없음');
+      }
+    } catch (error) {
+      console.error('my_level 업데이트 에러:', error);
+    }
+  };
   // 레벨 선택
-  const saveLevelToFirebase = () => {
+  const saveLevelToFirebase = (selectedLevel) => {
     // Firebase에 선택한 레벨 저장하는 로직 구현
-    // 예시로 console.log로 선택한 레벨을 출력합니다.
     console.log('선택한 레벨:', selectedLevel);
+    updateUserLevel(userEmail, selectedLevel);
   };
   
   return (
     <View>
+      <TouchableOpacity
+        style={styles.settingsButton}
+        onPress={() => { navigation.navigate('InfoSetting') }}
+      >
+      <View>
+        <Image
+          source={require('../assets/settings-icon.png')}
+          style={styles.settingsIcon}
+        />
+      </View>
+      
+</TouchableOpacity>
       <View style={styles.circleContainer}>
-      <Text>내 정보</Text>
-        <Pressable
-          style={[
-            styles.circle,
-            !imageUrl && styles.circleDefaultImage,
-            { overflow: 'hidden' },
-          ]}
-          onPress={onSelectImage}
-        >
-          {imageUrl ? (
-            <Image source={{ uri: imageUrl }} style={styles.circleImage} />
-          ) : (
-            <View style={styles.circleDefaultImageTextContainer}>
-              <Text style={styles.circleDefaultImageText}>+</Text>
-            </View>
-          )}
-        </Pressable>
+        <Text>내 정보</Text>
+          <Pressable
+            style={[
+              styles.circle,
+              !imageUrl && styles.circleDefaultImage,
+              { overflow: 'hidden' },
+            ]}
+            onPress={onSelectImage}
+          >
+            {imageUrl ? (
+              <Image source={{ uri: imageUrl }} style={styles.circleImage} />
+            ) : (
+              <View style={styles.circleDefaultImageTextContainer}>
+                <Text style={styles.circleDefaultImageText}>+</Text>
+              </View>
+            )}
+          </Pressable>
         
-        <Text> 이메일 : {userEmail}</Text>  
+          <Text> 이메일 : {userEmail}</Text>  
       </View>
     
-    <Text> 나의 레벨 </Text>
-    <Modal
+      <Text> 나의 레벨 </Text>
+      <Modal
         animationType="slide"
         transparent={true}
         visible={isModalVisible}
         onRequestClose={() => {
-          Alert.alert('Modal has been closed.');
-          setIsModalVisible(!isModalVisible);
-        }}>
+        Alert.alert('Modal has been closed.');
+        setIsModalVisible(!isModalVisible);
+        }}
+      >
         <View style={styles.centeredView}>
           <View style={styles.modalView}>
             <Text style={styles.modalText}>레벨 수정하기</Text>
             <DropDownPicker
-              items={level.map((item) => ({ label: item.label, value: item.value }))}
-              defaultValue={selectedLevel}
-              containerStyle={styles.dropdownContainer}
-              style={styles.dropdown}
-              itemStyle={styles.dropdownItem}
-              labelStyle={styles.dropdownLabel}
-              dropDownStyle={styles.dropdownMenu}
-              onChangeItem={handleLevelSelect}
+              open={open}
+              value={value}
+              items={items}
+              setOpen={setOpen}
+              setValue={setValue}
+              setItems={setItems}
+              placeholder="레벨을 선택해 주세요"
+              listMode="FLATLIST"
+              modalProps={{
+              animationType: 'fade',
+              }}
+              modalTitle="레벨 선택"
             />
             <Pressable
               style={[styles.button, styles.buttonClose]}
-              onPress={() => {setIsModalVisible(!isModalVisible);
-              saveLevelToFirebase();}}>
+              onPress={() => {
+                setIsModalVisible(!isModalVisible);
+                saveLevelToFirebase(value);
+              }}
+            >
               <Text style={styles.textStyle}>저장</Text>
             </Pressable>
           </View>
@@ -215,9 +249,8 @@ const InfoScreen = () => {
         onPress={() => setIsModalVisible(true)}>
         <Text style={styles.textStyle}>수정하기</Text>
       </Pressable>
-      <Text> {my_level}</Text>  
-      
-  </View>
+      <Text> {my_level}</Text>
+    </View>
  
     
   );
@@ -265,6 +298,7 @@ const styles = StyleSheet.create({
     marginTop: 22,
   },
   modalView: {
+    height: 200,
     margin: 20,
     backgroundColor: 'white',
     borderRadius: 20,
@@ -307,9 +341,21 @@ const styles = StyleSheet.create({
     backgroundColor: '#9ACD32',
     width: 100,
     position: 'absolute',
-    top: 120,
+    top: 150,
     left: 130,
   },
+  settingsButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'flex-end',
+    marginRight: 10,
+  },
+  settingsIcon: {
+    width: 20,
+    height: 20,
+    top: 10,
+  },
+  
 
 });
 

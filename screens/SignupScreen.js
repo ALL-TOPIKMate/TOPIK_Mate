@@ -1,8 +1,8 @@
 import React, {useState} from 'react';
-import {Alert, Text} from 'react-native';
+
 import {signUp } from "../lib/auth";
 import firestore from '@react-native-firebase/firestore';
-import {Button, View ,TextInput, StyleSheet} from 'react-native'
+import {Button, View ,TextInput, StyleSheet, Text, TouchableOpacity, Alert} from 'react-native'
 import AppNameHeader from './component/AppNameHeader'
 
 
@@ -35,8 +35,11 @@ const SignupScreen = ({navigation}) =>{
           console.log('나의 레벨', my_level);
           
           await firestore().collection("users").doc(user.uid).set({ email, nickname, my_level, u_uid});
-          await firestore().collection("users").doc(user.uid).collection("wrong_lv1").doc('복습').set({ Type: 'Wrong' });
-          await firestore().collection("users").doc(user.uid).collection("wrong_lv2").doc('복습').set({ Type: 'Wrong' });
+          await firestore().collection("users").doc(user.uid).collection("wrong_lv1").doc('LS_TAG').set({ Type: 'Wrong' });
+          await firestore().collection("users").doc(user.uid).collection("wrong_lv1").doc('RD_TAG').set({ Type: 'Wrong' });
+          await firestore().collection("users").doc(user.uid).collection("wrong_lv2").doc('LS_TAG').set({ Type: 'Wrong' });
+          await firestore().collection("users").doc(user.uid).collection("wrong_lv2").doc('RD_TAG').set({ Type: 'Wrong' });
+          await firestore().collection("users").doc(user.uid).collection("wrong_lv2").doc('WR_TAG').set({ Type: 'Wrong' });
           await firestore().collection("users").doc(user.uid).collection("recommend").doc('추천').set({ Type: 'Recom' });
           navigation.navigate('Home')
           return user;
@@ -50,24 +53,27 @@ const SignupScreen = ({navigation}) =>{
 
     
     return (
-        <View>
+        <View style={styles.container}>
             <AppNameHeader/>
             <View>
-                <Text> 이메일 </Text>
                 <TextInput
                     style={styles.input}
                     onChangeText={(value)=>setForm({displayName: form.displayName, email: value, password: form.password})}
                     value={form.email}
+                    placeholder="이메일"
                 />
-                <Text> 비밀번호 </Text>
+                
                 <TextInput
                     style={styles.input}
                     onChangeText={(value)=>setForm({displayName: form.displayName, email: form.email, password: value})}
                     value={form.password}
+                    placeholder="비밀번호"
                 />
                 
+                <TouchableOpacity style={styles.button} onPress={()=> signUpSubmit()}>
+                    <Text style={styles.buttonText}>회원가입</Text>
+                </TouchableOpacity>
                 
-                <Button title = "회원가입" onPress={()=> signUpSubmit()}/> 
             </View>
         </View>
     );
@@ -75,11 +81,28 @@ const SignupScreen = ({navigation}) =>{
 
 
 const styles = StyleSheet.create({
+    container: {
+        flex: 1,
+        backgroundColor: '#BBD6B8', // 원하는 배경색으로 변경
+    },
     input: {
       height: 40,
       margin: 12,
       borderWidth: 1,
       padding: 10,
+      backgroundColor: 'white',
+    },
+    button: {
+        backgroundColor: "#FFFFFF",
+        borderRadius: 8,
+        padding: 10,
+        margin: 10,
+        width: 250,
+        alignSelf: 'center'
+    },
+    buttonText:{
+        color: 'black',
+        textAlign: 'center',
     },
   });
 
