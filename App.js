@@ -57,11 +57,9 @@ const App = () => {
           <Stack.Screen name = "Home" component = {Home} options = {({route})=>({headerBackVisible: false})}/>
           <Stack.Screen name = "Signin" component = {SigninScreen}/>
           <Stack.Screen name = "Signup" component = {SignupScreen}/>
-<<<<<<< HEAD
           <Stack.Screen name="InfoSetting" component = {InfoSetting}/>
-=======
 
->>>>>>> f7fe24b5f7ef31bbf937aaa3c9163e5ec0f0ce14
+
           <Stack.Screen name = "RecommendStudy" component = {RecommendStudyScreen}/>
           <Stack.Screen name="MockStudy" component = {MockStudyScreen}/>
           <Stack.Screen name = "MockList" component = {MockListScreen}/>
