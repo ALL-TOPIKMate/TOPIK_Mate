@@ -1,18 +1,13 @@
 import React, { useState, useEffect,useRef } from 'react';
-import { View, Text, Button, StyleSheet,TouchableOpacity } from 'react-native';
+import { View, Text, Button, StyleSheet,TouchableOpacity, Image } from 'react-native';
 import AppNameHeader from './component/AppNameHeader';
 import firestore from '@react-native-firebase/firestore';
 import {subscribeAuth } from "../lib/auth";
 import firebase from '@react-native-firebase/app';
 import storage from '@react-native-firebase/storage'
 
-//import ProbMain from "./component/ProbMain";
-//import AudRef from "./component/AudRef";
-//import ProbChoice2 from "./component/ProbChoice2";
-//Reading
+//Listening
 const TypeQuestScreenLc = ({navigation, route}) =>{
-  //const [userLevel, setUserLevel] = useState(null); // 나의 레벨
-  //const [prbSection,setPrbSection] = useState(null); //LV 섹션 만들기
   const { source, paddedIndex, prbSection } = route.params;//이전 페이지에서 정보 받아오기
   const [data, setData] = useState([]);// 문제 담을 구성
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -42,7 +37,7 @@ const TypeQuestScreenLc = ({navigation, route}) =>{
         const problemCollection = firestore()
           .collection('problems')
           .doc(prbSection)//lv2
-          .collection(source)//rdtag
+          .collection(source)//lctag
           .doc(paddedIndex)//001
           .collection('PRB_LIST')//pbrblist
         const querySnapshot = await problemCollection.orderBy('__name__').limit(5).get();
@@ -60,6 +55,7 @@ const TypeQuestScreenLc = ({navigation, route}) =>{
           };
           console.log('문제',value);
           prblist.push(value);
+          /*
           if(paddedIndex === '001'){
             try {
               const choice1ImageRef = storage()
@@ -88,8 +84,9 @@ const TypeQuestScreenLc = ({navigation, route}) =>{
               console.log('Error occurred while downloading image', error);
             }
           }
-          
+         */ 
         });
+        
         setData(prblist);
         setCurrentIndex(0);
       } catch (error) {
@@ -108,9 +105,40 @@ const TypeQuestScreenLc = ({navigation, route}) =>{
     console.log('Selected Choice:', choice);
     // 선택된 버튼에 대한 처리 로직을 추가할 수 있습니다.
   };
-  const handleNextProblem = () => {
+  const handleNextProblem = async () => {
     if (currentIndex < data.length - 1) {
       setCurrentIndex((prevIndex) => prevIndex + 1);
+  
+      const nextProblem = data[currentIndex + 1];
+  
+      if (paddedIndex === '001') {
+        try {
+          const choice1ImageRef = storage()
+            .ref()
+            .child(`images/${prbSection}/LS_TAG/${paddedIndex}/${nextProblem.id}_1.png`);
+          const choice2ImageRef = storage()
+            .ref()
+            .child(`images/${prbSection}/LS_TAG/${paddedIndex}/${nextProblem.id}_2.png`);
+          const choice3ImageRef = storage()
+            .ref()
+            .child(`images/${prbSection}/LS_TAG/${paddedIndex}/${nextProblem.id}_3.png`);
+          const choice4ImageRef = storage()
+            .ref()
+            .child(`images/${prbSection}/LS_TAG/${paddedIndex}/${nextProblem.id}_4.png`);
+  
+          const choice1ImageUrl = await choice1ImageRef.getDownloadURL();
+          const choice2ImageUrl = await choice2ImageRef.getDownloadURL();
+          const choice3ImageUrl = await choice3ImageRef.getDownloadURL();
+          const choice4ImageUrl = await choice4ImageRef.getDownloadURL();
+  
+          setChoice1ImageUrl(choice1ImageUrl);
+          setChoice2ImageUrl(choice2ImageUrl);
+          setChoice3ImageUrl(choice3ImageUrl);
+          setChoice4ImageUrl(choice4ImageUrl);
+        } catch (error) {
+          console.log('Error occurred while downloading image', error);
+        }
+      }
     } else {
       loadProblems();
     }
@@ -127,7 +155,7 @@ const TypeQuestScreenLc = ({navigation, route}) =>{
   
         {data.length > 0 && (
           <View>
-            <Text>{data[currentIndex].PRB_MAIN}</Text>
+            <Text>{currentIndex+1}.{data[currentIndex].PRB_MAIN}</Text>
             {paddedIndex === '001' && (
               <>
                 <TouchableOpacity style={styles.button} onPress={() => handleChoice(data[currentIndex].PRB_CHOICE1)}>
@@ -150,7 +178,7 @@ const TypeQuestScreenLc = ({navigation, route}) =>{
             )}
           </View>
         )}
-        <Button title = "정답 확인" onPress={()=>console.log('확인하기')}> </Button>
+        
         {currentIndex < data.length - 1 ? (
           <Button title="Next" onPress={handleNextProblem} />
         ) : (
