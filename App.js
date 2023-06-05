@@ -25,6 +25,7 @@ import MockStudyScreen from "./screens/MockStudyScreen";
 import MockListScreen from "./screens/MockListScreen";
 import TypeQuestScreen from "./screens/TypeQuestScreen";
 import TypeQuestScreenLc from "./screens/TypeQuestScreenLc";
+import TypeQuestScreenWr from "./screens/TypeQuestScreenWr";
 import WrongStudyScreen from './screens/WrongStudyScreen';
 import WriteHistoryScreen from "./screens/WriteHistoryScreen";
 import Notice from "./screens/Notice";
@@ -63,8 +64,10 @@ const App = () => {
           <Stack.Screen name = "RecommendStudy" component = {RecommendStudyScreen}/>
           <Stack.Screen name="MockStudy" component = {MockStudyScreen}/>
           <Stack.Screen name = "MockList" component = {MockListScreen}/>
+          <Stack.Screen name = "Type" component={TypeScreen}/>
           <Stack.Screen name="TypeQuest" component = {TypeQuestScreen}/>
           <Stack.Screen name="TypeQuestLc" component = {TypeQuestScreenLc}/>
+          <Stack.Screen name="TypeQuestWr" component = {TypeQuestScreenWr}/>
           <Stack.Screen name="WrongStudy" component = {WrongStudyScreen}/>
           <Stack.Screen name="WriteHistory" component = {WriteHistoryScreen}/>
           <Stack.Screen name="Notice" component={Notice}/>
@@ -79,4 +82,3 @@ const App = () => {
 
 
 export default App;
-

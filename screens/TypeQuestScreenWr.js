@@ -8,7 +8,7 @@ import {subscribeAuth } from "../lib/auth";
 //import AudRef from "./component/AudRef";
 //import ProbChoice2 from "./component/ProbChoice2";
 //Reading
-const TypeQuestScreen = ({navigation, route}) =>{
+const TypeQuestScreenWr = ({navigation, route}) =>{
   //const [userLevel, setUserLevel] = useState(null); // 나의 레벨
   //const [prbSection,setPrbSection] = useState(null); //LV 섹션 만들기
   const { source, paddedIndex, prbSection } = route.params;//이전 페이지에서 정보 받아오기
@@ -52,11 +52,7 @@ const TypeQuestScreen = ({navigation, route}) =>{
           const value = {
             id: doc.id,
             PRB_MAIN: docData.PRB_MAIN,
-            PRB_SCRIPT: docData.PRB_SCRIPT,
-            PRB_CHOICE1: docData.PRB_CHOICE1,
-            PRB_CHOICE2: docData.PRB_CHOICE2,
-            PRB_CHOICE3: docData.PRB_CHOICE3,
-            PRB_CHOICE4: docData.PRB_CHOICE4,
+            
           };
           console.log('문제',value);
           prblist.push(value);
@@ -75,17 +71,7 @@ const TypeQuestScreen = ({navigation, route}) =>{
   useEffect(() => {
     console.log(data);
   }, [data]);
-  const handleChoice = (choice) => {
-    console.log('Selected Choice:', choice);
-    // 선택된 버튼에 대한 처리 로직을 추가할 수 있습니다.
-  };
-  const handleNextProblem = () => {
-    if (currentIndex < data.length - 1) {
-      setCurrentIndex((prevIndex) => prevIndex + 1);
-    } else {
-      loadProblems();
-    }
-  };
+  
   const handleEndProblem = () => {
     navigation.navigate('Type')
   };
@@ -99,19 +85,8 @@ const TypeQuestScreen = ({navigation, route}) =>{
         {data.length > 0 && (
         <View>
           <Text>{data[currentIndex].PRB_MAIN}</Text>
-          <Text>{data[currentIndex].PRB_SCRIPT} </Text>
-          <TouchableOpacity style={styles.button} onPress={() => handleChoice(data[currentIndex].PRB_CHOICE1)}>
-            <Text style={styles.buttonText}>{data[currentIndex].PRB_CHOICE1}</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.button} onPress={() => handleChoice(data[currentIndex].PRB_CHOICE2)}>
-            <Text style={styles.buttonText}>{data[currentIndex].PRB_CHOICE2}</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.button} onPress={() => handleChoice(data[currentIndex].PRB_CHOICE3)}>
-            <Text style={styles.buttonText}>{data[currentIndex].PRB_CHOICE3}</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.button} onPress={() => handleChoice(data[currentIndex].PRB_CHOICE4)}>
-            <Text style={styles.buttonText}>{data[currentIndex].PRB_CHOICE4}</Text>
-          </TouchableOpacity>
+          
+          
         </View>
       )}
       {currentIndex < data.length - 1 ? (
@@ -135,4 +110,4 @@ const styles = StyleSheet.create({
       
 });
 
-export default TypeQuestScreen;
+export default TypeQuestScreenWr;
