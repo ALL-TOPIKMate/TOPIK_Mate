@@ -1,32 +1,23 @@
 import React, { useState, useEffect,useRef } from 'react';
-import { View, Text, Button, StyleSheet,TouchableOpacity } from 'react-native';
+import { View, Text, Button, StyleSheet,TouchableOpacity,Image } from 'react-native';
 import AppNameHeader from './component/AppNameHeader';
 import firestore from '@react-native-firebase/firestore';
 import {subscribeAuth } from "../lib/auth";
+import storage from '@react-native-firebase/storage'
 
-//import ProbMain from "./component/ProbMain";
-//import AudRef from "./component/AudRef";
-//import ProbChoice2 from "./component/ProbChoice2";
+
 //Reading
 const TypeQuestScreen = ({navigation, route}) =>{
-  //const [userLevel, setUserLevel] = useState(null); // 나의 레벨
-  //const [prbSection,setPrbSection] = useState(null); //LV 섹션 만들기
   const { source, paddedIndex, prbSection } = route.params;//이전 페이지에서 정보 받아오기
   const [data, setData] = useState([]);// 문제 담을 구성
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [imageUrls,setImageUrls]=useState(null);
   useEffect(() => { //이메일 가져와서 레벨 찾아오는 useEffect
     const handleAuthStateChanged = (user) => {
       if (user) {
         console.log('로그인', user.email);
-        // 이메일에 해당하는 레벨 가져오기
-        //getMylevel(user.email);
       }
     };
-    console.log('읽어요',paddedIndex, prbSection)
-    //사용자 레벨을 얻어오는 함수
-  
-    console.log('여기',prbSection)
-    //setPrbSection(section);
     const unsubscribe = subscribeAuth(handleAuthStateChanged);
 
     // 컴포넌트 언마운트 시 구독 해제
@@ -45,10 +36,10 @@ const TypeQuestScreen = ({navigation, route}) =>{
           .doc(paddedIndex)//001
           .collection('PRB_LIST')//pbrblist
         const querySnapshot = await problemCollection.orderBy('__name__').limit(5).get();
-        //const problems = [];
         
-        querySnapshot.forEach((doc) => {
+        querySnapshot.forEach(async (doc) => {
           const docData = doc.data();
+          const prbIndex = doc.id;
           const value = {
             id: doc.id,
             PRB_MAIN: docData.PRB_MAIN,
@@ -58,8 +49,10 @@ const TypeQuestScreen = ({navigation, route}) =>{
             PRB_CHOICE3: docData.PRB_CHOICE3,
             PRB_CHOICE4: docData.PRB_CHOICE4,
           };
+          
           console.log('문제',value);
           prblist.push(value);
+          
         });
         
         setData(prblist);
@@ -89,17 +82,43 @@ const TypeQuestScreen = ({navigation, route}) =>{
   const handleEndProblem = () => {
     navigation.navigate('Type')
   };
-    
+  useEffect(() => {
+    const loadImageUrls = async () => {
+      const urls = [];
+      for (let i = 0; i < data.length; i++) {
+        const prbIndex = data[i].id;
+        try {
+          const imageUrl = await getImageUrl(prbIndex); // 이미지 URL 가져오는 비동기 함수
+          urls.push({
+            id: prbIndex,
+            image: imageUrl,
+          });
+        } catch (error) {
+          console.log(error);
+        }
+      }
+      setImageUrls(urls);
+    };
+  
+    loadImageUrls();
+  }, [data]);
+  
   
   return (
     <View style={[styles.container, styles.containerPos]}>
       <View style={[styles.container, styles.containerPos]}>
         <Text> {source} , {paddedIndex} </Text>
       
-        {data.length > 0 && (
+        
         <View>
-          <Text>{data[currentIndex].PRB_MAIN}</Text>
-          <Text>{data[currentIndex].PRB_SCRIPT} </Text>
+          {data.length > 0 && (
+            <>
+            <Text>{currentIndex+1}.{data[currentIndex].PRB_MAIN}</Text>
+            {imageUrls.length > 0 && (
+             <Image source={{ uri: imageUrls[currentIndex].image }} style={styles.image} />
+            )}
+            <Text>{data[currentIndex].PRB_SCRIPT} </Text>
+            
           <TouchableOpacity style={styles.button} onPress={() => handleChoice(data[currentIndex].PRB_CHOICE1)}>
             <Text style={styles.buttonText}>{data[currentIndex].PRB_CHOICE1}</Text>
           </TouchableOpacity>
@@ -112,8 +131,10 @@ const TypeQuestScreen = ({navigation, route}) =>{
           <TouchableOpacity style={styles.button} onPress={() => handleChoice(data[currentIndex].PRB_CHOICE4)}>
             <Text style={styles.buttonText}>{data[currentIndex].PRB_CHOICE4}</Text>
           </TouchableOpacity>
+          </>
+          )}
         </View>
-      )}
+
       {currentIndex < data.length - 1 ? (
         <Button title="Next" onPress={handleNextProblem} />
       ) : (

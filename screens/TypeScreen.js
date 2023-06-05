@@ -11,8 +11,8 @@ const TypeScreen = ({ navigation }) => {
   const [my_Level, setmy_Level] = useState(null); // 나의 레벨
   const [prbSection, setprbSection] = useState('')
   const [listenButtonTags, setListenButtonTags] = useState([]); // 듣기 버튼의 태그 값
-const [readButtonTags, setReadButtonTags] = useState([]); // 읽기 버튼의 태그 값
-const [writeButtonTags, setWriteButtonTags] = useState([]); // 쓰기 버튼의 태그 값
+  const [readButtonTags, setReadButtonTags] = useState([]); // 읽기 버튼의 태그 값
+  const [writeButtonTags, setWriteButtonTags] = useState([]); // 쓰기 버튼의 태그 값
   //레벨 세팅
   useEffect(() => {
     const handleAuthStateChanged = (user) => {
@@ -77,12 +77,29 @@ const [writeButtonTags, setWriteButtonTags] = useState([]); // 쓰기 버튼의 
     }
   };
 
-  const handleReadButtonPress = () => {
+  const handleReadButtonPress = async () => {
     console.log("Read Button press");
     setShowReadButtons(true);
     setShowListenButtons(false);
     setShowWriteButtons(false);
+
+    try {
+      const querySnapshot = await firestore()
+        .collection('problems')
+        .doc(prbSection)
+        .collection('RD_TAG')
+        .get();
+  
+      if (!querySnapshot.empty) {
+        const buttons = querySnapshot.docs.map((doc) => doc.data());
+
+        setReadButtonTags(buttons); // 듣기 버튼의 태그 값을 설정
+      }
+    } catch (error) {
+      console.error('Error fetching Read button data:', error);
+    }
   };
+  
   const handleWriteButtonPress = () => {
     console.log("Write Button press");
     setShowWriteButtons(true);
@@ -115,11 +132,21 @@ const [writeButtonTags, setWriteButtonTags] = useState([]); // 쓰기 버튼의 
         </View>
       )}
 
+      
       {showReadButtons && (
         <View style={styles.buttonColumn}>
-          <Button color="#8caf95" title="읽기 버튼1" onPress={() => {navigation.navigate('TypeQuest') }} />
-          <Button color="#8caf95" title="읽기 버튼2" onPress={() => {navigation.navigate('TypeQuest') }} />
-          <Button color="#8caf95" title="읽기 버튼3" onPress={() => {navigation.navigate('TypeQuest') }} />
+          {readButtonTags.map((button, index) => (
+            <Button
+              key={index}
+              color="#8caf95"
+              title={button.tag}
+              onPress={() => {
+                const paddedIndex = (index+1).toString().padStart(3, '0');
+                console.log('paddedIndex:', paddedIndex);
+                navigation.navigate('TypeQuest',{source:'RD_TAG', paddedIndex:paddedIndex, prbSection:prbSection});
+              }}
+            />
+          ))}
         </View>
       )}
       {showWriteButtons && (
