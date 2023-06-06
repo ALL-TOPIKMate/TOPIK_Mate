@@ -272,6 +272,16 @@ const styles = StyleSheet.create({
     marginTop: 10, 
     //justifyContent: 'space-between',
   },
+  button: {
+    backgroundColor: '#D9D9D9',
+    marginBottom: 10,
+    borderRadius: 5,
+    height: 30,
+  },
+  buttonText:{
+    marginLeft: 10,
+    fontSize: 15,
+  },
   buttonpass: {
     marginTop: 100,
     alignSelf: 'flex-end',
@@ -298,7 +308,7 @@ const styles = StyleSheet.create({
   },  
   buttonContainer:{
     flexDirection: 'row',
-  }
+  },
 });
 
 export default TypeQuestScreenLc;
