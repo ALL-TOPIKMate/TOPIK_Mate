@@ -100,11 +100,27 @@ const TypeScreen = ({ navigation }) => {
     }
   };
   
-  const handleWriteButtonPress = () => {
+  const handleWriteButtonPress = async () => {
     console.log("Write Button press");
     setShowWriteButtons(true);
     setShowListenButtons(false);
     setShowReadButtons(false);
+
+    try {
+      const querySnapshot = await firestore()
+        .collection('problems')
+        .doc(prbSection)
+        .collection('WR_TAG')
+        .get();
+  
+      if (!querySnapshot.empty) {
+        const buttons = querySnapshot.docs.map((doc) => doc.data());
+
+        setWriteButtonTags(buttons); // 쓰기 버튼의 태그값 설정
+      }
+    } catch (error) {
+      console.error('Error fetching Write button data:', error);
+    }
   };
 
   return (
@@ -151,9 +167,18 @@ const TypeScreen = ({ navigation }) => {
       )}
       {showWriteButtons && (
         <View style={styles.buttonColumn}>
-          <Button color="#8caf95" title="쓰기 버튼1" onPress={() => {navigation.navigate('TypeQuest') }} />
-          <Button color="#8caf95" title="쓰기 버튼2" onPress={() => {navigation.navigate('TypeQuest') }} />
-          <Button color="#8caf95" title="쓰기 버튼3" onPress={() => {navigation.navigate('TypeQuest') }} />
+          {writeButtonTags.map((button, index) => (
+            <Button
+              key={index}
+              color="#8caf95"
+              title={button.tag}
+              onPress={() => {
+                const paddedIndex = (index+1).toString().padStart(3, '0');
+                console.log('paddedIndex:', paddedIndex);
+                navigation.navigate('TypeQuestWr',{source:'WR_TAG', paddedIndex:paddedIndex, prbSection:prbSection});
+              }}
+            />
+          ))}
         </View>
       )}
       <Text> {my_Level}, {prbSection} </Text>

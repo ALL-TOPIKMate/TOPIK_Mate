@@ -42,8 +42,8 @@ const TypeQuestScreen = ({navigation, route}) =>{
           const prbIndex = doc.id;
           const value = {
             id: doc.id,
-            PRB_MAIN: docData.PRB_MAIN,
-            PRB_SCRIPT: docData.PRB_SCRIPT,
+            PRB_MAIN: docData.PRB_MAIN_CONT,
+            PRB_TXT: docData.PRB_TXT,
             PRB_CHOICE1: docData.PRB_CHOICE1,
             PRB_CHOICE2: docData.PRB_CHOICE2,
             PRB_CHOICE3: docData.PRB_CHOICE3,
@@ -75,20 +75,29 @@ const TypeQuestScreen = ({navigation, route}) =>{
   const handleNextProblem = () => {
     if (currentIndex < data.length - 1) {
       setCurrentIndex((prevIndex) => prevIndex + 1);
+      const nextProblem = data[currentIndex + 1];
     } else {
       loadProblems();
+      setCurrentIndex(-1);
     }
   };
   const handleEndProblem = () => {
     navigation.navigate('Type')
   };
+  const handlePreviousProblem =() =>{
+    if (currentIndex > 0) {
+      setCurrentIndex((prevIndex) => prevIndex - 1);
+      const prevProblem = data[currentIndex - 1];
+    } 
+  }
   useEffect(() => {
     const loadImageUrls = async () => {
       const urls = [];
       for (let i = 0; i < data.length; i++) {
         const prbIndex = data[i].id;
+        const modifiedPrbIndex = prbIndex + 54;
         try {
-          const imageUrl = await getImageUrl(prbIndex); // 이미지 URL 가져오는 비동기 함수
+          const imageUrl = await imageUrl(modifiedPrbIndex); // 이미지 URL 가져오는 비동기 함수
           urls.push({
             id: prbIndex,
             image: imageUrl,
@@ -117,42 +126,84 @@ const TypeQuestScreen = ({navigation, route}) =>{
             {imageUrls.length > 0 && (
              <Image source={{ uri: imageUrls[currentIndex].image }} style={styles.image} />
             )}
-            <Text>{data[currentIndex].PRB_SCRIPT} </Text>
+            <Text>{data[currentIndex].PRB_TXT} </Text>
             
-          <TouchableOpacity style={styles.button} onPress={() => handleChoice(data[currentIndex].PRB_CHOICE1)}>
-            <Text style={styles.buttonText}>{data[currentIndex].PRB_CHOICE1}</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.button} onPress={() => handleChoice(data[currentIndex].PRB_CHOICE2)}>
-            <Text style={styles.buttonText}>{data[currentIndex].PRB_CHOICE2}</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.button} onPress={() => handleChoice(data[currentIndex].PRB_CHOICE3)}>
-            <Text style={styles.buttonText}>{data[currentIndex].PRB_CHOICE3}</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.button} onPress={() => handleChoice(data[currentIndex].PRB_CHOICE4)}>
-            <Text style={styles.buttonText}>{data[currentIndex].PRB_CHOICE4}</Text>
-          </TouchableOpacity>
-          </>
+            <TouchableOpacity style={styles.button} onPress={() => handleChoice(data[currentIndex].PRB_CHOICE1)}>
+              <Text style={styles.buttonText}>{data[currentIndex].PRB_CHOICE1}</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.button} onPress={() => handleChoice(data[currentIndex].PRB_CHOICE2)}>
+              <Text style={styles.buttonText}>{data[currentIndex].PRB_CHOICE2}</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.button} onPress={() => handleChoice(data[currentIndex].PRB_CHOICE3)}>
+              <Text style={styles.buttonText}>{data[currentIndex].PRB_CHOICE3}</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.button} onPress={() => handleChoice(data[currentIndex].PRB_CHOICE4)}>
+              <Text style={styles.buttonText}>{data[currentIndex].PRB_CHOICE4}</Text>
+            </TouchableOpacity>
+            </>
           )}
         </View>
 
-      {currentIndex < data.length - 1 ? (
-        <Button title="Next" onPress={handleNextProblem} />
-      ) : (
-        <Button title="End" onPress={handleEndProblem}/>
-      )}
+        <View style={styles.buttonContainer}>
+          {currentIndex > 0 && (
+            <TouchableOpacity style={[styles.buttonprevious]} onPress={handlePreviousProblem}>
+              <Text style={styles.buttonTextprevious}>Previous</Text>
+            </TouchableOpacity>
+          )}
+          {currentIndex < data.length - 1 ? (
+            <TouchableOpacity style={styles.buttonpass} onPress={handleNextProblem}>
+              <Text style={styles.buttonTextpass}>Next</Text>
+            </TouchableOpacity>
+          ) : (
+            <TouchableOpacity style={styles.buttonpass} onPress={handleEndProblem}>
+              <Text style={styles.buttonTextpass}>End</Text>
+            </TouchableOpacity>
+          )}
+        </View>
       </View>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-    container:{
-      padding: 10,
-    },
-    containerPos: {
-      flex:20
-    },
-  
+  container:{
+    padding: 10,
+  },
+  containerPos: {
+    flex:20
+  },
+  buttonContainer: {
+    flexDirection: 'row',
+    marginTop: 10, 
+    //justifyContent: 'space-between',
+  },
+  buttonpass: {
+    marginTop: 100,
+    alignSelf: 'flex-end',
+    backgroundColor: '#A4BAA1',
+    padding: 10,
+    borderRadius: 5,
+  },
+  buttonprevious: {
+    marginTop: 100,
+    alignSelf: 'flex-start',
+    backgroundColor: '#A4BAA1',
+    padding: 10,
+    borderRadius: 5,
+  },
+  buttonTextpass: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  buttonTextprevious: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },  
+  buttonContainer:{
+    flexDirection: 'row',
+  }
       
 });
 

@@ -1,19 +1,17 @@
 import React, { useState, useEffect,useRef } from 'react';
-import { View, Text, Button, StyleSheet,TouchableOpacity } from 'react-native';
+import { View, Text, Button, StyleSheet,TouchableOpacity,TextInput,Image } from 'react-native';
 import AppNameHeader from './component/AppNameHeader';
 import firestore from '@react-native-firebase/firestore';
 import {subscribeAuth } from "../lib/auth";
 
-//import ProbMain from "./component/ProbMain";
-//import AudRef from "./component/AudRef";
-//import ProbChoice2 from "./component/ProbChoice2";
-//Reading
+//Write
 const TypeQuestScreenWr = ({navigation, route}) =>{
-  //const [userLevel, setUserLevel] = useState(null); // 나의 레벨
-  //const [prbSection,setPrbSection] = useState(null); //LV 섹션 만들기
+  
   const { source, paddedIndex, prbSection } = route.params;//이전 페이지에서 정보 받아오기
   const [data, setData] = useState([]);// 문제 담을 구성
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [textInputValue, setTextInputValue] = useState('');
+  const [imageUrls,setImageUrls]=useState(null);
   useEffect(() => { //이메일 가져와서 레벨 찾아오는 useEffect
     const handleAuthStateChanged = (user) => {
       if (user) {
@@ -22,11 +20,7 @@ const TypeQuestScreenWr = ({navigation, route}) =>{
         //getMylevel(user.email);
       }
     };
-    console.log('읽어요',paddedIndex, prbSection)
-    //사용자 레벨을 얻어오는 함수
-  
-    console.log('여기',prbSection)
-    //setPrbSection(section);
+    
     const unsubscribe = subscribeAuth(handleAuthStateChanged);
 
     // 컴포넌트 언마운트 시 구독 해제
@@ -41,17 +35,17 @@ const TypeQuestScreenWr = ({navigation, route}) =>{
         const problemCollection = firestore()
           .collection('problems')
           .doc(prbSection)//lv2
-          .collection(source)//rdtag
+          .collection(source)//wrtag
           .doc(paddedIndex)//001
           .collection('PRB_LIST')//pbrblist
         const querySnapshot = await problemCollection.orderBy('__name__').limit(5).get();
-        //const problems = [];
+  
         
         querySnapshot.forEach((doc) => {
           const docData = doc.data();
           const value = {
             id: doc.id,
-            PRB_MAIN: docData.PRB_MAIN,
+            PRB_MAIN: docData.PRB_MAIN_CONT,
             
           };
           console.log('문제',value);
@@ -71,10 +65,23 @@ const TypeQuestScreenWr = ({navigation, route}) =>{
   useEffect(() => {
     console.log(data);
   }, [data]);
-  
-  const handleEndProblem = () => {
-    navigation.navigate('Type')
+  const handleNextProblem = () => {
+    if (currentIndex < data.length - 1) {
+      setCurrentIndex((prevIndex) => prevIndex + 1);
+    } else {
+      loadProblems();
+      setCurrentIndex(-1);
+    }
   };
+  const handleEndProblem = () => {
+    navigation.navigate('Type');
+  };
+  const handlePreviousProblem =() =>{
+    if (currentIndex > 0) {
+      setCurrentIndex((prevIndex) => prevIndex - 1);
+      const prevProblem = data[currentIndex - 1];
+    } 
+  }
     
   
   return (
@@ -84,15 +91,28 @@ const TypeQuestScreenWr = ({navigation, route}) =>{
       
         {data.length > 0 && (
         <View>
-          <Text>{data[currentIndex].PRB_MAIN}</Text>
-          
-          
+          <Text>{currentIndex+1}.{data[currentIndex].PRB_MAIN}</Text>
+          <View style ={styles.textfield}>
+            <TextInput
+              editable
+              multiline
+              numberOfLines={4}
+              maxLength={40}
+              onChangeText={text => setTextInputValue(text)}
+              value={textInputValue}
+              style={{padding: 10}}
+              />
+          </View>
         </View>
       )}
       {currentIndex < data.length - 1 ? (
-        <Button title="Next" onPress={handleNextProblem} />
+        <TouchableOpacity style={styles.button} onPress={handleNextProblem}>
+          <Text style={styles.buttonText}>Next</Text>
+        </TouchableOpacity>
       ) : (
-        <Button title="End" onPress={handleEndProblem}/>
+        <TouchableOpacity style={styles.button} onPress={handleEndProblem}>
+          <Text style={styles.buttonText}>End</Text>
+        </TouchableOpacity>
       )}
       </View>
     </View>
@@ -106,7 +126,28 @@ const styles = StyleSheet.create({
     containerPos: {
       flex:20
     },
-  
+    textfield:{
+      backgroundColor: '#FFFFFF',
+      borderColor: '#000000',
+      borderWidth: 1,
+      position: 'absolute',
+      top: 50,
+      left: 0,
+      width: 350,
+      height: 200,
+    },
+    button: {
+      marginTop: 300,
+      alignSelf: 'flex-end',
+      backgroundColor: '#A4BAA1',
+      padding: 10,
+      borderRadius: 5,
+    },
+    buttonText: {
+      color: 'white',
+      fontSize: 16,
+      fontWeight: 'bold',
+    },
       
 });
 
