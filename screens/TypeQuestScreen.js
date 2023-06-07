@@ -1,135 +1,186 @@
 import React, { useState, useEffect,useRef } from 'react';
-import { View, Text, Button, StyleSheet,TouchableOpacity } from 'react-native';
+import { View, Text, Button, StyleSheet,TouchableOpacity,Image } from 'react-native';
 import AppNameHeader from './component/AppNameHeader';
 import firestore from '@react-native-firebase/firestore';
+import {subscribeAuth } from "../lib/auth";
+import storage from '@react-native-firebase/storage'
 
-import ProbMain from "./component/ProbMain";
-import AudRef from "./component/AudRef";
-import ProbChoice2 from "./component/ProbChoice2";
 
-const LoadTypeScreen = (loadedProblem,setProblemStructure, choiceRef, setNextBtn) => {
-  let question = []
-  let problemStructures = [];
-  for(var i=0;i<loadedProblem.length;i++){
-    question = []
-    //문제 모아 놓는곳
-    question.push(<ProbMain PRB_MAIN_CONT = {loadedProblem[i].PRB_MAIN_CONT} PRB_NUM = {loadedProblem[i].PRB_NUM} key = {i*7+0}/>)
-    if(loadedProblem[i].PRB_SECT == '듣기'){
-      question.push(<AudRef AUD_REF = {loadedProblem[i].AUD_REF} key = {i*7+1}/>)
-      if(loadedProblem[i].PRB_SUB_CONT){
-        question.push(<Text style = {{flex: 3}} key = {i*7+2}>{loadedProblem[i].PRB_SUB_CONT}</Text>)
+//Reading
+const TypeQuestScreen = ({navigation, route}) =>{
+  const { source, paddedIndex, prbSection } = route.params;//이전 페이지에서 정보 받아오기
+  const [data, setData] = useState([]);// 문제 담을 구성
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [imageUrls,setImageUrls]=useState(null);
+  const [submitted, setSubmitted]=useState(false);
+  const [selectedChoice, setSelectedChoice] = useState(null);
+
+   
+  useEffect(() => { //이메일 가져와서 레벨 찾아오는 useEffect
+    const handleAuthStateChanged = (user) => {
+      if (user) {
+        console.log('로그인', user.email);
       }
-    }
-    else if(loadedProblem[i].PRB_SECT == "읽기"){
-      // PRB_TXT: 지문
-      question.push(<Text style = {{flex: 3}} key = {i*7+3}>{loadedProblem[i].PRB_TXT}</Text>)
+    };
+    const unsubscribe = subscribeAuth(handleAuthStateChanged);
 
-      // PRB_SUB_CONT: 서브 문제
-      if(loadedProblem[i].PRB_SUB_CONT){
-        question.push(<Text style = {{flex: 3}} key = {i*7+4}>{loadedProblem[i].PRB_SUB_CONT}</Text>)
-      }// PRB_SCRPT: 서브 지문
-      if(loadedProblem[i].PRB_SCRPT){
-        question.push(<Text style = {{flex: 3}} key = {i*7+5}>{loadedProblem[i].PRB_SCRPT}</Text>)  
-      }
-    }
-    //위에는 문제, 아래는 보기 처리
-    question.push(<ProbChoice2
-      PRB_CHOICE1= {loadedProblem[i].PRB_CHOICE1} 
-      PRB_CHOICE2={loadedProblem[i].PRB_CHOICE2} 
-      PRB_CHOICE3= {loadedProblem[i].PRB_CHOICE3} 
-      PRB_CHOICE4={loadedProblem[i].PRB_CHOICE4} 
-      PRB_CORRT_ANSW = {loadedProblem[i].PRB_CORRT_ANSW}
-
-      choiceRef = {choiceRef}
-      nextBtn = {i}
-      setNextBtn = {setNextBtn}
-
-      key = {i*7+6}
-    />)
-    problemStructures.push(<View style = {styles.containerPos}>{question}</View>)
-  }
-  
-  
-  
-  
-  // 비동기 setstate를 동기 방식으로 처리하기
-  const help = () => {
-    setProblemStructure(problemStructures)
-
-  }
-
-  help();
-};
-
-
-const TypeQuestScreen = () =>{
-  // 문제구조 html 코드
-  const [problemStructure, setProblemStructure] = useState([]); // component
-  // 백엔드에서 불러온 json 문제
-  const [loadedProblem, setLoadedProblem] = useState([]); // json
-  // 다음 문제를 넘길 때 사용
-  const [nextBtn, setNextBtn] = useState(0);
-  // 4지선다 컴포넌트에서 사용자가 고른 답을 저장
-  const choiceRef = useRef(0);
-  // 콜렉션 불러오기
-  const problemCollection = firestore().collection('problems');
-  
-  // MOUNT 
-  useEffect(()=> {
-      // promise 객체를 반환하는 함수
-      async function dataLoading(){
-          try{
-              const data = await problemCollection.limit(10).get(); // 요청한 데이터가 반환되면 다음 줄 실행
-              setLoadedProblem(data.docs.map(doc => ({...doc.data()})))
-          }catch(error){
-              console.log(error.message);
-          }
-      
-      }
-
-      dataLoading();
+    // 컴포넌트 언마운트 시 구독 해제
+    return () => unsubscribe();
   }, []);
-  // setState 실행
-
-
-  
-// 모든 문제를 불러온 후 구조 만들기
-useEffect(() => {
-  console.log(loadedProblem);
-  LoadTypeScreen(loadedProblem, setProblemStructure, choiceRef,setNextBtn);
-}, [loadedProblem]);
  
+  useEffect(() => {
+    // 콜렉션 불러오기
+    const loadPrbList = async () => {
+      try {
+        const prblist = [];
+        const problemCollection = firestore()
+          .collection('problems')
+          .doc(prbSection)//lv2
+          .collection(source)//rdtag
+          .doc(paddedIndex)//001
+          .collection('PRB_LIST')//pbrblist
+        const querySnapshot = await problemCollection.orderBy('__name__').limit(5).get();
+        
+        querySnapshot.forEach(async (doc) => {
+          const docData = doc.data();
+          const prbIndex = doc.id;
+          const value = {
+            id: doc.id,
+            PRB_MAIN: docData.PRB_MAIN_CONT,
+            PRB_TXT: docData.PRB_TXT,
+            PRB_CHOICE1: docData.PRB_CHOICE1,
+            PRB_CHOICE2: docData.PRB_CHOICE2,
+            PRB_CHOICE3: docData.PRB_CHOICE3,
+            PRB_CHOICE4: docData.PRB_CHOICE4,
+            PRB_CORRT_ANSW: docData.PRB_CORRT_ANSW,
+          };
+          
+          console.log('문제',value);
+          prblist.push(value);
+          
+        });
+        
+        setData(prblist);
+        setCurrentIndex(0);
+      } catch (error) {
+        console.log(error);
+      }
+    };
   
-  // 문제 풀이 결과를 보냄 or 저장
-  useEffect(()=>{
-      // console.log(`
-      //     {   
-      //         userId: hello,
-      //         PRB_ID: AAAAAAAAAAAA,
-      //         elapsed_time(sec): 10,
-      //         Success: True,
-      //         Date: 2023-04-17,
-      //         Rank(1-5 level): 4 
-      //     }
-      // `);
+    loadPrbList();
+  }, [source, paddedIndex]);
+  
+  useEffect(() => {
+    console.log(data);
+  }, [data]);
+  const handleChoice = (choice,choice_index) => {
+    console.log('Selected Choice:', choice);
+    setSelectedChoice(choice_index);
+    // 선택된 버튼에 대한 처리 로직을 추가할 수 있습니다.
+  };
+  const handleNextProblem = () => {
+    if (currentIndex < data.length - 1) {
+      setCurrentIndex((prevIndex) => prevIndex + 1);
+      const nextProblem = data[currentIndex + 1];
+    } else {
+      loadProblems();
+      setCurrentIndex(-1);
+    }
+  };
+  const handleEndProblem = () => {
+    navigation.navigate('Type')
+  };
+  const handlePreviousProblem =() =>{
+    if (currentIndex > 0) {
+      setCurrentIndex((prevIndex) => prevIndex - 1);
+      const prevProblem = data[currentIndex - 1];
+    } 
+  }
+  const handleSubmitProblem=() => {
+    console.log('제출 버튼 클릭');
+    console.log('선택한 보기:', selectedChoice);
+    setSubmitted(true);
 
-      console.log(choiceRef.current)
-
-      choiceRef.current = 0;
-  })
+  }
+  useEffect(() => {
+    const loadImageUrls = async () => {
+      const urls = [];
+      for (let i = 0; i < data.length; i++) {
+        const prbIndex = data[i].id;
+        const modifiedPrbIndex = prbIndex + 54;
+        try {
+          const imageUrl = await imageUrl(modifiedPrbIndex); // 이미지 URL 가져오는 비동기 함수
+          urls.push({
+            id: prbIndex,
+            image: imageUrl,
+          });
+        } catch (error) {
+          console.log(error);
+        }
+      }
+      setImageUrls(urls);
+    };
+  
+    loadImageUrls();
+  }, [data]);
+  
   
   return (
     <View style={[styles.container, styles.containerPos]}>
       <View style={[styles.container, styles.containerPos]}>
-        {problemStructure[nextBtn]}
-        <Text>
-          아이디 값은 버튼 값은
-        </Text>
+        <Text> {source} , {paddedIndex} </Text>
+      
+        
+        <View>
+          {data.length > 0 && (
+            <>
+            <Text>{currentIndex+1}.{data[currentIndex].PRB_MAIN}</Text>
+            {imageUrls.length > 0 && (
+             <Image source={{ uri: imageUrls[currentIndex].image }} style={styles.image} />
+            )}
+            <Text>{data[currentIndex].PRB_TXT} </Text>
+            
+            <TouchableOpacity style={styles.button} onPress={() => handleChoice(data[currentIndex].PRB_CHOICE1,1)}>
+              <Text style={styles.buttonText}>{data[currentIndex].PRB_CHOICE1}</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.button} onPress={() => handleChoice(data[currentIndex].PRB_CHOICE2,2)}>
+              <Text style={styles.buttonText}>{data[currentIndex].PRB_CHOICE2}</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.button} onPress={() => handleChoice(data[currentIndex].PRB_CHOICE3, 3)}>
+              <Text style={styles.buttonText}>{data[currentIndex].PRB_CHOICE3}</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.button} onPress={() => handleChoice(data[currentIndex].PRB_CHOICE4, 4)}>
+              <Text style={styles.buttonText}>{data[currentIndex].PRB_CHOICE4}</Text>
+            </TouchableOpacity>
+            </>
+          )}
+        </View>
+        <View style={styles.buttonSumitContainer}>
+          <TouchableOpacity style={[styles.buttonsubmit]} onPress={handleSubmitProblem}>
+            <Text style={styles.buttonTextpass}>Submit</Text>
+          </TouchableOpacity>
+        </View>
+        <View style={styles.buttonContainer}>
+          {currentIndex > 0 && (
+            <TouchableOpacity style={[styles.buttonprevious]} onPress={handlePreviousProblem}>
+              <Text style={styles.buttonTextprevious}>Previous</Text>
+            </TouchableOpacity>
+          )}
+          {currentIndex < data.length - 1 ? (
+            <TouchableOpacity style={styles.buttonpass} onPress={handleNextProblem}>
+              <Text style={styles.buttonTextpass}>Next</Text>
+            </TouchableOpacity>
+          ) : (
+            <TouchableOpacity style={styles.buttonpass} onPress={handleEndProblem}>
+              <Text style={styles.buttonTextpass}>End</Text>
+            </TouchableOpacity>
+          )}
+        </View>
       </View>
     </View>
-  
   );
-}
+};
+
 const styles = StyleSheet.create({
   container:{
     padding: 10,
@@ -137,7 +188,60 @@ const styles = StyleSheet.create({
   containerPos: {
     flex:20
   },
-
-    
+  buttonContainer: {
+    flexDirection: 'row',
+    marginTop: 10, 
+    //justifyContent: 'space-between',
+  },
+  button: {
+    backgroundColor: '#D9D9D9',
+    marginBottom: 10,
+    borderRadius: 5,
+    height: 30,
+  },
+  buttonText:{
+    marginLeft: 10,
+    fontSize: 15,
+  },
+  buttonpass: {
+    marginTop: 100,
+    alignSelf: 'flex-end',
+    backgroundColor: '#A4BAA1',
+    padding: 10,
+    borderRadius: 5,
+  },
+  buttonprevious: {
+    marginTop: 100,
+    alignSelf: 'flex-start',
+    backgroundColor: '#A4BAA1',
+    padding: 10,
+    borderRadius: 5,
+  },
+  buttonTextpass: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: 'bold',
+    textAlign: 'center',
+  },
+  buttonTextprevious: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },  
+  buttonContainer:{
+    flexDirection: 'row',
+  },
+  buttonsubmit:{
+    backgroundColor: '#AFB9AE',
+    height: 30,
+    width: 80,
+    borderRadius: 5,
+  },
+  buttonSumitContainer:{
+    justifyContent: 'center',
+    alignItems: 'center',
+  }
+      
 });
+
 export default TypeQuestScreen;
