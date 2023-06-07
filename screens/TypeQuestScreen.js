@@ -12,6 +12,10 @@ const TypeQuestScreen = ({navigation, route}) =>{
   const [data, setData] = useState([]);// 문제 담을 구성
   const [currentIndex, setCurrentIndex] = useState(0);
   const [imageUrls,setImageUrls]=useState(null);
+  const [submitted, setSubmitted]=useState(false);
+  const [selectedChoice, setSelectedChoice] = useState(null);
+
+   
   useEffect(() => { //이메일 가져와서 레벨 찾아오는 useEffect
     const handleAuthStateChanged = (user) => {
       if (user) {
@@ -48,6 +52,7 @@ const TypeQuestScreen = ({navigation, route}) =>{
             PRB_CHOICE2: docData.PRB_CHOICE2,
             PRB_CHOICE3: docData.PRB_CHOICE3,
             PRB_CHOICE4: docData.PRB_CHOICE4,
+            PRB_CORRT_ANSW: docData.PRB_CORRT_ANSW,
           };
           
           console.log('문제',value);
@@ -68,8 +73,9 @@ const TypeQuestScreen = ({navigation, route}) =>{
   useEffect(() => {
     console.log(data);
   }, [data]);
-  const handleChoice = (choice) => {
+  const handleChoice = (choice,choice_index) => {
     console.log('Selected Choice:', choice);
+    setSelectedChoice(choice_index);
     // 선택된 버튼에 대한 처리 로직을 추가할 수 있습니다.
   };
   const handleNextProblem = () => {
@@ -89,6 +95,12 @@ const TypeQuestScreen = ({navigation, route}) =>{
       setCurrentIndex((prevIndex) => prevIndex - 1);
       const prevProblem = data[currentIndex - 1];
     } 
+  }
+  const handleSubmitProblem=() => {
+    console.log('제출 버튼 클릭');
+    console.log('선택한 보기:', selectedChoice);
+    setSubmitted(true);
+
   }
   useEffect(() => {
     const loadImageUrls = async () => {
@@ -128,22 +140,26 @@ const TypeQuestScreen = ({navigation, route}) =>{
             )}
             <Text>{data[currentIndex].PRB_TXT} </Text>
             
-            <TouchableOpacity style={styles.button} onPress={() => handleChoice(data[currentIndex].PRB_CHOICE1)}>
+            <TouchableOpacity style={styles.button} onPress={() => handleChoice(data[currentIndex].PRB_CHOICE1,1)}>
               <Text style={styles.buttonText}>{data[currentIndex].PRB_CHOICE1}</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.button} onPress={() => handleChoice(data[currentIndex].PRB_CHOICE2)}>
+            <TouchableOpacity style={styles.button} onPress={() => handleChoice(data[currentIndex].PRB_CHOICE2,2)}>
               <Text style={styles.buttonText}>{data[currentIndex].PRB_CHOICE2}</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.button} onPress={() => handleChoice(data[currentIndex].PRB_CHOICE3)}>
+            <TouchableOpacity style={styles.button} onPress={() => handleChoice(data[currentIndex].PRB_CHOICE3, 3)}>
               <Text style={styles.buttonText}>{data[currentIndex].PRB_CHOICE3}</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.button} onPress={() => handleChoice(data[currentIndex].PRB_CHOICE4)}>
+            <TouchableOpacity style={styles.button} onPress={() => handleChoice(data[currentIndex].PRB_CHOICE4, 4)}>
               <Text style={styles.buttonText}>{data[currentIndex].PRB_CHOICE4}</Text>
             </TouchableOpacity>
             </>
           )}
         </View>
-
+        <View style={styles.buttonSumitContainer}>
+          <TouchableOpacity style={[styles.buttonsubmit]} onPress={handleSubmitProblem}>
+            <Text style={styles.buttonTextpass}>Submit</Text>
+          </TouchableOpacity>
+        </View>
         <View style={styles.buttonContainer}>
           {currentIndex > 0 && (
             <TouchableOpacity style={[styles.buttonprevious]} onPress={handlePreviousProblem}>
@@ -205,6 +221,7 @@ const styles = StyleSheet.create({
     color: 'white',
     fontSize: 16,
     fontWeight: 'bold',
+    textAlign: 'center',
   },
   buttonTextprevious: {
     color: 'white',
@@ -213,6 +230,16 @@ const styles = StyleSheet.create({
   },  
   buttonContainer:{
     flexDirection: 'row',
+  },
+  buttonsubmit:{
+    backgroundColor: '#AFB9AE',
+    height: 30,
+    width: 80,
+    borderRadius: 5,
+  },
+  buttonSumitContainer:{
+    justifyContent: 'center',
+    alignItems: 'center',
   }
       
 });
