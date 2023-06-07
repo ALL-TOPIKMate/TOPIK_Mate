@@ -197,19 +197,19 @@ const TypeQuestScreenLc = ({navigation, route}) =>{
           <Text>{currentIndex+1}.{data[currentIndex].PRB_MAIN_CONT}</Text>
           {paddedIndex === '001' && (
             <>
-              <TouchableOpacity style={styles.button} onPress={() => handleChoice(data[currentIndex].PRB_CHOICE1)}>
+              <TouchableOpacity style={[styles.button,choice1ImageUrl ? { height: 103,width:150} : null]} onPress={() => handleChoice(data[currentIndex].PRB_CHOICE1)}>
                 {choice1ImageUrl && <Image source={{ uri: choice1ImageUrl }} style={styles.choiceImage} />}
                 {!choice1ImageUrl && <Text style={styles.buttonText}>{data[currentIndex].PRB_CHOICE1}</Text>}
               </TouchableOpacity>
-              <TouchableOpacity style={styles.button} onPress={() => handleChoice(data[currentIndex].PRB_CHOICE2)}>
+              <TouchableOpacity style={[styles.button,choice2ImageUrl ? { height: 103,width:150} : null]} onPress={() => handleChoice(data[currentIndex].PRB_CHOICE2)}>
                 {choice2ImageUrl && <Image source={{ uri: choice2ImageUrl }} style={styles.choiceImage} />}
                 {!choice2ImageUrl && <Text style={styles.buttonText}>{data[currentIndex].PRB_CHOICE2}</Text>}
               </TouchableOpacity>
-              <TouchableOpacity style={styles.button} onPress={() => handleChoice(data[currentIndex].PRB_CHOICE3)}>
+              <TouchableOpacity style={[styles.button,choice3ImageUrl ? { height: 103,width:150}: null ]} onPress={() => handleChoice(data[currentIndex].PRB_CHOICE3)}>
                 {choice3ImageUrl && <Image source={{ uri: choice3ImageUrl }} style={styles.choiceImage} />}
                 {!choice3ImageUrl && <Text style={styles.buttonText}>{data[currentIndex].PRB_CHOICE3}</Text>}
               </TouchableOpacity>
-              <TouchableOpacity style={styles.button} onPress={() => handleChoice(data[currentIndex].PRB_CHOICE4)}>
+              <TouchableOpacity style={[styles.button, ,choice3ImageUrl ? { height: 103,width:150}: null]} onPress={() => handleChoice(data[currentIndex].PRB_CHOICE4)}>
                 {choice4ImageUrl && <Image source={{ uri: choice4ImageUrl }} style={styles.choiceImage} />}
                 {!choice4ImageUrl && <Text style={styles.buttonText}>{data[currentIndex].PRB_CHOICE4}</Text>}
               </TouchableOpacity>
@@ -276,7 +276,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#D9D9D9',
     marginBottom: 10,
     borderRadius: 5,
-    height: 30,
   },
   buttonText:{
     marginLeft: 10,
