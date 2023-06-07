@@ -6,6 +6,7 @@ import '@react-native-firebase/storage';
 import {subscribeAuth } from "../lib/auth";
 import firestore from '@react-native-firebase/firestore';
 import DropDownPicker from 'react-native-dropdown-picker';
+import { CommonActions } from '@react-navigation/native';
 //import AppNameHeader from './component/AppNameHeader';
 
 // 내정보
@@ -237,6 +238,12 @@ const InfoScreen = ({ navigation }) => {
               onPress={() => {
                 setIsModalVisible(!isModalVisible);
                 saveLevelToFirebase(value);
+                navigation.dispatch(
+                  CommonActions.reset({
+                    index: 0,
+                    routes: [{ name: 'Home' }] // 로그인 페이지 이름으로 변경
+                  })
+                );
               }}
             >
               <Text style={styles.textStyle}>저장</Text>
