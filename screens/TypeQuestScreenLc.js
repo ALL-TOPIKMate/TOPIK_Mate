@@ -15,6 +15,9 @@ const TypeQuestScreenLc = ({navigation, route}) =>{
   const [choice2ImageUrl, setChoice2ImageUrl] = useState(null)
   const [choice3ImageUrl, setChoice3ImageUrl] = useState(null)
   const [choice4ImageUrl, setChoice4ImageUrl] = useState(null)
+  const [submitted, setSubmitted]=useState(false);
+  const [selectedChoice, setSelectedChoice] = useState(null);
+  //const [buttonColors, setButtonColors]=useState(null);
   useEffect(() => { //이메일 가져와서 레벨 찾아오는 useEffect
     const handleAuthStateChanged = (user) => {
       if (user) {
@@ -22,7 +25,7 @@ const TypeQuestScreenLc = ({navigation, route}) =>{
       }
     };
     
-    console.log('여기',prbSection)
+    //console.log('여기',prbSection)
     const unsubscribe = subscribeAuth(handleAuthStateChanged);
 
     // 컴포넌트 언마운트 시 구독 해제
@@ -52,6 +55,7 @@ const TypeQuestScreenLc = ({navigation, route}) =>{
             PRB_CHOICE2: docData.PRB_CHOICE2,
             PRB_CHOICE3: docData.PRB_CHOICE3,
             PRB_CHOICE4: docData.PRB_CHOICE4,
+            PRB_CORRT_ANSW: docData.PRB_CORRT_ANSW,
           };
           console.log('문제',value);
           prblist.push(value);
@@ -101,12 +105,15 @@ const TypeQuestScreenLc = ({navigation, route}) =>{
   useEffect(() => {
     console.log(data);
   }, [data]);
+
   const handleChoice = (choice) => {
-    console.log('Selected Choice:', choice);
-    // 선택된 버튼에 대한 처리 로직을 추가할 수 있습니다.
+    setSelectedChoice(choice.toString());  
   };
+
   const handleNextProblem = async () => {
     if (currentIndex < data.length - 1) {
+      setSelectedChoice(null); // 선택한 답변 초기화
+      setSubmitted(false); // 제출 여부 초기화
       setCurrentIndex((prevIndex) => prevIndex + 1);
   
       const nextProblem = data[currentIndex + 1];
@@ -148,6 +155,8 @@ const TypeQuestScreenLc = ({navigation, route}) =>{
   };
   const handlePreviousProblem = async () => {
     if (currentIndex > 0) {
+      setSelectedChoice(null); // 선택한 답변 초기화
+      setSubmitted(false); // 제출 여부 초기화
       setCurrentIndex((prevIndex) => prevIndex - 1);
 
       const prevProblem = data[currentIndex - 1];
@@ -184,8 +193,22 @@ const TypeQuestScreenLc = ({navigation, route}) =>{
       loadProblems();
       setCurrentIndex(-1)
     }
+
   };
-    
+  const handleSubmitProblem = () => {
+    console.log('제출 버튼 클릭');
+    console.log('선택한 보기:', selectedChoice, '실제 정답:', data[currentIndex].PRB_CORRT_ANSW);
+    const isCorrect = selectedChoice.toString() === data[currentIndex].PRB_CORRT_ANSW;
+    console.log(isCorrect)
+    /*
+    const buttonColor = {
+      selectedButtonColor: isCorrect ? '#0000FF' : '#FF0000',
+      correctButtonColor: '#CC99FF',
+    };
+    */
+    setSubmitted(true);
+    //setButtonColors(buttonColor);
+  };
   
   return (
     <View style={[styles.container, styles.containerPos]}>
@@ -217,23 +240,29 @@ const TypeQuestScreenLc = ({navigation, route}) =>{
           )}
           {paddedIndex !== '001' && (
             <>
-              <TouchableOpacity style={styles.button} onPress={() => handleChoice(data[currentIndex].PRB_CHOICE1)}>
+              <TouchableOpacity style={[styles.button,{backgroundColor: submitted? selectedChoice ==='1'? selectedChoice=== data[currentIndex].PRB_CORRT_ANSW? '#BAD7E9':'#FFACAC':'#D9D9D9':selectedChoice==='1'?'#BBD6B8':'#D9D9D9'} ]} onPress={() => handleChoice(1)}>
                 <Text style={styles.buttonText}>{data[currentIndex].PRB_CHOICE1}</Text>
               </TouchableOpacity>
-              <TouchableOpacity style={styles.button} onPress={() => handleChoice(data[currentIndex].PRB_CHOICE2)}>
+              <TouchableOpacity style={[styles.button,{backgroundColor: submitted? selectedChoice ==='2'? selectedChoice=== data[currentIndex].PRB_CORRT_ANSW? '#BAD7E9':'#FFACAC':'#D9D9D9':selectedChoice==='2'?'#BBD6B8':'#D9D9D9'} ]} onPress={() => handleChoice(2)}>
                 <Text style={styles.buttonText}>{data[currentIndex].PRB_CHOICE2}</Text>
               </TouchableOpacity>
-              <TouchableOpacity style={styles.button} onPress={() => handleChoice(data[currentIndex].PRB_CHOICE3)}>
+              <TouchableOpacity style={[styles.button,{backgroundColor: submitted? selectedChoice ==='3'? selectedChoice=== data[currentIndex].PRB_CORRT_ANSW? '#BAD7E9':'#FFACAC':'#D9D9D9':selectedChoice==='3'?'#BBD6B8':'#D9D9D9'} ]} onPress={() => handleChoice(3)}>
                 <Text style={styles.buttonText}>{data[currentIndex].PRB_CHOICE3}</Text>
               </TouchableOpacity>
-              <TouchableOpacity style={styles.button} onPress={() => handleChoice(data[currentIndex].PRB_CHOICE4)}>
+              <TouchableOpacity style={[styles.button,{backgroundColor: submitted? selectedChoice ==='4'? selectedChoice=== data[currentIndex].PRB_CORRT_ANSW? '#BAD7E9':'#FFACAC':'#D9D9D9':selectedChoice==='4'?'#BBD6B8':'#D9D9D9'} ]} onPress={() => handleChoice(4)}>
                 <Text style={styles.buttonText}>{data[currentIndex].PRB_CHOICE4}</Text>
               </TouchableOpacity>
             </>
           )}
+          <View style={styles.buttonSumitContainer}>
+            <TouchableOpacity style={[styles.buttonsubmit]} onPress={handleSubmitProblem}>
+              <Text style={styles.buttonTextpass}>Submit</Text>
+            </TouchableOpacity>
+          </View>
         </View>
-      )}
-        <View style={styles.buttonContainer}>
+        
+        )}
+        <View style={styles.fixToText}>
           {currentIndex > 0 && (
             <TouchableOpacity style={[styles.buttonprevious]} onPress={handlePreviousProblem}>
               <Text style={styles.buttonTextprevious}>Previous</Text>
@@ -299,6 +328,7 @@ const styles = StyleSheet.create({
     color: 'white',
     fontSize: 16,
     fontWeight: 'bold',
+    textAlign: 'center',
   },
   buttonTextprevious: {
     color: 'white',
@@ -308,6 +338,21 @@ const styles = StyleSheet.create({
   buttonContainer:{
     flexDirection: 'row',
   },
+  fixToText:{
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  buttonsubmit:{
+    backgroundColor: '#AFB9AE',
+    height: 30,
+    width: 80,
+    borderRadius: 5,
+  },
+  buttonSumitContainer:{
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  
 });
 
 export default TypeQuestScreenLc;
