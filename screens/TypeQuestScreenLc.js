@@ -200,14 +200,7 @@ const TypeQuestScreenLc = ({navigation, route}) =>{
     console.log('선택한 보기:', selectedChoice, '실제 정답:', data[currentIndex].PRB_CORRT_ANSW);
     const isCorrect = selectedChoice.toString() === data[currentIndex].PRB_CORRT_ANSW;
     console.log(isCorrect)
-    /*
-    const buttonColor = {
-      selectedButtonColor: isCorrect ? '#0000FF' : '#FF0000',
-      correctButtonColor: '#CC99FF',
-    };
-    */
     setSubmitted(true);
-    //setButtonColors(buttonColor);
   };
   
   return (
@@ -240,16 +233,16 @@ const TypeQuestScreenLc = ({navigation, route}) =>{
           )}
           {paddedIndex !== '001' && (
             <>
-              <TouchableOpacity style={[styles.button,{backgroundColor: submitted? selectedChoice ==='1'? selectedChoice=== data[currentIndex].PRB_CORRT_ANSW? '#BAD7E9':'#FFACAC':'#D9D9D9':selectedChoice==='1'?'#BBD6B8':'#D9D9D9'} ]} onPress={() => handleChoice(1)}>
+              <TouchableOpacity style={[styles.button,{backgroundColor: submitted? selectedChoice ==='1'? selectedChoice=== data[currentIndex].PRB_CORRT_ANSW? '#BAD7E9':'#FFACAC': data[currentIndex].PRB_CORRT_ANSW === '1'? '#BAD7E9': '#D9D9D9' : selectedChoice === '1'? '#BBD6B8': '#D9D9D9'} ]} onPress={() => handleChoice(1)}>
                 <Text style={styles.buttonText}>{data[currentIndex].PRB_CHOICE1}</Text>
               </TouchableOpacity>
-              <TouchableOpacity style={[styles.button,{backgroundColor: submitted? selectedChoice ==='2'? selectedChoice=== data[currentIndex].PRB_CORRT_ANSW? '#BAD7E9':'#FFACAC':'#D9D9D9':selectedChoice==='2'?'#BBD6B8':'#D9D9D9'} ]} onPress={() => handleChoice(2)}>
+              <TouchableOpacity style={[styles.button,{backgroundColor: submitted? selectedChoice ==='2'? selectedChoice=== data[currentIndex].PRB_CORRT_ANSW? '#BAD7E9':'#FFACAC': data[currentIndex].PRB_CORRT_ANSW === '2'? '#BAD7E9': '#D9D9D9' : selectedChoice === '2'? '#BBD6B8': '#D9D9D9'}]} onPress={() => handleChoice(2)}>
                 <Text style={styles.buttonText}>{data[currentIndex].PRB_CHOICE2}</Text>
               </TouchableOpacity>
-              <TouchableOpacity style={[styles.button,{backgroundColor: submitted? selectedChoice ==='3'? selectedChoice=== data[currentIndex].PRB_CORRT_ANSW? '#BAD7E9':'#FFACAC':'#D9D9D9':selectedChoice==='3'?'#BBD6B8':'#D9D9D9'} ]} onPress={() => handleChoice(3)}>
+              <TouchableOpacity style={[styles.button,{backgroundColor: submitted? selectedChoice ==='3'? selectedChoice=== data[currentIndex].PRB_CORRT_ANSW? '#BAD7E9':'#FFACAC': data[currentIndex].PRB_CORRT_ANSW === '3'? '#BAD7E9': '#D9D9D9' : selectedChoice === '3'? '#BBD6B8': '#D9D9D9'}]} onPress={() => handleChoice(3)}>
                 <Text style={styles.buttonText}>{data[currentIndex].PRB_CHOICE3}</Text>
               </TouchableOpacity>
-              <TouchableOpacity style={[styles.button,{backgroundColor: submitted? selectedChoice ==='4'? selectedChoice=== data[currentIndex].PRB_CORRT_ANSW? '#BAD7E9':'#FFACAC':'#D9D9D9':selectedChoice==='4'?'#BBD6B8':'#D9D9D9'} ]} onPress={() => handleChoice(4)}>
+              <TouchableOpacity style={[styles.button,{backgroundColor: submitted? selectedChoice ==='4'? selectedChoice=== data[currentIndex].PRB_CORRT_ANSW? '#BAD7E9':'#FFACAC': data[currentIndex].PRB_CORRT_ANSW === '4'? '#BAD7E9': '#D9D9D9' : selectedChoice === '4'? '#BBD6B8': '#D9D9D9'}]} onPress={() => handleChoice(4)}>
                 <Text style={styles.buttonText}>{data[currentIndex].PRB_CHOICE4}</Text>
               </TouchableOpacity>
             </>

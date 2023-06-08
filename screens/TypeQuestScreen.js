@@ -14,7 +14,6 @@ const TypeQuestScreen = ({navigation, route}) =>{
   const [imageUrls,setImageUrls]=useState(null);
   const [submitted, setSubmitted]=useState(false);
   const [selectedChoice, setSelectedChoice] = useState(null);
-  //const [buttonColors, setButtonColors]=useState(null);
 
    
   useEffect(() => { //이메일 가져와서 레벨 찾아오는 useEffect
@@ -74,53 +73,45 @@ const TypeQuestScreen = ({navigation, route}) =>{
   useEffect(() => {
     console.log(data);
   }, [data]);
- 
+ //선택지 함수
   const handleChoice = (choice) => {
-    setSelectedChoice(choice.toString());
-  
-    
+    setSelectedChoice(choice.toString()); 
   };
-  
+  //다음 버튼 클릭
   const handleNextProblem = () => {
     if (currentIndex < data.length - 1) {
       setSelectedChoice(null); // 선택한 답변 초기화
       setSubmitted(false); // 제출 여부 초기화
       setCurrentIndex((prevIndex) => prevIndex + 1);
-      const nextProblem = data[currentIndex + 1];
+      //const nextProblem = data[currentIndex + 1];
     } else {
       loadProblems();
       setCurrentIndex(-1);
     }
   };
+  //문제 끝날 경우 처리
   const handleEndProblem = () => {
     navigation.navigate('Type')
   };
+  //이전 문제
   const handlePreviousProblem =() =>{
     if (currentIndex > 0) {
       setSelectedChoice(null); // 선택한 답변 초기화
       setSubmitted(false); // 제출 여부 초기화
       setCurrentIndex((prevIndex) => prevIndex - 1);
-      const prevProblem = data[currentIndex - 1];
+      //const prevProblem = data[currentIndex - 1];
     } 
   }
+  //제출버튼
   const handleSubmitProblem = () => {
     console.log('제출 버튼 클릭');
     console.log('선택한 보기:', selectedChoice, '실제 정답:', data[currentIndex].PRB_CORRT_ANSW);
     const isCorrect = selectedChoice.toString() === data[currentIndex].PRB_CORRT_ANSW;
     console.log(isCorrect)
-  
     setSubmitted(true);
-  
-  
+    
   };
-  /*
-  useEffect(() => {
-    setButtonColors({
-      selectedButtonColor: '',
-      correctButtonColor: '',
-    });
-  }, [currentIndex]);
-  */
+//이미지 로드 관련, 에러 있음.
   useEffect(() => {
     const loadImageUrls = async () => {
       const urls = [];
@@ -160,16 +151,16 @@ const TypeQuestScreen = ({navigation, route}) =>{
             )}
             <Text>{data[currentIndex].PRB_TXT} </Text>
             
-            <TouchableOpacity style={[styles.button,{backgroundColor: submitted? selectedChoice ==='1'? selectedChoice=== data[currentIndex].PRB_CORRT_ANSW? '#BAD7E9':'#FFACAC':'#D9D9D9':selectedChoice==='1'?'#BBD6B8':'#D9D9D9'} ]} onPress={() => handleChoice(1)}>
+            <TouchableOpacity style={[styles.button,{backgroundColor: submitted? selectedChoice ==='1'? selectedChoice=== data[currentIndex].PRB_CORRT_ANSW? '#BAD7E9':'#FFACAC': data[currentIndex].PRB_CORRT_ANSW === '1'? '#BAD7E9': '#D9D9D9' : selectedChoice === '1'? '#BBD6B8': '#D9D9D9'} ]} onPress={() => handleChoice(1)}>
               <Text style={styles.buttonText}>{data[currentIndex].PRB_CHOICE1}</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={[styles.button,{backgroundColor: submitted? selectedChoice ==='2'? selectedChoice=== data[currentIndex].PRB_CORRT_ANSW? '#BAD7E9':'#FFACAC':'#D9D9D9':selectedChoice==='2'?'#BBD6B8':'#D9D9D9'} ]} onPress={() => handleChoice(2)}>
+            <TouchableOpacity style={[styles.button,{backgroundColor: submitted? selectedChoice ==='2'? selectedChoice=== data[currentIndex].PRB_CORRT_ANSW? '#BAD7E9':'#FFACAC': data[currentIndex].PRB_CORRT_ANSW === '2'? '#BAD7E9': '#D9D9D9' : selectedChoice === '2'? '#BBD6B8': '#D9D9D9'}]} onPress={() => handleChoice(2)}>
               <Text style={styles.buttonText}>{data[currentIndex].PRB_CHOICE2}</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={[styles.button,{backgroundColor: submitted? selectedChoice ==='3'? selectedChoice=== data[currentIndex].PRB_CORRT_ANSW? '#BAD7E9':'#FFACAC':'#D9D9D9':selectedChoice==='3'?'#BBD6B8':'#D9D9D9'} ]} onPress={() => handleChoice(3)}>
+            <TouchableOpacity style={[styles.button,{backgroundColor: submitted? selectedChoice ==='3'? selectedChoice=== data[currentIndex].PRB_CORRT_ANSW? '#BAD7E9':'#FFACAC': data[currentIndex].PRB_CORRT_ANSW === '3'? '#BAD7E9': '#D9D9D9' : selectedChoice === '3'? '#BBD6B8': '#D9D9D9'}]} onPress={() => handleChoice(3)}>
               <Text style={styles.buttonText}>{data[currentIndex].PRB_CHOICE3}</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={[styles.button,{backgroundColor: submitted? selectedChoice ==='4'? selectedChoice=== data[currentIndex].PRB_CORRT_ANSW? '#BAD7E9':'#FFACAC':'#D9D9D9':selectedChoice==='4'?'#BBD6B8':'#D9D9D9'} ]} onPress={() => handleChoice(4)}>
+            <TouchableOpacity style={[styles.button,{backgroundColor: submitted? selectedChoice ==='4'? selectedChoice=== data[currentIndex].PRB_CORRT_ANSW? '#BAD7E9':'#FFACAC': data[currentIndex].PRB_CORRT_ANSW === '4'? '#BAD7E9': '#D9D9D9' : selectedChoice === '4'? '#BBD6B8': '#D9D9D9'}]} onPress={() => handleChoice(4)}>
               <Text style={styles.buttonText}>{data[currentIndex].PRB_CHOICE4}</Text>
             </TouchableOpacity>
             </>
