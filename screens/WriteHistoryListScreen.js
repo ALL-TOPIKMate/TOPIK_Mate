@@ -18,8 +18,9 @@ const WriteHistoryListScreen = ({route, navigation}) => {
                 let problemList = []
                 const data = await wrongCollection.get(); // 요청한 데이터가 반환되면 다음 줄 실행
                 
-                data.docs.forEach((doc) => {if(doc._data.date) problemList.push(doc._data)})
+                data.docs.forEach((doc) => {if(doc._data.DATE) problemList.push(doc._data)})
             
+                // console.log(problemList)
                 setData(problemList)
             }catch(error){
                 console.log(error.message);
@@ -33,7 +34,7 @@ const WriteHistoryListScreen = ({route, navigation}) => {
         <View style = {{flex: 1, padding: 20}}>
             <View style = {{flex: 1}}>
                 <Text style = {{fontWeight: "bold", fontSize: 20}}>
-                    {route.params.userTag.tag}
+                    {route.params.userTag.tagName}
                 </Text>
             </View>
             <View style = {{flex: 1}}>
@@ -49,12 +50,12 @@ const WriteHistoryListScreen = ({route, navigation}) => {
                             return (
                                 <TouchableOpacity key = {index} style = {styles.tagList} onPress = {()=>{navigation.push("WrongStudy", {key: "write", order: index, querySnapshot: wrongCollection})}}>
                                     <Text style = {{flex: 5}}>
-                                        {data.date}
+                                        {data.DATE}
                                     </Text>
                                     <View style = {{flex: 1, flexDirection: "column"}}>
                                         <Text style = {{flex: 1}}/>
                                         <Text style = {{fontSize: 10}}>
-                                        score {data.score}/{data.PRB_POINT}
+                                        score {data.SCORE}/{data.PRB_POINT}
                                     </Text>
                                     </View>
 
@@ -73,7 +74,7 @@ const styles = StyleSheet.create({
     tagList:{
         flex: 1,
         marginVertical: 2,
-        padding: 16,
+        padding: 32,
 
         flexDirection: "row",
         backgroundColor: "#D9D9D9"
