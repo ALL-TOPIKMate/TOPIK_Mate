@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
 
-import {View, Text, Button, FlatList} from 'react-native';
-import AppNameHeader from './component/AppNameHeader'
+import { View, Text, Button, StyleSheet, Pressable, ScrollView, FlatList, TouchableOpacity } from 'react-native';
 import firestore from '@react-native-firebase/firestore';
+
 
 const MockListScreen = ({navigation, route}) => {
     
@@ -16,35 +16,21 @@ const MockListScreen = ({navigation, route}) => {
         async function getMockList() {
             try {
                 const data = await mockColl.get();
-                setMockList(data.docs.map(doc => ({id: doc.id, name: doc.id[3] == '1' 
-                                                                ? Number(doc.id) + "st" 
-                                                                : (
-                                                                    doc.id[3] == '2' 
-                                                                    ? Number(doc.id) + "nd" : (
-                                                                        doc.id[3] == '3'
-                                                                        ? Number(doc.id) + "rd"
-                                                                        : Number(doc.id) + "th"
-                                                                    ))})));
-                
-                // data.docs.map((doc) => {
-                    // let ordinaryNumName = "th";
-                    // let lastNum = doc.id[3];
-                    
-                    // if (lastNum == "1") {
-                    //     ordinaryNumName = "st";
-                    // } else if (lastNum == "2") {
-                    //     ordinaryNumName = "nd";
-                    // } else if (lastNum == "3") {
-                    //     ordinaryNumName = "rd";
-                    // }
-
-                    // let newObj = {
-                    //     id: doc.id,
-                    //     name: Number(doc.id) + ordinaryNumName
-                    // }
-
-                    // setMockList([...mockList, newObj])
-                // });
+                console.log(data.docs.length);
+                setMockList(data.docs.map(doc => (
+                    {
+                        id: doc.id, 
+                        name: doc.id[3] == '1' 
+                        ? Number(doc.id) + "st" 
+                        : (
+                            doc.id[3] == '2' 
+                            ? Number(doc.id) + "nd" : (
+                                doc.id[3] == '3'
+                                ? Number(doc.id) + "rd"
+                                : Number(doc.id) + "th"
+                            ))
+                        }))
+                );
 
             } catch (err) {
                 console.log(err)
@@ -56,29 +42,36 @@ const MockListScreen = ({navigation, route}) => {
     }, []);
 
 
+    const renderItem = ({item}) => {
+        return (
+            <Pressable
+                onPress={() => {
+                    navigation.push("MockStudy", {
+                        level: route.params.level,
+                        order: item.id
+                    })
+                }}
+                style={styles.mockItem}>
+                <Text style={styles.mockName}>{item.name}</Text>
+            </Pressable>
+        )
+    }
+
     return (
 
-        <View>
-            <Text>
-                선택한 TOPIK 레벨: { route.params.level }
-            </Text>
-            <View>
-                {
-                    mockList.map((mock, index) => {
-                        return (
-                            <Button 
-                                key={index} 
-                                title={mock.name} 
-                                onPress={()=>{
-                                    navigation.push("MockStudy", {
-                                        level: route.params.level,
-                                        order: mock.id
-                                    })
-                                }}
-                            />
-                        )
-                    })
-                }
+        <View style={styles.container}>
+            <View style={styles.titleSection}>
+                <Text style={styles.tabNaviTitle}>
+                    모의고사 - TOPIK { route.params.level }
+                </Text>
+            </View>
+
+            <View style={styles.mockList}>
+                <FlatList 
+                    keyExtractor={(item) => item.id}
+                    data={mockList}
+                    renderItem={renderItem}
+                />
             </View>
 
             {/* <Button title = "60st topik mock test" onPress={()=>{navigation.push("MockStudy", {order: 60})}}/> */}
@@ -86,5 +79,50 @@ const MockListScreen = ({navigation, route}) => {
     );
 
 }
+
+const styles = StyleSheet.create({
+    container: {
+        flex: 1,
+        padding: 20,
+    },
+
+    titleSection: {
+        flex: 1,
+    },
+    tabNaviTitle: {
+        fontSize: 32,
+    },
+
+    mockList: {
+        flex: 5,
+        flexDirection: 'column'
+    },
+
+    mockItem: {
+        height: 80,
+        borderRadius: 10,
+        padding: 16,
+        marginVertical: 10,
+        backgroundColor: '#D9D9D9',
+
+        // 그림자 효과
+        shadowColor: "#000",
+        shadowOffset: {
+            width: 0,
+            height: 2,
+        },
+
+
+        shadowOpacity: 0.25,
+        shadowRadius: 3,
+        elevation: 5,
+
+    },
+
+    mockName: {
+        fontSize: 24,
+    }
+
+});
 
 export default MockListScreen;
