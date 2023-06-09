@@ -3,9 +3,7 @@ import { View, Text, Image, Modal, Button, StyleSheet, TouchableOpacity } from '
 
 const MockProbModal = ({ problem, index, setVisible, images, audios }) => {
 
-  
-
-  return (    
+  return (
       <Modal
         animationType={"slide"}
         transparent={false}
