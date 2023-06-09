@@ -8,7 +8,7 @@ const WriteHistoryScreen = ({route, navigation}) =>{
 
 
     const querySnapshot = route.params.querySnapshot
-    const wrongCollection = querySnapshot.doc(route.params.userInfo.userId).collection(`wrong_lv${route.params.userInfo.myLevel}`).doc("WR_TAG").collection("PRB_TAG").doc(route.params.userTag.tagName).collection("PRB_RSC_LIST")
+    const wrongCollection = querySnapshot.doc(route.params.userInfo.userId).collection(`wrong_lv${route.params.userInfo.myLevel}`).doc("WR_TAG").collection("PRB_TAG").doc(route.params.userTag.tag).collection("PRB_RSC_LIST")
     
     
     useEffect(()=>{
@@ -28,15 +28,12 @@ const WriteHistoryScreen = ({route, navigation}) =>{
         dataLoading();
     }, [])
 
-    useEffect(()=>{
-        console.log(data)
-    }, [data])
 
     return (
         <View style = {{flex: 1, padding: 20}}>
             <View style = {{flex: 1}}>
                 <Text style = {{fontWeight: "bold", fontSize: 20}}>
-                    {route.params.userTag.tag}
+                    {route.params.userTag.tagName}
                 </Text>
             </View>
             <View style = {{flex: 0.5}}>
@@ -49,7 +46,7 @@ const WriteHistoryScreen = ({route, navigation}) =>{
                     {
                         data.map((data, index)=>{
                             return (
-                                <TouchableOpacity key = {index} style = {styles.buttonList} onPress = {() => navigation.push("WriteHistoryList", {userTag: route.params.userTag, userRsc: {PRB_NUM: data.PRB_NUM, PRB_RSC: data.PRB_RSC},PRB_ID: data.PRB_ID, querySnapshot: wrongCollection})} >
+                                <TouchableOpacity key = {index} style = {styles.buttonList} onPress = {() => navigation.push("WriteHistoryList", {userTag: route.params.userTag, userRsc: {PRB_NUM: data.PRB_NUM, PRB_RSC: data.PRB_RSC}, PRB_ID: data.PRB_ID, querySnapshot: wrongCollection})} >
                                     <Text>{data.PRB_RSC} {data.PRB_NUM}번</Text>
                                 </TouchableOpacity>
                             )
@@ -64,7 +61,7 @@ const WriteHistoryScreen = ({route, navigation}) =>{
 const styles = StyleSheet.create({
     buttonList: {
         backgroundColor: "#D9D9D9",
-        padding: 28,
+        padding: 32,
         marginVertical: 2,
     }
 })

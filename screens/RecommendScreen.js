@@ -1,11 +1,85 @@
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 
 import {Button, View ,Text, StyleSheet, TouchableOpacity} from 'react-native'
+import firestore from '@react-native-firebase/firestore';
+
+import {subscribeAuth } from "../lib/auth";
+
+
 import AppNameHeader from './component/AppNameHeader'
 
 
 const RecommendScreen = ({navigation}) =>{
-    const [solve, setSolve] = useState(10);
+    // 유저 정보 setting
+    const [userEmail, setUserEmail] = useState("")
+    const [userInfo, setUserInfo] = useState(null)
+    const [userRecommendInfo, setUserRecommendInfo] = useState({userIndex: "0"})
+
+    const querySnapshot = firestore().collection('users');
+
+
+    useEffect(() => {
+        // 유저 이메일 setting
+        const handleAuthStateChanged = (user) => {
+          if (user) {
+            setUserEmail(user.email)
+        }
+        }
+        // 유저 찾기
+        const unsubscribe = subscribeAuth(handleAuthStateChanged);
+        
+
+        // 컴포넌트 언마운트 시 구독 해제
+        return () => unsubscribe();
+    }, []);
+
+
+    // 유저 정보 setting (my_level, u_uid)
+    useEffect(()=>{
+        const getMyInfo = async (email) => {
+            try {
+                const userInfoQuery = await querySnapshot
+                    .where('email', '==', email)
+                    .get();
+        
+                if (!userInfoQuery.empty) {
+                    const userData = userInfoQuery.docs[0].data();
+                    
+                    setUserInfo({myLevel: userData.my_level, userId: userData.u_uid})
+                }
+            } catch (error) {
+                console.error('Error fetching user data:', error);
+            }
+            
+        };
+        if(userEmail !== ""){
+            // console.log(`email 변경: ${userEmail}`)
+            
+            getMyInfo(userEmail)  
+        }
+    }, [userEmail])
+
+
+    // 추천 문제 풀이 갯수 load
+    useEffect(()=>{
+        getRecommendIndex()
+    }, [userInfo])
+
+    
+
+    const getRecommendIndex = async () =>{
+        try{
+            const data = await querySnapshot.doc(userInfo.userId).collection("recommend").doc("Recommend").get()
+
+            console.log(data._data)
+
+            setUserRecommendInfo(data._data)
+        }catch(e){
+            console.log(e)
+        }
+    }
+
+
 
     return (
         <View style = {{flex: 1}}>
@@ -20,12 +94,12 @@ const RecommendScreen = ({navigation}) =>{
                 
                 
                 <View style = {[styles.recommend, {flex: 2,}]}>
-                    <TouchableOpacity style = {styles.recommendBtn} onPress={()=> navigation.push("RecommendStudy")}>
+                    <TouchableOpacity style = {styles.recommendBtn} onPress={()=> navigation.push("RecommendStudy", {userRecommendInfo: userRecommendInfo, setUserRecommendInfo: setUserRecommendInfo, querySnapshot: querySnapshot, userInfo: userInfo})}>
                         <Text style = {{color: "#F6F1F1", fontSize: 24, fontWeight: "bold", paddingVertical: 5}}>
                             추천 문제 풀기
                         </Text>
                         <Text style = {{color: "#F6F1F1", fontSize: 20}}>
-                            {solve} / 10
+                            {10 - Number(userRecommendInfo.userIndex)} / 10
                         </Text>
                     </TouchableOpacity>
                 </View>

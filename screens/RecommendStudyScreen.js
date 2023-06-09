@@ -1,153 +1,233 @@
 import React, {useState, useEffect, useRef} from 'react';
 import {View, Text, StyleSheet, ScrollView} from 'react-native';
 import firestore from '@react-native-firebase/firestore';
+import firebase from '@react-native-firebase/app';
+
+import { getStorage } from '@react-native-firebase/storage'; // include storage module besides Firebase core(firebase/app)
 
 
-import ProbMain from "./component/ProbMain";
-import AudRef from "./component/AudRef";
-import ProbChoice from "./component/ProbChoice";
-import ProbSub from "./component/ProbSub";
-import ProbTxt from "./component/ProbTxt"
-import ProbScrpt from './component/ProbScrpt';
+import RecommendProb from './component/RecommendProb';
 import Result from './component/Result';
 
-const LoadProblemScreen = (loadedProblem, setProblemStructure, choiceRef, setNextBtn) => {
-    // MOUNT시 실행되는 함수
-    // 모든 문제에 대해서 구조화
-  
-    let question = []
-    let problemStructures = [];
+const audioURL = async(problemList, audioStorage) =>{
+    const PRB_RSC = problemList.PRB_ID.substr(0, problemList.PRB_ID.length-3)
 
-    
-    for(var i=0; i<loadedProblem.length; i++){
-        question = []
-
-        // component화 하기
-
-        // PRB_MAIN_CONT: 메인 문제
-        question.push(<ProbMain PRB_MAIN_CONT = {loadedProblem[i].PRB_MAIN_CONT} PRB_NUM = {loadedProblem[i].PRB_NUM} key = {i*6+0}/>)
-        if(loadedProblem[i].PRB_SECT == "듣기"){
-            question.push(<AudRef AUD_REF = {loadedProblem[i].AUD_REF} key = {i*6+1}/>)
-
-            // PRB_SUB_CONT: 서브 문제
-            if(loadedProblem[i].PRB_SUB_CONT){
-                question.push(<ProbSub PRB_SUB_CONT = {loadedProblem[i].PRB_SUB_CONT} key = {i*6+2}/>)
-            }
-
-        }else if(loadedProblem[i].PRB_SECT == "읽기"){
-            // PRB_TXT: 지문
-            question.push(<ProbTxt PRB_TXT = {loadedProblem[i].PRB_TXT} key = {i*6+1}/>)
-
-             // PRB_SUB_CONT: 서브 문제
-            if(loadedProblem[i].PRB_SUB_CONT){
-                question.push(<ProbSub PRB_SUB_CONT = {loadedProblem[i].PRB_SUB_CONT} key = {i*6+2}/>)
-            }// PRB_SCRPT: 서브 지문
-            if(loadedProblem[i].PRB_SCRPT){
-                question.push(<ProbScrpt PRB_SCRPT = {loadedProblem[i].PRB_SCRPT} key = {i*6+3} />)
-            }
-        }
-
-        // PRB_CHOICE1 ~ 4: 4지 선다
-        question.push(<ProbChoice
-            PRB_CHOICE1= {loadedProblem[i].PRB_CHOICE1} 
-            PRB_CHOICE2={loadedProblem[i].PRB_CHOICE2} 
-            PRB_CHOICE3= {loadedProblem[i].PRB_CHOICE3} 
-            PRB_CHOICE4={loadedProblem[i].PRB_CHOICE4} 
-            PRB_CORRT_ANSW = {loadedProblem[i].PRB_CORRT_ANSW}
-
-            choiceRef = {choiceRef}
-            nextBtn = {i}
-            setNextBtn = {setNextBtn}
-
-            key = {i*6+4}
-        />)
-
-        problemStructures.push(<ScrollView style = {styles.container} key = {i*6+5}>{question}</ScrollView>)
+    try{
+        await audioStorage.child(`/${PRB_RSC}/${problemList.AUD_REF}`).getDownloadURL().then((url)=>{
+            problemList.AUD_REF = url
+            // console.log(`콜백함수 안 ${url}`)
+        })
+    }catch(err){
+        console.log(err)
     }
-
-
-    setProblemStructure(problemStructures)
 }
 
+const imageURL = async (problemList, imageStorage) =>{
+    const PRB_RSC = problemList.PRB_ID.substr(0, problemList.PRB_ID.length-3)
+    
+    try{
+        await imageStorage.child(`/${PRB_RSC}/${problemList.IMG_REF}`).getDownloadURL().then((url)=>{
+            problemList.IMG_REF = url
+            // console.log(`콜백함수 안 ${url}`)
+        })
+    }catch(err){
+        console.log(err)
+    }
+}
 
+const imagesURL = async (problemList, imageStorage) =>{
+    const PRB_RSC = problemList.PRB_ID.substr(0, problemList.PRB_ID.length-3)
+    
+    try{
+        problemList.isImage = true
+
+        await imageStorage.child(`/${PRB_RSC}/${problemList.PRB_CHOICE1}`).getDownloadURL().then((url) => {
+            problemList.PRB_CHOICE1 = url
+        })
+
+        await imageStorage.child(`/${PRB_RSC}/${problemList.PRB_CHOICE2}`).getDownloadURL().then((url) => {
+            problemList.PRB_CHOICE2 = url
+        })
+
+        await imageStorage.child(`/${PRB_RSC}/${problemList.PRB_CHOICE3}`).getDownloadURL().then((url) => {
+            problemList.PRB_CHOICE3 = url
+        })
+        
+        await imageStorage.child(`/${PRB_RSC}/${problemList.PRB_CHOICE4}`).getDownloadURL().then((url) => {
+            problemList.PRB_CHOICE4 = url
+        })
+
+    }catch(err){
+        console.log(err)
+    }
+}
+
+const loadMultimedia = async (problemList, audioStorage, imageStorage, setLoadedProblem) =>{
+    try{
+        let size = problemList.length
+
+        for(var i=0; i<size; i++){
+            const imageIndex = problemList[i].PRB_CHOICE1.search(".png")
+
+            if(problemList[i].AUD_REF){
+                // await audioURL(problemList[i], audioStorage)
+            }if(problemList[i].IMG_REF){
+                await imageURL(problemList[i], imageStorage)
+            }if(imageIndex != -1){
+                await imagesURL(problemList[i], imageStorage)
+            }
+        }
+    }catch(err){
+        console.log(err)
+    }
+
+    // console.log(problemList)
+    setLoadedProblem(problemList)
+}
 
 const RecommendStudyScreen = ({route, navigation}) =>{
-    // 문제구조 html 코드
-    const [problemStructure, setProblemStructure] = useState([]); // component
+
+    // 멀티미디어
+    const storage = getStorage(firebase);
+    const audioStorage = storage.ref().child(`/audios`);
+    const imageStorage = storage.ref().child(`/images`);
+
+    // 콜렉션 불러오기
+    const querySnapshot = route.params.querySnapshot
+    const recommendCollection = querySnapshot.doc(route.params.userInfo.userId).collection("recommend")
+
+
+
     // 백엔드에서 불러온 json 문제
     const [loadedProblem, setLoadedProblem] = useState([]); // json
+
     // 다음 문제를 넘길 때 사용
-    const [nextBtn, setNextBtn] = useState(0);
-
-    // 맞춘 답 개수 
-    const [correct, setCorrect] = useState(-1);
-
+    const [nextBtn, setNextBtn] = useState(route.params.userRecommendInfo.userIndex);
+    
     // 4지선다 컴포넌트에서 사용자가 고른 답을 저장
     const choiceRef = useRef(0);
+    
     // 유저 답안 기록
     const answerRef = useRef([]);
 
 
-    // 콜렉션 불러오기
-    const problemCollection = firestore().collection('problems').doc("EQ60LV2RDG46");
+    // 맞은 답 개수
+    const [correct, setCorrect] = useState(-1);
     
+
+    // 리렌더링
+    const [render, reRender] = useState(false);
+
+
+
+    // 추천문제 인덱스 및 정답 수 load
+    const userIndex = route.params.userRecommendInfo.userIndex    
+    const userCorrect = route.params.userRecommendInfo.userCorrect
+
+
+
+
+    // 유저 정답 수 count
+    const countUserCorrect = () =>{
+        let correct_cnt = 0
+        
+        for(var index in answerRef.current){
+            if(answerRef.current[index].PRB_CORRT_ANSW == answerRef.current[index].USER_CORRT_ANSW){
+                correct_cnt++
+            }
+        }
+
+        return correct_cnt
+    }
+
+
+
+    // firebase update
+    const updateUserAnswer = async () =>{
+        await recommendCollection.doc("Recommend").update({
+            userIndex: Number(userIndex)+Number(answerRef.current.length),
+            userCorrect: Number(userCorrect)+Number(countUserCorrect())
+        })
+    }
+
+
 
     // MOUNT 
     useEffect(()=> {
         // promise 객체를 반환하는 함수
-        async function dataLoading(){
-            try{
-                const data = await problemCollection.get(); // 요청한 데이터가 반환되면 다음 줄 실행
-
-                // setLoadedProblem(data.docs.map(doc => ({...doc.data()})))
-                setLoadedProblem([data._data])
-            }catch(error){
-                console.log(error.message);
-            }    
-        }
-
         dataLoading();
 
+
+        
         return () => {
             console.log("문제 풀이 완료")
+
+            // update Recommend document's field
+            updateUserAnswer()
+
+            // update RecommendScreen
+            route.params.setUserRecommendInfo({
+                userIndex: Number(userIndex)+Number(answerRef.current.length),
+                userCorrect: Number(userCorrect)+Number(countUserCorrect())
+            })
         }
     }, []);
-    // setState 실행
 
 
     
-    // 모든 문제를 불러온 후 구조 만들기
+
+    // 문제 데이터 load
+    const dataLoading = async () =>{
+        try{
+            let dataList = []
+            const data = await recommendCollection.where("PRB_ID", ">=", "").orderBy("PRB_ID").get()
+
+            data.forEach((doc)=>{
+                if(doc._data.PRB_ID)
+                    dataList.push(doc._data)
+            })
+
+            // console.log(dataList)
+            setLoadedProblem(dataList)
+        }catch(error){
+            console.log(error.message);
+        }    
+    }
+
+    
+
+    // 모든 문제를 불러온 후 멀티미디어 생성하기
     useEffect(()=>{
-        LoadProblemScreen(loadedProblem, setProblemStructure, choiceRef, setNextBtn);
+        if(loadedProblem.length){
+            loadMultimedia(loadedProblem, audioStorage, imageStorage, setLoadedProblem).then(()=>{
+                reRender(true)
+            })
+        }
     }, [loadedProblem])
-   
     
-    // 문제 풀이 결과를 보냄 or 저장
-    useEffect(()=>{
-        // console.log(`
-        //     {   
-        //         userId: hello,
-        //         PRB_ID: AAAAAAAAAAAA,
-        //         elapsed_time(sec): 10,
-        //         Success: True,
-        //         Date: 2023-04-17,
-        //         Rank(1-5 level): 4 
-        //     }
-        // `);
 
-        if(nextBtn>0){
+
+    useEffect(()=>{
+        if(render){ // 모든 이미지, 오디오 데이터가 로드되었을 때
+            // console.log(loadedProblem)
+        }
+    }, [render])
+
+
+    
+    useEffect(()=>{
+        if(nextBtn>0 && choiceRef.current != 0){
             console.log(choiceRef.current)
-            answerRef.current.push({USER_CORRT_ANSW: choiceRef.current})
+            answerRef.current.push({
+                USER_CORRT_ANSW: choiceRef.current,
+                PRB_CORRT_ANSW: loadedProblem[nextBtn-1].PRB_CORRT_ANSW
+            })
+
+            console.log(answerRef.current)
         }
         
         if(nextBtn > 0 && nextBtn == loadedProblem.length){
-            let correct_cnt = 0
-            loadedProblem.forEach((data, index) => {
-                if(data.PRB_CORRT_ANSW == answerRef.current[index].USER_CORRT_ANSW)
-                    correct_cnt++
-            })
-
-            setCorrect(correct_cnt)
+            setCorrect(countUserCorrect() + userCorrect)
             return 
         }
 
@@ -158,18 +238,18 @@ const RecommendStudyScreen = ({route, navigation}) =>{
     return (
         <View style = {{flex: 1}}>
             {
-                correct == -1 ? (
-                problemStructure[nextBtn]) :(
-                <Result CORRT_CNT = {correct} ALL_CNT = {answerRef.current.length} navigation = {navigation} PATH = "Recommend"/>)
+                render === false ? 
+                    
+                null : (
+                    nextBtn == 10 ? (alert("모든 문제를 풀었습니다")):(
+                    correct == -1  && loadedProblem[nextBtn]? 
+                        (<RecommendProb problem = {loadedProblem[nextBtn]} nextBtn={nextBtn} setNextBtn = {setNextBtn} choiceRef = {choiceRef} key = {nextBtn}/>) :(
+                        <Result CORRT_CNT = {correct} ALL_CNT = "10" navigation = {navigation} PATH = "Recommend"/>)
+                    )
+                )
             }
         </View>
     );
 }
-
-const styles = StyleSheet.create({
-    container:{
-        padding: 20,
-    },
-})
 
 export default RecommendStudyScreen;

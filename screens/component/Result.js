@@ -7,7 +7,7 @@ export default Result = (props) =>{
         <View style = {{flex: 1, padding: 14, alignItems: "center", justifyContent: "space-between"}}>
             <View style = {{marginTop: 32}}>
                 <Text style = {[styles.text, {fontSize: 20}]}>
-                    이번 학습에서 문제 {props.CORRT_CNT}개를 풀었습니다    
+                    이번 학습에서 문제 {props.CORRT_CNT}개를 맞췄습니다   
                 </Text>
             </View>
             <View style = {{width: 250, height: 250, borderRadius: 125, borderColor: "#BBD6B8", borderWidth: 5, alignItems: "center", justifyContent: "center"}}>

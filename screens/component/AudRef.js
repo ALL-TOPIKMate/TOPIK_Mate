@@ -3,15 +3,21 @@ import {View, Text, StyleSheet, Button, TouchableOpacity} from 'react-native'
 
 
 // import TrackPlayer from 'react-native-track-player';
+import Sound from 'react-native-sound';
+
+Sound.setCategory('Playback');
 
 // await TrackPlayer.setupPlayer()
 
 const AudRef = ({ source }) =>{
-
     const [isRunning, setIsRunning] = useState(false);
     const currentTime = useRef(0); // 재생 시간
 
-    
+    const audio = new Sound(source, null, err => {
+        // audio.setVo
+    })
+
+
     const track = {
         url: source,
     }
@@ -28,6 +34,15 @@ const AudRef = ({ source }) =>{
     //     setTrack();
 
     // }, [])
+
+    useEffect(()=>{
+        if(isRunning === true){
+            audio.play()
+        }else{
+            audio.pause()
+        }
+    }, [isRunning])
+
 
     const start = () => {
         console.log("재생중")
