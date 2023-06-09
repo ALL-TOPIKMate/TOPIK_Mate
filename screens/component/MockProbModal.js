@@ -21,10 +21,10 @@ const MockProbModal = ({ problem, index, setVisible, images, audios }) => {
 
         {/* 이미지 */}
         {
-          problem[index].IMG_REF in images
+          problem[index].IMG_REF in images.current
           ? <Image
             style={{ width: 100, height: 100 }}
-            source={{ uri: images[problem[index].IMG_REF].url }}
+            source={{ uri: images.current[problem[index].IMG_REF].url }}
           />
           : null
         }
@@ -35,8 +35,9 @@ const MockProbModal = ({ problem, index, setVisible, images, audios }) => {
         {
           problem[index].PRB_SECT === "LS" || problem[index].PRB_SECT === "RD"
           ? <View>
+              {/* CHOICE1 */}
               {
-                problem[index].PRB_CHOICE1 in images
+                problem[index].PRB_CHOICE1 in images.current
                 ? <TouchableOpacity disabled={true} style={[styles.choiceImgConainer]}>
                   <Image
                     style={[styles.choiceImg, 
@@ -47,7 +48,7 @@ const MockProbModal = ({ problem, index, setVisible, images, audios }) => {
                         ? "#FFACAC"
                         : "#D9D9D9"
                         )}]}
-                    source={{uri: images[problem[index].PRB_CHOICE1].url}}
+                    source={{uri: images.current[problem[index].PRB_CHOICE1].url}}
                   />
                 </TouchableOpacity>
                 : <TouchableOpacity disabled={true} style={[styles.choiceButton, 
@@ -63,62 +64,97 @@ const MockProbModal = ({ problem, index, setVisible, images, audios }) => {
                     <Text>{ problem[index].PRB_CHOICE1 }</Text>
                 </TouchableOpacity>
               }
-              <TouchableOpacity disabled={true} style={[styles.choiceButton, 
-                {
-                  backgroundColor: problem[index].PRB_CORRT_ANSW === "2" 
-                  ? "#BAD7E9" 
-                  : (
-                    problem.USER_CHOICE === "2"
-                    ? "#FFACAC"
-                    : "#D9D9D9"
-                    )
-                }]}>
+
+              {/* CHOICE2 */}
               {
-                problem[index].PRB_CHOICE2 in images
-                ? <Image
-                  style={{width: 50, height: 50}}
-                  source={{uri: images[problem[index].PRB_CHOICE2].url}}
-                />
-                : <Text>{ problem[index].PRB_CHOICE2 }</Text>
+                problem[index].PRB_CHOICE2 in images.current
+                ? <TouchableOpacity disabled={true} style={[styles.choiceImgConainer]}>
+                  <Image
+                    style={[styles.choiceImg, 
+                      {borderColor: problem[index].PRB_CORRT_ANSW === "2" 
+                      ? "#BAD7E9" 
+                      : (
+                        problem[index].USER_CHOICE === "2"
+                        ? "#FFACAC"
+                        : "#D9D9D9"
+                        )}]}
+                    source={{uri: images.current[problem[index].PRB_CHOICE2].url}}
+                  />
+                </TouchableOpacity>
+                : <TouchableOpacity disabled={true} style={[styles.choiceButton, 
+                    {
+                      backgroundColor: problem[index].PRB_CORRT_ANSW === "2" 
+                      ? "#BAD7E9" 
+                      : (
+                        problem[index].USER_CHOICE === "2"
+                        ? "#FFACAC"
+                        : "#D9D9D9"
+                        )
+                    }]}>
+                    <Text>{ problem[index].PRB_CHOICE2 }</Text>
+                </TouchableOpacity>
               }
-              </TouchableOpacity>
-              <TouchableOpacity disabled={true} style={[styles.choiceButton, {
-                  backgroundColor: problem[index].PRB_CORRT_ANSW === "3" 
-                  ? "#BAD7E9" 
-                  : (
-                    problem[index].USER_CHOICE === "3"
-                    ? "#FFACAC"
-                    : "#D9D9D9"
-                    )
-                }]}>
+
+              {/* CHOICE3 */}
               {
-                problem[index].PRB_CHOICE3 in images
-                ? <Image
-                  style={{width: 50, height: 50}}
-                  source={{uri: images[problem[index].PRB_CHOICE3].url}}
-                />
-                : <Text>{ problem[index].PRB_CHOICE3 }</Text>
+                problem[index].PRB_CHOICE3 in images.current
+                ? <TouchableOpacity disabled={true} style={[styles.choiceImgConainer]}>
+                  <Image
+                    style={[styles.choiceImg, 
+                      {borderColor: problem[index].PRB_CORRT_ANSW === "3" 
+                      ? "#BAD7E9" 
+                      : (
+                        problem[index].USER_CHOICE === "3"
+                        ? "#FFACAC"
+                        : "#D9D9D9"
+                        )}]}
+                    source={{uri: images.current[problem[index].PRB_CHOICE3].url}}
+                  />
+                </TouchableOpacity>
+                : <TouchableOpacity disabled={true} style={[styles.choiceButton, 
+                    {
+                      backgroundColor: problem[index].PRB_CORRT_ANSW === "3" 
+                      ? "#BAD7E9" 
+                      : (
+                        problem[index].USER_CHOICE === "3"
+                        ? "#FFACAC"
+                        : "#D9D9D9"
+                      )
+                    }]}>
+                    <Text>{ problem[index].PRB_CHOICE3 }</Text>
+                </TouchableOpacity>
               }
-              </TouchableOpacity>
-              <TouchableOpacity disabled={true} style={[styles.choiceButton, {
-                  backgroundColor: problem[index].PRB_CORRT_ANSW === "4" 
-                  ? "#BAD7E9" 
-                  : (
-                    problem[index].USER_CHOICE === "4"
-                    ? "#FFACAC"
-                    : "#D9D9D9"
-                    )
-                }]}> 
+
+              {/* CHOICE4 */}
               {
-                problem[index].PRB_CHOICE4 in images
-                ? <Image
-                  style={{width: 50, height: 50}}
-                  source={{uri: images[problem[index].PRB_CHOICE4].url}}
-                />
-                : <Text>{ problem[index].PRB_CHOICE4 }</Text>
+                problem[index].PRB_CHOICE4 in images.current
+                ? <TouchableOpacity disabled={true} style={[styles.choiceImgConainer]}>
+                  <Image
+                    style={[styles.choiceImg, 
+                      {borderColor: problem[index].PRB_CORRT_ANSW === "4" 
+                      ? "#BAD7E9" 
+                      : (
+                        problem[index].USER_CHOICE === "4"
+                        ? "#FFACAC"
+                        : "#D9D9D9"
+                        )}]}
+                    source={{uri: images.current[problem[index].PRB_CHOICE4].url}}
+                  />
+                </TouchableOpacity>
+                : <TouchableOpacity disabled={true} style={[styles.choiceButton, 
+                    {
+                      backgroundColor: problem[index].PRB_CORRT_ANSW === "4" 
+                      ? "#BAD7E9" 
+                      : (
+                        problem[index].USER_CHOICE === "4"
+                        ? "#FFACAC"
+                        : "#D9D9D9"
+                        )
+                    }]}>
+                    <Text>{ problem[index].PRB_CHOICE4 }</Text>
+                </TouchableOpacity>
               }
-              </TouchableOpacity>
-          </View>
+              </View>
           : <View>
             <Text>{ problem[index].PRB_NUM }</Text>
             <Text>점수가 여기 표시됩니다.</Text>
