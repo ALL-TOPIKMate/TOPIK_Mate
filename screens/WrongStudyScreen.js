@@ -1,10 +1,17 @@
 import React, {useState, useEffect, useRef} from 'react';
 import {View, Text, StyleSheet, TouchableOpacity} from 'react-native';
+import Loading from './component/Loading';
 
 import firestore from '@react-native-firebase/firestore';
 import firebase from '@react-native-firebase/app';
 
 import { getStorage } from '@react-native-firebase/storage'; // include storage module besides Firebase core(firebase/app)
+
+
+
+import Sound from 'react-native-sound';
+
+Sound.setCategory('Playback');
 
 
 
@@ -19,8 +26,15 @@ const audioURL = async(problemList, audioStorage) =>{
 
     try{
         await audioStorage.child(`/${PRB_RSC}/${problemList.AUD_REF}`).getDownloadURL().then((url)=>{
-            problemList.AUD_REF = url
-            // console.log(`콜백함수 안 ${url}`)
+            problemList.AUD_REF = new Sound(url, null, err => {
+            if (err) {
+                console.log('Failed to load the sound', err);
+                return undefined;
+            }
+        
+            // 로드 성공
+            console.log(`오디오 로드 성공. ${url}`);
+            })
         })
     }catch(err){
         console.log(err)
@@ -75,7 +89,7 @@ const loadMultimedia = async (problemList, audioStorage, imageStorage) =>{
             const imageIndex = problemList[i].PRB_CHOICE1.search(".png")
 
             if(problemList[i].AUD_REF){
-                // await audioURL(problemList[i], audioStorage)
+                await audioURL(problemList[i], audioStorage)
             }if(problemList[i].IMG_REF){
                 await imageURL(problemList[i], imageStorage)
             }if(imageIndex != -1){
@@ -125,6 +139,11 @@ const WrongStudyScreen = ({route, navigation}) =>{
 
     
 
+    // 문제를 불러오기 전일때 false
+    const [ready, setReady] = useState(false) 
+
+
+
     // 현재 userTag의 인덱스를 가르킴 ex. [{tagName: 001, section: "LS"} ,{tagName: 003, section: "LS"}, {tagName: 002, section: "RD"}]
     const typeRef = useRef(0);
 
@@ -141,7 +160,7 @@ const WrongStudyScreen = ({route, navigation}) =>{
         if(route.params.key == "select" || route.params.key == "random"){ 
             loadProblem()
         }else if(route.params.key =="write"){
-            allLoadProblem();
+            allLoadProblem()
         }
 
         return () => {
@@ -173,7 +192,9 @@ const WrongStudyScreen = ({route, navigation}) =>{
             }    
         }
 
-        dataLoading();
+        dataLoading().then(()=>{
+            setReady(true)
+        })
     }
 
 
@@ -226,7 +247,9 @@ const WrongStudyScreen = ({route, navigation}) =>{
             }    
         }
 
-        dataLoading();
+        dataLoading().then(()=>{
+            setReady(true)
+        })
     }
 
 
@@ -251,6 +274,7 @@ const WrongStudyScreen = ({route, navigation}) =>{
         }
 
         if(nextBtn == loadedProblem.length && nextBtn > 0){ // 문제를 다 풀었을 경우, 더 가져옴
+            setReady(false)
             loadProblem()
         }
 
@@ -262,7 +286,7 @@ const WrongStudyScreen = ({route, navigation}) =>{
         
 
         if(nextBtn >= 0 && loadedProblem.length){
-            console.log(loadedProblem[nextBtn])
+            // console.log(loadedProblem[nextBtn])
         }
         
         choiceRef.current = 0;
@@ -276,7 +300,7 @@ const WrongStudyScreen = ({route, navigation}) =>{
                 (nextBtn == -1) ? (
                     <Result CORRT_CNT = {correct} ALL_CNT = {answerRef.current.length} navigation = {navigation} PATH = "Wrong"/>
                 ): 
-                ((loadedProblem.length && nextBtn < loadedProblem.length) ? 
+                    ((loadedProblem.length && nextBtn < loadedProblem.length && ready) ? 
                         <WrongProb 
                             problem = {loadedProblem[nextBtn]}
                             nextBtn = {nextBtn}
@@ -289,7 +313,7 @@ const WrongStudyScreen = ({route, navigation}) =>{
 
                             key = {nextBtn}
                         />
-                    : null) 
+                    : <Loading />) 
             }
             
         </View>

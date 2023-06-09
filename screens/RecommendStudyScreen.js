@@ -6,15 +6,32 @@ import firebase from '@react-native-firebase/app';
 import { getStorage } from '@react-native-firebase/storage'; // include storage module besides Firebase core(firebase/app)
 
 
+import Sound from 'react-native-sound';
+
+Sound.setCategory('Playback');
+
+
+
 import RecommendProb from './component/RecommendProb';
 import Result from './component/Result';
+import Loading from './component/Loading';
+
+
 
 const audioURL = async(problemList, audioStorage) =>{
     const PRB_RSC = problemList.PRB_ID.substr(0, problemList.PRB_ID.length-3)
 
     try{
         await audioStorage.child(`/${PRB_RSC}/${problemList.AUD_REF}`).getDownloadURL().then((url)=>{
-            problemList.AUD_REF = url
+            problemList.AUD_REF = new Sound(url, null, err => {
+                    if (err) {
+                        console.log('Failed to load the sound', err);
+                        return undefined;
+                    }
+                    
+                // 로드 성공
+                console.log(`오디오 로드 성공. ${url}`);
+            })
             // console.log(`콜백함수 안 ${url}`)
         })
     }catch(err){
@@ -70,7 +87,7 @@ const loadMultimedia = async (problemList, audioStorage, imageStorage, setLoaded
             const imageIndex = problemList[i].PRB_CHOICE1.search(".png")
 
             if(problemList[i].AUD_REF){
-                // await audioURL(problemList[i], audioStorage)
+                await audioURL(problemList[i], audioStorage)
             }if(problemList[i].IMG_REF){
                 await imageURL(problemList[i], imageStorage)
             }if(imageIndex != -1){
@@ -115,9 +132,8 @@ const RecommendStudyScreen = ({route, navigation}) =>{
     const [correct, setCorrect] = useState(-1);
     
 
-    // 리렌더링
-    const [render, reRender] = useState(false);
-
+    // loading 시간 
+    const [ready, setReady] = useState(false);
 
 
     // 추천문제 인덱스 및 정답 수 load
@@ -200,7 +216,7 @@ const RecommendStudyScreen = ({route, navigation}) =>{
     useEffect(()=>{
         if(loadedProblem.length){
             loadMultimedia(loadedProblem, audioStorage, imageStorage, setLoadedProblem).then(()=>{
-                reRender(true)
+                setReady(true)
             })
         }
     }, [loadedProblem])
@@ -208,10 +224,10 @@ const RecommendStudyScreen = ({route, navigation}) =>{
 
 
     useEffect(()=>{
-        if(render){ // 모든 이미지, 오디오 데이터가 로드되었을 때
+        if(ready){ // 모든 이미지, 오디오 데이터가 로드되었을 때
             // console.log(loadedProblem)
         }
-    }, [render])
+    }, [ready])
 
 
     
@@ -237,17 +253,16 @@ const RecommendStudyScreen = ({route, navigation}) =>{
 
     return (
         <View style = {{flex: 1}}>
+
             {
-                render === false ? 
-                    
-                null : (
-                    nextBtn == 10 ? (alert("모든 문제를 풀었습니다")):(
-                    correct == -1  && loadedProblem[nextBtn]? 
-                        (<RecommendProb problem = {loadedProblem[nextBtn]} nextBtn={nextBtn} setNextBtn = {setNextBtn} choiceRef = {choiceRef} key = {nextBtn}/>) :(
-                        <Result CORRT_CNT = {correct} ALL_CNT = "10" navigation = {navigation} PATH = "Recommend"/>)
-                    )
-                )
+                (ready === false) ? 
+                    (<Loading />) : 
+                        ( correct == -1 && nextBtn < 10)? 
+                            ( <RecommendProb problem = {loadedProblem[nextBtn]} nextBtn={nextBtn} setNextBtn = {setNextBtn} choiceRef = {choiceRef} key = {nextBtn} /> ) :
+                            ( <Result CORRT_CNT = {correct} ALL_CNT = "10" navigation = {navigation} PATH = "Recommend" /> )
+        
             }
+
         </View>
     );
 }

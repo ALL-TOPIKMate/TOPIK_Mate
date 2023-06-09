@@ -1,11 +1,15 @@
 import React, {useState, useEffect, useRef} from 'react';
-import {View, Text, StyleSheet, ScrollView} from 'react-native';
+import {View, Text, StyleSheet, ScrollView, TouchableOpacity} from 'react-native';
 
+
+
+import Sound from 'react-native-sound';
+
+Sound.setCategory('Playback');
 
 
 
 import ProbMain from "./ProbMain";
-import AudRef from "./AudRef";
 import ImgRef from "./ImgRef"
 import ProbChoice from "./ProbChoice";
 import ProbSub from "./ProbSub";
@@ -14,14 +18,60 @@ import ProbScrpt from './ProbScrpt';
 
 
 
+const AudRef = (audio) =>{
+
+    const [isRunning, setIsRunning] = useState(false);
+
+    function audioPlay(){
+        if(audio){
+            console.log(audio)
+            if(audio.isPlaying()){
+                audio.pause()
+
+                setIsRunning(false)
+            }else{
+                setIsRunning(true)
+        
+                // audio.play()
+
+                audio.play((success) => {
+                    if (success) {
+                      setIsRunning(false);
+                      console.log('successfully finished playing');
+                    } else {
+                      setIsRunning(false);
+                      console.log('playback failed due to audio decoding errors');
+                    }
+                })
+            }
+        }
+    }
+
+    return (
+        <View style = {styles.btnBox}>
+            <TouchableOpacity onPress={()=>{audioPlay()}} style = {styles.btnPlay}>
+                    {
+                        isRunning
+                        ? <Text style = {{color: "#F6F1F1", fontSize: 20, textAlign: "center"}}>
+                        Stop
+                        </Text>
+                        : <Text style = {{color: "#F6F1F1", fontSize: 20, textAlign: "center"}}>
+                        Start
+                        </Text>
+                    }
+            </TouchableOpacity>
+        </View>  
+    )
+}
+
 // component화 하기
-const problemStructure = (problem, nextBtn, setNextBtn, choiceRef) =>{
+const problemStructure = (problem, nextBtn, setNextBtn, choiceRef, audio) =>{
     let question = []
 
     // PRB_MAIN_CONT: 메인 문제
     question.push(<ProbMain PRB_MAIN_CONT = {problem.PRB_MAIN_CONT} PRB_NUM = {problem.PRB_NUM} />)
     if(problem.PRB_SECT == "LS"){
-        question.push(<AudRef source = {problem.AUD_REF} />)
+        question.push(AudRef(audio))
 
 
         // IMG_REF: 이미지 문제
@@ -87,9 +137,23 @@ const problemStructure = (problem, nextBtn, setNextBtn, choiceRef) =>{
 }
 
 export default recommendProb = ({ problem, nextBtn, setNextBtn, choiceRef }) =>{
+
+    const audio = problem.AUD_REF ? problem.AUD_REF : null
+
+    useEffect(()=>{
+
+        return () => {
+            if(audio){
+                console.log("오디오 멈춤")
+                audio.release()
+            }
+        }
+    }, [])
+
+
     return (
         <ScrollView style = {styles.container}>
-            { problemStructure(problem, nextBtn, setNextBtn, choiceRef) }
+            { problemStructure(problem, nextBtn, setNextBtn, choiceRef, audio) }
         </ScrollView>
     )
 }
@@ -100,4 +164,20 @@ const styles = StyleSheet.create({
     container:{
         padding: 20,
     },
+
+    btnBox:{
+        backgroundColor: "#D9D9D9", 
+        flexDirection: "row", 
+        justifyContent: "center",
+
+        alignItems: "center",
+
+        paddingVertical: 30
+    }, 
+
+    btnPlay:{
+        backgroundColor: "#94AF9F",
+        padding: 30,
+        borderRadius: 20
+    }
 })

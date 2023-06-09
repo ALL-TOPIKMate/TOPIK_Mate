@@ -94,7 +94,7 @@ const RecommendScreen = ({navigation}) =>{
                 
                 
                 <View style = {[styles.recommend, {flex: 2,}]}>
-                    <TouchableOpacity style = {styles.recommendBtn} onPress={()=> navigation.push("RecommendStudy", {userRecommendInfo: userRecommendInfo, setUserRecommendInfo: setUserRecommendInfo, querySnapshot: querySnapshot, userInfo: userInfo})}>
+                    <TouchableOpacity style = {styles.recommendBtn} onPress={()=> (userRecommendInfo.userIndex == 10) ? (alert("모든 문제를 풀었습니다 다음에 도전하세요.")): (navigation.push("RecommendStudy", {userRecommendInfo: userRecommendInfo, setUserRecommendInfo: setUserRecommendInfo, querySnapshot: querySnapshot, userInfo: userInfo})) }>
                         <Text style = {{color: "#F6F1F1", fontSize: 24, fontWeight: "bold", paddingVertical: 5}}>
                             추천 문제 풀기
                         </Text>

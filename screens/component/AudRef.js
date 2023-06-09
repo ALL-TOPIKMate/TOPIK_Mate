@@ -11,55 +11,50 @@ Sound.setCategory('Playback');
 
 const AudRef = ({ source }) =>{
     const [isRunning, setIsRunning] = useState(false);
-    const currentTime = useRef(0); // 재생 시간
-
-    const audio = new Sound(source, null, err => {
-        // audio.setVo
-    })
 
 
-    const track = {
-        url: source,
-    }
+    const [audio, setAudio] = useState(undefined)
 
-    // useEffect(() => {
-    //     async function setTrack() {
-    //         try {
-    //             await TrackPlayer.add(track);
-    //         } catch(err) {
-    //             console.log(err);
-    //         }
-    //     }
-
-    //     setTrack();
-
-    // }, [])
 
     useEffect(()=>{
-        if(isRunning === true){
-            audio.play()
-        }else{
-            audio.pause()
+
+        // 오디오 객체 생성
+        setAudio(new Sound(source, null, err => {
+            if (err) {
+                console.log('Failed to load the sound', err);
+                return undefined;
+              }
+              
+              // 로드 성공
+              console.log(`오디오 로드 성공. ${source}`);
+        }))
+
+        return () => {
+            if(audio){
+                console.log("오디오 멈춤")
+                audio.release()
+            }
         }
-    }, [isRunning])
+    }, [])
 
 
-    const start = () => {
-        console.log("재생중")
-
-        setIsRunning(true);
+    function audioPlay(){
+        if(audio){
+            if(audio.isRunning()){
+                audio.pause()
+                setIsRunning(false)
+            }else{
+                audio.play()
+                setIsRunning(true)
+            }
+        }
     }
 
-    const stop = () => {
-        console.log("멈춤")
-
-        setIsRunning(false);
-    }
 
     return (    
         <View>
             <View style = {styles.btnBox}>
-                <TouchableOpacity onPress={()=>{!isRunning ? start() : stop()}} style = {styles.btnPlay}>
+                <TouchableOpacity onPress={()=>{audioPlay()}} style = {styles.btnPlay}>
                         {
                             isRunning
                             ? <Text style = {{color: "#F6F1F1", fontSize: 20, textAlign: "center"}}>

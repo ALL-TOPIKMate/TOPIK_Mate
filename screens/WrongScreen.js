@@ -186,9 +186,9 @@ const WrongScreen = ({navigation}) =>{
                 const typeList_r = await querySnapshot.doc(userInfo.userId).collection(`wrong_lv${userInfo.myLevel}`).doc("RD_TAG").collection("PRB_TAG").get()
                 const typeList_w = await querySnapshot.doc(userInfo.userId).collection(`wrong_lv${userInfo.myLevel}`).doc("WR_TAG").collection("PRB_TAG").get()
                 
-                typeList_l.docs.forEach((doc) => {if(doc._data.score){typeList.push({type: doc.id, section: "LS", choice: false})}})
-                typeList_r.docs.forEach((doc) => {if(doc._data.score){typeList.push({type: doc.id, section: "RD", choice: false})}})
-                typeList_w.docs.forEach((doc) => {if(doc._data.score){typeList.push({type: doc.id, section: "WR", choice: false})}})
+                typeList_l.docs.forEach((doc) => {if(doc.id !== "Wrong"){typeList.push({type: doc.id, section: "LS", choice: false})}})
+                typeList_r.docs.forEach((doc) => {if(doc.id !== "Wrong"){typeList.push({type: doc.id, section: "RD", choice: false})}})
+                typeList_w.docs.forEach((doc) => {if(doc.id !== "Wrong"){typeList.push({type: doc.id, section: "WR", choice: false})}})
                 
                 
                 setData(typeList)
@@ -205,9 +205,6 @@ const WrongScreen = ({navigation}) =>{
     }, [userInfo])
     
     
-    // useEffect(()=>{
-    //     console.log(data)
-    // }, [data])
 
 
 
@@ -350,7 +347,7 @@ const WrongScreen = ({navigation}) =>{
             </View> 
             {
                 selectList.current ? (
-                    <TouchableOpacity onPress={()=>{navigation.push("WrongStudy", {key: "select", userTag: userSelectedTag(), order: 0, userInfo: userInfo, querySnapshot: querySnapshot})}} style = {styles.btnBox}>
+                    <TouchableOpacity onPress={()=>{ (userSelectedTag().length==0 ? alert("유형을 선택해주세요") : navigation.push("WrongStudy", {key: "select", userTag: userSelectedTag(), order: 0, userInfo: userInfo, querySnapshot: querySnapshot}))}} style = {styles.btnBox}>
                         <Text style = {{fontWeight: "bold", fontSize: 16}}>
                             선택 학습
                         </Text>
