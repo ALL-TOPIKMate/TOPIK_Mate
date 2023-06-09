@@ -39,7 +39,7 @@ const SigninScreen = ({navigation}) =>{
             const alertMessage = resultMessages[e.code] ? 
             resultMessages[e.code] : "알 수 없는 이유로 로그인에 실패하였습니다.";
 
-            console.log(e.code)
+            console.log(e)
           Alert.alert("로그인 실패", alertMessage);
         }
       }
