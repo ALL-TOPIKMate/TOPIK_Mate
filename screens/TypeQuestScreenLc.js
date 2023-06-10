@@ -1,5 +1,5 @@
 import React, { useState, useEffect,useRef } from 'react';
-import { View, Text, Button, StyleSheet,TouchableOpacity, Image } from 'react-native';
+import { View, Text, Button, StyleSheet,TouchableOpacity, Image, Modal } from 'react-native';
 import AppNameHeader from './component/AppNameHeader';
 import firestore from '@react-native-firebase/firestore';
 import {subscribeAuth } from "../lib/auth";
@@ -19,7 +19,10 @@ const TypeQuestScreenLc = ({navigation, route}) =>{
   const [selectedChoice, setSelectedChoice] = useState(null); //선택한 선택지 기록
   const [Last,setLast] = useState(null)
   const [isLoading, setIsLoading] = useState(true);
- 
+  const [modalVisible, setModalVisible] = useState(false);
+  const [totalProblem, setTotalProblem] = useState(0);
+  const [CorrectProb, setCorrectProb] = useState(0);
+
   // 콜렉션 불러오기
   const loadProblems = async () => {
     //console.log('진입')
@@ -201,14 +204,51 @@ const TypeQuestScreenLc = ({navigation, route}) =>{
     console.log('제출 버튼 클릭');
     console.log('선택한 보기:', selectedChoice, '실제 정답:', problems[currentIndex].PRB_CORRT_ANSW);
     const isCorrect = selectedChoice.toString() === problems[currentIndex].PRB_CORRT_ANSW;
+    if(isCorrect){
+      setCorrectProb(prevCorrectProb => prevCorrectProb+1)
+    }
+    setTotalProblem(prevTotalProblem => prevTotalProblem+1)
+    console.log(isCorrect,'전체 문제: ', totalProblem, '맞은 문제: ', CorrectProb);
     console.log(isCorrect)
     setSubmitted(true);
+  };
+  const handlePress = () => {
+    setModalVisible(true);
+  };
+  const handleConfirm = () => {
+    setModalVisible(false);
+    navigation.navigate('Home');
   };
   
   return (
     <View style={[styles.container, styles.containerPos]}>
       <View style={[styles.container, styles.containerPos]}>
         <Text> {source} , {paddedIndex} </Text>
+        <View style={{flexDirection:'row'}}>
+            <TouchableOpacity style={{ marginLeft: 'auto' }} onPress={handlePress}> 
+            <View>
+              <Image
+                source={require('../assets/out-icon.png')}
+                style={styles.outButton}
+              />
+            </View>
+            </TouchableOpacity>
+            <Modal visible={modalVisible} onRequestClose={() => setModalVisible(false)}>
+            <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+              <View>
+                <Text style={styles.typeend}> 유형별 문제 풀이 종료 </Text>
+                <View style={styles.circle}>
+                  <Text style={styles.score}>{CorrectProb}/{totalProblem}</Text>
+                  
+                </View>
+                <Text style={{fontSize:25,textAlign:'center'}}>{totalProblem}문제 중 {CorrectProb}문제 맞췄습니다.</Text>
+                <TouchableOpacity style={styles.confirmButton} onPress={handleConfirm}>
+                  <Text style={[styles.buttonTextpass]}>확인</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </Modal>
+        </View>
         {isLoading ? (
           <Text>Loading...</Text>
         ) : (
@@ -273,9 +313,27 @@ const TypeQuestScreenLc = ({navigation, route}) =>{
               <Text style={styles.buttonTextpass}>Next</Text>
             </TouchableOpacity>
           ) : (
-            <TouchableOpacity style={styles.buttonpass} onPress={handleEndProblem}>
-              <Text style={styles.buttonTextpass}>End</Text>
-            </TouchableOpacity>
+            <View style={{flexDirection:'row'}}> 
+
+              <TouchableOpacity style={styles.buttonpass} onPress={handlePress}>
+                <Text style={styles.buttonTextpass}>End</Text>
+              </TouchableOpacity>
+              <Modal visible={modalVisible} onRequestClose={() => setModalVisible(false)}>
+                <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+                  <View>
+                    <Text style={styles.typeend}> 유형별 문제 풀이 종료 </Text>
+                    <View style={styles.circle}>
+                      <Text style={styles.score}>{CorrectProb}/{totalProblem}</Text>
+                      
+                    </View>
+                    <Text style={{fontSize:25,textAlign:'center'}}>{totalProblem}문제 중 {CorrectProb}문제 맞췄습니다.</Text>
+                    <TouchableOpacity style={styles.confirmButton} onPress={handleConfirm}>
+                      <Text style={[styles.buttonTextpass]}>확인</Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
+              </Modal>
+            </View>
           )}
         </View>
       </View>
@@ -331,6 +389,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
     textAlign: 'center',
+    textAlignVertical:'center',
   },
   buttonTextprevious: {
     color: 'white',
@@ -354,6 +413,43 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
+  fixToText:{
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  outButton:{
+    width: 20,
+    height: 20,
+    right: 10,
+  },
+  confirmButton:{
+    backgroundColor: '#BBD6B8',
+    borderRadius: 5,
+    top: 50,
+    height: 35,
+    width: 100,
+    alignSelf: 'center',
+  },
+  circle: {
+    width: 300,
+    height: 300,
+    borderRadius: 200,
+    backgroundColor: '#BBD6B8',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  typeend:{
+    fontSize: 30,
+    textAlign:'center',
+    fontWeight:'bold',
+    marginTop: 5,
+  },
+  score:{
+    fontSize: 80,
+    color: 'white',
+    textAlign:'center',
+    fontWeight:'bold',
+  }
   
 });
 

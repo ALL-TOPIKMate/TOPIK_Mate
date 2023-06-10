@@ -17,6 +17,8 @@ const TypeQuestScreen = ({navigation, route}) =>{
   const [modalVisible, setModalVisible] = useState(false);
   const [Last,setLast] = useState(null)
   const [isLoading, setIsLoading] = useState(true);
+  const [totalProblem, setTotalProblem] = useState(0);
+  const [CorrectProb, setCorrectProb] = useState(0);
  
   // 콜렉션 불러오기
   const loadProblems = async () => {
@@ -135,7 +137,11 @@ const TypeQuestScreen = ({navigation, route}) =>{
     console.log('제출 버튼 클릭');
     console.log('선택한 보기:', selectedChoice, '실제 정답:', problems[currentIndex].PRB_CORRT_ANSW);
     const isCorrect = selectedChoice.toString() === problems[currentIndex].PRB_CORRT_ANSW;
-    console.log(isCorrect)
+    if(isCorrect){
+      setCorrectProb(prevCorrectProb => prevCorrectProb+1)
+    }
+    setTotalProblem(prevTotalProblem => prevTotalProblem+1)
+    console.log(isCorrect,'전체 문제: ', totalProblem, '맞은 문제: ', CorrectProb);
     setSubmitted(true);
     
   };
@@ -167,7 +173,7 @@ const TypeQuestScreen = ({navigation, route}) =>{
 
   const handleConfirm = () => {
     setModalVisible(false);
-    navigation.navigate('Type');
+    navigation.navigate('Home');
   };
   
   return (
@@ -185,15 +191,16 @@ const TypeQuestScreen = ({navigation, route}) =>{
             </View>
             </TouchableOpacity>
             <Modal visible={modalVisible} onRequestClose={() => setModalVisible(false)}>
-            {/* 모달 내용 */}
-            {/* 전체 화면에 표시되는 내용 */}
             <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-              {/* 모달 내용을 디자인 및 구성 */}
               <View>
-                {/* 모달 내용 */}
-                <Text>모달 내용</Text>
+                <Text style={styles.typeend}> 유형별 문제 풀이 종료 </Text>
+                <View style={styles.circle}>
+                  <Text style={styles.score}>{CorrectProb}/{totalProblem}</Text>
+                  
+                </View>
+                <Text style={{fontSize:25,textAlign:'center'}}>{totalProblem}문제 중 {CorrectProb}문제 맞췄습니다.</Text>
                 <TouchableOpacity style={styles.confirmButton} onPress={handleConfirm}>
-                  <Text style={styles.buttonTextpass}>확인</Text>
+                  <Text style={[styles.buttonTextpass]}>확인</Text>
                 </TouchableOpacity>
               </View>
             </View>
@@ -244,9 +251,27 @@ const TypeQuestScreen = ({navigation, route}) =>{
                 <Text style={styles.buttonTextpass}>Next</Text>
               </TouchableOpacity>
             ) : (
-              <TouchableOpacity style={styles.buttonpass} onPress={handleEndProblem}>
-                <Text style={styles.buttonTextpass}>End</Text>
-              </TouchableOpacity>
+              <View style={{flexDirection:'row'}}> 
+
+                <TouchableOpacity style={styles.buttonpass} onPress={handlePress}>
+                  <Text style={styles.buttonTextpass}>End</Text>
+                </TouchableOpacity>
+                <Modal visible={modalVisible} onRequestClose={() => setModalVisible(false)}>
+                  <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+                    <View>
+                      <Text style={styles.typeend}> 유형별 문제 풀이 종료 </Text>
+                      <View style={styles.circle}>
+                        <Text style={styles.score}>{CorrectProb}/{totalProblem}</Text>
+                        
+                      </View>
+                      <Text style={{fontSize:25,textAlign:'center'}}>{totalProblem}문제 중 {CorrectProb}문제 맞췄습니다.</Text>
+                      <TouchableOpacity style={styles.confirmButton} onPress={handleConfirm}>
+                        <Text style={[styles.buttonTextpass]}>확인</Text>
+                      </TouchableOpacity>
+                    </View>
+                  </View>
+                </Modal>
+              </View>
             )}
           </View>
         </ScrollView>
@@ -296,6 +321,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
     textAlign: 'center',
+    textAlignVertical:'center',
   },
   buttonTextprevious: {
     color: 'white',
@@ -327,6 +353,30 @@ const styles = StyleSheet.create({
   confirmButton:{
     backgroundColor: '#BBD6B8',
     borderRadius: 5,
+    top: 50,
+    height: 35,
+    width: 100,
+    alignSelf: 'center',
+  },
+  circle: {
+    width: 300,
+    height: 300,
+    borderRadius: 200,
+    backgroundColor: '#BBD6B8',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  typeend:{
+    fontSize: 30,
+    textAlign:'center',
+    fontWeight:'bold',
+    marginTop: 5,
+  },
+  score:{
+    fontSize: 80,
+    color: 'white',
+    textAlign:'center',
+    fontWeight:'bold',
   }
       
 });
