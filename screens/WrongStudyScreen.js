@@ -128,14 +128,19 @@ const WrongStudyScreen = ({route, navigation}) =>{
     const [nextBtn, setNextBtn] = useState(route.params.order); // WR 영역에 의한 order 값 셋팅
     
     
-    // 문제 풀이 후 맞은 문제 카운팅
+    // 문제 풀이 후 맞은 문제 렌더링
     const [correct, setCorrect] = useState(0);
-    
+
+    // 맞은 문제 카운팅
+    const correctCount = useRef(0)
+    // 푼 문제 카운팅 
+    const problemCount = useRef(0)
+
+
     // 4지선다 컴포넌트에서 사용자가 고른 답을 저장
     const choiceRef = useRef(0);
 
-    // 유저 답안 기록
-    const answerRef = useRef([]);
+    
 
     
 
@@ -260,15 +265,8 @@ const WrongStudyScreen = ({route, navigation}) =>{
         }
          
         else if(nextBtn === -1){ // 모든 문제를 풀었을 경우
-            let correct_answ = 0
-
-            answerRef.current.forEach((data, index)=>{
-               if(data.PRB_USER_ANSW == loadedProblem[index].PRB_CORRT_ANSW){
-                    correct_answ++
-                }
-            })
-
-            setCorrect(correct_answ)
+        
+            setCorrect(correctCount.current)
 
             return
         }
@@ -279,10 +277,36 @@ const WrongStudyScreen = ({route, navigation}) =>{
         }
 
 
-        if(nextBtn > 0 && loadedProblem[nextBtn-1].choice===undefined){ // 다음 문제를 풀기 전전 유저 답안을 기록
-            answerRef.current.push({PRB_USER_ANSW: choiceRef.current})
-            loadedProblem[nextBtn-1].choice = answerRef.current[nextBtn-1].PRB_USER_ANSW
+        if(nextBtn > 0 && loadedProblem[nextBtn-1].PRB_USER_ANSW===undefined){ // 다음 문제를 풀기 전, 유저 답안을 기록
+
+            loadedProblem[nextBtn-1].PRB_USER_ANSW = choiceRef.current
+
+
+            // 문제를 맞았을 경우
+            if(loadedProblem[nextBtn - 1].PRB_USER_ANSW == loadedProblem[nextBtn - 1].PRB_CORRT_ANSW){
+
+
+
+                
+                const sectTadDoc = wrongCollection.doc(`${loadedProblem[nextBtn-1].PRB_SECT}_TAG`); sectTadDoc.set({})
+                
+
+                const tagDoc = sectTadDoc.collection("PRB_TAG").doc(loadedProblem[nextBtn-1].TAG); tagDoc.set({})
+
+            
+                tagDoc.collection("PRB_LIST").doc(loadedProblem[nextBtn-1].PRB_ID).delete().then((err)=>{
+                    if(err){
+                        console.log(err)
+                    }else{
+                        console.log("success to delete data")
+                    }
+
+                })
+
         }
+
+        problemCount.current++
+    }
         
 
         if(nextBtn >= 0 && loadedProblem.length){
@@ -298,7 +322,7 @@ const WrongStudyScreen = ({route, navigation}) =>{
         <View style = {{flex: 1}}>
             {   
                 (nextBtn == -1) ? (
-                    <Result CORRT_CNT = {correct} ALL_CNT = {answerRef.current.length} navigation = {navigation} PATH = "Wrong"/>
+                    <Result CORRT_CNT = {correct} ALL_CNT = {problemCount.current} navigation = {navigation} PATH = "Wrong"/>
                 ): 
                     ((loadedProblem.length && nextBtn < loadedProblem.length && ready) ? 
                         <WrongProb 

@@ -232,18 +232,19 @@ const RecommendStudyScreen = ({route, navigation}) =>{
         
                 // 유저가 답안을 맞췄을 경우
 
-                wrongCollection.doc(`${loadedProblem[nextBtn-1].PRB_SECT}_TAG`).set({})
+                const sectTadDoc = wrongCollection.doc(`${loadedProblem[nextBtn-1].PRB_SECT}_TAG`); sectTadDoc.set({})
                 
 
-                wrongCollection.doc(`${loadedProblem[nextBtn-1].PRB_SECT}_TAG`).collection("PRB_TAG").doc(loadedProblem[nextBtn-1].TAG).set({})
+                const tagDoc = sectTadDoc.collection("PRB_TAG").doc(loadedProblem[nextBtn-1].TAG); tagDoc.set({})
 
             
-                wrongCollection.doc(`${loadedProblem[nextBtn-1].PRB_SECT}_TAG`).collection("PRB_TAG").doc(loadedProblem[nextBtn-1].TAG).collection("PRB_LIST").doc(loadedProblem[nextBtn-1].PRB_ID).delete().then((err)=>{
+                tagDoc.collection("PRB_LIST").doc(loadedProblem[nextBtn-1].PRB_ID).delete().then((err)=>{
                     if(err){
                         console.log(err)
                     }else{
                         console.log("success to delete data")
                     }
+
                 })
                 
                 
@@ -257,23 +258,18 @@ const RecommendStudyScreen = ({route, navigation}) =>{
                 const sectTadDoc = wrongCollection.doc(`${loadedProblem[nextBtn-1].PRB_SECT}_TAG`); sectTadDoc.set({})
                 
 
-                const tagDoc = wrongCollection.doc(`${loadedProblem[nextBtn-1].PRB_SECT}_TAG`).collection("PRB_TAG").doc(loadedProblem[nextBtn-1].TAG); tagDoc.set({})
+                const tagDoc = sectTadDoc.collection("PRB_TAG").doc(loadedProblem[nextBtn-1].TAG); tagDoc.set({})
 
             
                 let problem = {}
 
                 Object.keys(loadedProblem[nextBtn-1]).forEach((key) => {
-                    if(key !== "AUD_URL" && key !== "PRB_CHOICE_URL1" && key !== "PRB_CHOICE_URL2" && key !== "PRB_CHOICE_URL3"&& key !== "PRB_CHOICE_URL4" && key != "IMG_URL"){
+                    if(key !== "AUD_URL" && key !== "PRB_CHOICE_URL1" && key !== "PRB_CHOICE_URL2" && key !== "PRB_CHOICE_URL3"&& key !== "PRB_CHOICE_URL4" && key != "IMG_URL" || key != "PRB_USER_ANSW"){
                         problem[key] = loadedProblem[nextBtn - 1][key]
                     }
                 })
-                /*
                 
-                위에는 객체 미리 다운받아논거 때문에 처리해논겁니다!!!!
-                
-                밑에 부분 틀린문제 업로드가 잘 안되네요 ㅠㅠㅠ
-                
-                */
+
 
 
                 tagDoc.collection("PRB_LIST").doc(loadedProblem[nextBtn-1].PRB_ID).set(problem).then((err)=>{

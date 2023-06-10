@@ -143,7 +143,7 @@ const problemStructure = (problem, nextBtn, setNextBtn, choiceRef, section, size
 
 export default WrongProb = ({ problem, nextBtn, setNextBtn, choiceRef, section, size}) =>{
     
-    const audio = problem.AUD_URL
+    const audio = problem.AUD_REF
 
     useEffect(()=>{
 
