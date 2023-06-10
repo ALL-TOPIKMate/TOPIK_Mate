@@ -23,7 +23,7 @@ const audioURL = async(problemList, audioStorage) =>{
 
     try{
         await audioStorage.child(`/${PRB_RSC}/${problemList.AUD_REF}`).getDownloadURL().then((url)=>{
-            problemList.AUD_REF = new Sound(url, null, err => {
+            problemList.AUD_URL = new Sound(url, null, err => {
                     if (err) {
                         console.log('Failed to load the sound', err);
                         return undefined;
@@ -44,7 +44,7 @@ const imageURL = async (problemList, imageStorage) =>{
     
     try{
         await imageStorage.child(`/${PRB_RSC}/${problemList.IMG_REF}`).getDownloadURL().then((url)=>{
-            problemList.IMG_REF = url
+            problemList.IMG_URL = url
             // console.log(`콜백함수 안 ${url}`)
         })
     }catch(err){
@@ -56,22 +56,21 @@ const imagesURL = async (problemList, imageStorage) =>{
     const PRB_RSC = problemList.PRB_ID.substr(0, problemList.PRB_ID.length-3)
     
     try{
-        problemList.isImage = true
 
         await imageStorage.child(`/${PRB_RSC}/${problemList.PRB_CHOICE1}`).getDownloadURL().then((url) => {
-            problemList.PRB_CHOICE1 = url
+            problemList.PRB_CHOICE_URL1 = url
         })
 
         await imageStorage.child(`/${PRB_RSC}/${problemList.PRB_CHOICE2}`).getDownloadURL().then((url) => {
-            problemList.PRB_CHOICE2 = url
+            problemList.PRB_CHOICE_URL2 = url
         })
 
         await imageStorage.child(`/${PRB_RSC}/${problemList.PRB_CHOICE3}`).getDownloadURL().then((url) => {
-            problemList.PRB_CHOICE3 = url
+            problemList.PRB_CHOICE_URL3 = url
         })
         
         await imageStorage.child(`/${PRB_RSC}/${problemList.PRB_CHOICE4}`).getDownloadURL().then((url) => {
-            problemList.PRB_CHOICE4 = url
+            problemList.PRB_CHOICE_URL4 = url
         })
 
     }catch(err){
@@ -99,6 +98,7 @@ const loadMultimedia = async (problemList, audioStorage, imageStorage, setLoaded
     }
 
     // console.log(problemList)
+
     setLoadedProblem(problemList)
 }
 
@@ -112,6 +112,8 @@ const RecommendStudyScreen = ({route, navigation}) =>{
     // 콜렉션 불러오기
     const querySnapshot = route.params.querySnapshot
     const recommendCollection = querySnapshot.doc(route.params.userInfo.userId).collection("recommend")
+    const wrongCollection = querySnapshot.doc(route.params.userInfo.userId).collection(`wrong_lv${route.params.userInfo.myLevel}`)
+
 
 
 
@@ -128,9 +130,12 @@ const RecommendStudyScreen = ({route, navigation}) =>{
     const answerRef = useRef([]);
 
 
-    // 맞은 답 개수
+    // 맞은 답 렌더링
     const [correct, setCorrect] = useState(-1);
-    
+    // 맞은 답 개수
+    const correctCount = useRef(0)
+    // 푼 문제 개수 
+    const problemCount = useRef(0)
 
     // loading 시간 
     const [ready, setReady] = useState(false);
@@ -143,26 +148,11 @@ const RecommendStudyScreen = ({route, navigation}) =>{
 
 
 
-    // 유저 정답 수 count
-    const countUserCorrect = () =>{
-        let correct_cnt = 0
-        
-        for(var index in answerRef.current){
-            if(answerRef.current[index].PRB_CORRT_ANSW == answerRef.current[index].USER_CORRT_ANSW){
-                correct_cnt++
-            }
-        }
-
-        return correct_cnt
-    }
-
-
-
     // firebase update
     const updateUserAnswer = async () =>{
         await recommendCollection.doc("Recommend").update({
-            userIndex: Number(userIndex)+Number(answerRef.current.length),
-            userCorrect: Number(userCorrect)+Number(countUserCorrect())
+            userIndex: Number(userIndex) + Number(problemCount.current),
+            userCorrect: Number(userCorrect)+Number(correctCount.current)
         })
     }
 
@@ -183,8 +173,8 @@ const RecommendStudyScreen = ({route, navigation}) =>{
 
             // update RecommendScreen
             route.params.setUserRecommendInfo({
-                userIndex: Number(userIndex)+Number(answerRef.current.length),
-                userCorrect: Number(userCorrect)+Number(countUserCorrect())
+                userIndex: Number(userIndex) + Number(problemCount.current),
+                userCorrect: Number(userCorrect)+Number(correctCount.current)
             })
         }
     }, []);
@@ -232,18 +222,77 @@ const RecommendStudyScreen = ({route, navigation}) =>{
 
     
     useEffect(()=>{
+        // 다음 문제를 넘길 때 이전 문제 기록
         if(nextBtn>0 && choiceRef.current != 0){
-            console.log(choiceRef.current)
-            answerRef.current.push({
-                USER_CORRT_ANSW: choiceRef.current,
-                PRB_CORRT_ANSW: loadedProblem[nextBtn-1].PRB_CORRT_ANSW
-            })
 
-            console.log(answerRef.current)
+            loadedProblem[nextBtn-1].PRB_USER_ANSW = choiceRef.current
+
+     
+            if(loadedProblem[nextBtn-1].PRB_CORRT_ANSW == loadedProblem[nextBtn-1].PRB_USER_ANSW){ 
+        
+                // 유저가 답안을 맞췄을 경우
+
+                wrongCollection.doc(`${loadedProblem[nextBtn-1].PRB_SECT}_TAG`).set({})
+                
+
+                wrongCollection.doc(`${loadedProblem[nextBtn-1].PRB_SECT}_TAG`).collection("PRB_TAG").doc(loadedProblem[nextBtn-1].TAG).set({})
+
+            
+                wrongCollection.doc(`${loadedProblem[nextBtn-1].PRB_SECT}_TAG`).collection("PRB_TAG").doc(loadedProblem[nextBtn-1].TAG).collection("PRB_LIST").doc(loadedProblem[nextBtn-1].PRB_ID).delete().then((err)=>{
+                    if(err){
+                        console.log(err)
+                    }else{
+                        console.log("success to delete data")
+                    }
+                })
+                
+                
+                // 정답 카운트
+                correctCount.current++
+            }else{
+
+                // 유저가 답안을 틀렸을 경우
+
+
+                const sectTadDoc = wrongCollection.doc(`${loadedProblem[nextBtn-1].PRB_SECT}_TAG`); sectTadDoc.set({})
+                
+
+                const tagDoc = wrongCollection.doc(`${loadedProblem[nextBtn-1].PRB_SECT}_TAG`).collection("PRB_TAG").doc(loadedProblem[nextBtn-1].TAG); tagDoc.set({})
+
+            
+                let problem = {}
+
+                Object.keys(loadedProblem[nextBtn-1]).forEach((key) => {
+                    if(key !== "AUD_URL" && key !== "PRB_CHOICE_URL1" && key !== "PRB_CHOICE_URL2" && key !== "PRB_CHOICE_URL3"&& key !== "PRB_CHOICE_URL4" && key != "IMG_URL"){
+                        problem[key] = loadedProblem[nextBtn - 1][key]
+                    }
+                })
+                /*
+                
+                위에는 객체 미리 다운받아논거 때문에 처리해논겁니다!!!!
+                
+                밑에 부분 틀린문제 업로드가 잘 안되네요 ㅠㅠㅠ
+                
+                */
+
+
+                tagDoc.collection("PRB_LIST").doc(loadedProblem[nextBtn-1].PRB_ID).set(problem).then((err)=>{
+                    if(err){
+                        console.log(err)
+                    }else{
+                        console.log("success to uploading data")
+                        console.log(loadedProblem[nextBtn-1].PRB_ID)
+                    }
+                })
+
+            }
+
+
+            problemCount.current++
         }
         
         if(nextBtn > 0 && nextBtn == loadedProblem.length){
-            setCorrect(countUserCorrect() + userCorrect)
+            setCorrect(userCorrect + correctCount.current)
             return 
         }
 

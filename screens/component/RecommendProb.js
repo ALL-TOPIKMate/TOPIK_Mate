@@ -24,7 +24,7 @@ const AudRef = (audio) =>{
 
     function audioPlay(){
         if(audio){
-            console.log(audio)
+            
             if(audio.isPlaying()){
                 audio.pause()
 
@@ -76,7 +76,7 @@ const problemStructure = (problem, nextBtn, setNextBtn, choiceRef, audio) =>{
 
         // IMG_REF: 이미지 문제
         if(problem.IMG_REF){
-            question.push(<ImgRef IMG_REF = {problem.IMG_REF}/>)    
+            question.push(<ImgRef IMG_REF = {problem.IMG_URL}/>)    
         }
         
 
@@ -92,7 +92,7 @@ const problemStructure = (problem, nextBtn, setNextBtn, choiceRef, audio) =>{
 
         // IMG_REF: 이미지 문제
         if(problem.IMG_REF){
-            question.push(<ImgRef IMG_REF = {problem.IMG_REF}/>)    
+            question.push(<ImgRef IMG_REF = {problem.IMG_URL}/>)    
         }
 
 
@@ -122,9 +122,13 @@ const problemStructure = (problem, nextBtn, setNextBtn, choiceRef, audio) =>{
         PRB_CHOICE2={problem.PRB_CHOICE2} 
         PRB_CHOICE3= {problem.PRB_CHOICE3} 
         PRB_CHOICE4={problem.PRB_CHOICE4} 
+
+        PRB_CHOICE_URL1 = {problem.PRB_CHOICE_URL1}
+        PRB_CHOICE_URL2 = {problem.PRB_CHOICE_URL2}
+        PRB_CHOICE_URL3 = {problem.PRB_CHOICE_URL3}
+        PRB_CHOICE_URL4 = {problem.PRB_CHOICE_URL4}
         PRB_CORRT_ANSW = {problem.PRB_CORRT_ANSW}
 
-        isImage = {problem.isImage}
 
         choiceRef = {choiceRef}
         nextBtn = {nextBtn}
@@ -138,7 +142,7 @@ const problemStructure = (problem, nextBtn, setNextBtn, choiceRef, audio) =>{
 
 export default recommendProb = ({ problem, nextBtn, setNextBtn, choiceRef }) =>{
 
-    const audio = problem.AUD_REF ? problem.AUD_REF : null
+    const audio = problem.AUD_URL ? problem.AUD_URL : null
 
     useEffect(()=>{
 

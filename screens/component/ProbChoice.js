@@ -14,7 +14,7 @@ export default ProbChoice = (props) =>{
 
 
     // 4지선다 이미지 여부
-    const isImage = props.isImage
+    const isImage = (props.PRB_CHOICE_URL1) ? true: false
 
 
 
@@ -52,7 +52,7 @@ export default ProbChoice = (props) =>{
                     <Image
                     style={{height: 200}}
                     resizeMode = "stretch"
-                    source={{uri: props.PRB_CHOICE1}}
+                    source={{uri: props.PRB_CHOICE_URL1}}
                     />
                 </TouchableOpacity>
             ):(
@@ -70,7 +70,7 @@ export default ProbChoice = (props) =>{
                     <Image
                     style={{height: 200}}
                     resizeMode = "stretch"
-                    source={{uri: props.PRB_CHOICE2}}
+                    source={{uri: props.PRB_CHOICE_URL2}}
                     />
                 </TouchableOpacity>
             ):(
@@ -88,7 +88,7 @@ export default ProbChoice = (props) =>{
                     <Image
                     style={{height: 200}}
                     resizeMode = "stretch"
-                    source={{uri: props.PRB_CHOICE3}}
+                    source={{uri: props.PRB_CHOICE_URL3}}
                     />
                 </TouchableOpacity>
             ):(
@@ -106,7 +106,7 @@ export default ProbChoice = (props) =>{
                     <Image
                     style={{height: 200}}
                     resizeMode = "stretch"
-                    source={{uri: props.PRB_CHOICE4}}
+                    source={{uri: props.PRB_CHOICE_URL4}}
                     />
                 </TouchableOpacity>
             ):(

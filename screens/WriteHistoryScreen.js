@@ -17,7 +17,7 @@ const WriteHistoryScreen = ({route, navigation}) =>{
                 let problemList = []
                 const data = await wrongCollection.get(); // 요청한 데이터가 반환되면 다음 줄 실행
                 
-                data.docs.forEach((doc) => {if(doc._data.PRB_ID) problemList.push(doc._data)})
+                data.docs.forEach((doc) => {if(doc._data.PRB_RSC) problemList.push({PRB_RSC: doc._data.PRB_RSC, PRB_ID: doc.id})})
             
                 setData(problemList)
             }catch(error){
@@ -36,7 +36,7 @@ const WriteHistoryScreen = ({route, navigation}) =>{
                     {route.params.userTag.tagName}
                 </Text>
             </View>
-            <View style = {{flex: 0.5}}>
+            <View style = {{flex: 0.5, paddingVertical: 10}}>
                 <Text>
                     문제 회차를 선택하세요
                 </Text>
@@ -46,8 +46,9 @@ const WriteHistoryScreen = ({route, navigation}) =>{
                     {
                         data.map((data, index)=>{
                             return (
-                                <TouchableOpacity key = {index} style = {styles.buttonList} onPress = {() => navigation.push("WriteHistoryList", {userTag: route.params.userTag, userRsc: {PRB_NUM: data.PRB_NUM, PRB_RSC: data.PRB_RSC}, PRB_ID: data.PRB_ID, querySnapshot: wrongCollection})} >
-                                    <Text>{data.PRB_RSC} {data.PRB_NUM}번</Text>
+                                <TouchableOpacity key = {index} style = {styles.buttonList} onPress = {() => navigation.push("WriteHistoryList", {userTag: route.params.userTag, PRB_RSC: data.PRB_RSC, PRB_ID: data.PRB_ID, querySnapshot: wrongCollection})} >
+                                    <Text>{data.PRB_RSC}</Text>
+                                    <Text>{data.PRB_ID}번</Text> 
                                 </TouchableOpacity>
                             )
                         })

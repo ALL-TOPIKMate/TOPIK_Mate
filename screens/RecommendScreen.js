@@ -1,6 +1,6 @@
 import React, {useEffect, useState} from 'react';
 
-import {Button, View ,Text, StyleSheet, TouchableOpacity} from 'react-native'
+import {Button, View ,Text, StyleSheet, TouchableOpacity, Touchable} from 'react-native'
 import firestore from '@react-native-firebase/firestore';
 
 import {subscribeAuth } from "../lib/auth";
@@ -69,9 +69,10 @@ const RecommendScreen = ({navigation}) =>{
 
     const getRecommendIndex = async () =>{
         try{
+            // userIndex, userCorrect
             const data = await querySnapshot.doc(userInfo.userId).collection("recommend").doc("Recommend").get()
 
-            console.log(data._data)
+            console.log(data._data) 
 
             setUserRecommendInfo(data._data)
         }catch(e){
@@ -83,17 +84,27 @@ const RecommendScreen = ({navigation}) =>{
 
     return (
         <View style = {{flex: 1}}>
-            <AppNameHeader/>
             <View style = {styles.container}>
                 <View style = {styles.detail}>
-                    <Text>Weak -------- <Button title = "▷" onPress = { () => {navigation.navigate("Info")} } /></Text>
+                    <Text style = {{flex: 2, fontSize: 24, fontWeight: "bold"}}>WEAK POINT</Text>
+                    <View style = {{flex: 4, borderBottomColor: 'black', borderBottomWidth: StyleSheet.hairlineWidth, marginLeft: 4}}/>
+                    <TouchableOpacity onPress = { () => {navigation.navigate("Info")} } style = {{flex:1, marginLeft: 16}}>
+                        <Text>Detail</Text>
+                    </TouchableOpacity>
                 </View>
+
+                <Text />
+                
                 <View style = {styles.detail}>
-                    <Text>Strong -------- <Button title = "▷" onPress = {() => {navigation.navigate("Info")}}/></Text>
+                    <Text style = {{flex: 2, fontSize: 24, fontWeight: "bold"}}>STRONG POINT</Text>
+                    <View style = {{flex: 4, borderBottomColor: 'black', borderBottomWidth: StyleSheet.hairlineWidth, marginLeft: 8}}/>
+                    <TouchableOpacity onPress = { () => {navigation.navigate("Info")} } style = {{flex:1, marginLeft: 16}}>
+                        <Text>Detail</Text>
+                    </TouchableOpacity>
                 </View>
                 
                 
-                <View style = {[styles.recommend, {flex: 2,}]}>
+                <View style = {[styles.recommend, {flex: 1.8,}]}>
                     <TouchableOpacity style = {styles.recommendBtn} onPress={()=> (userRecommendInfo.userIndex == 10) ? (alert("모든 문제를 풀었습니다 다음에 도전하세요.")): (navigation.push("RecommendStudy", {userRecommendInfo: userRecommendInfo, setUserRecommendInfo: setUserRecommendInfo, querySnapshot: querySnapshot, userInfo: userInfo})) }>
                         <Text style = {{color: "#F6F1F1", fontSize: 24, fontWeight: "bold", paddingVertical: 5}}>
                             추천 문제 풀기
@@ -104,7 +115,6 @@ const RecommendScreen = ({navigation}) =>{
                     </TouchableOpacity>
                 </View>
 
-                <View style = {{flex: 0.5}}/>
             </View>
         </View>
     );
@@ -113,10 +123,12 @@ const RecommendScreen = ({navigation}) =>{
 const styles = StyleSheet.create({
     container: {
         padding: 16,
-        flex: 1
+        flex: 1,
     }, 
     detail: {
-        flex: 1
+        flex: 0.5,
+        flexDirection: "row",
+        alignItems: "center"
     },
     recommend: {
         alignItems: "center",

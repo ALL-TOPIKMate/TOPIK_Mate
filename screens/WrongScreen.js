@@ -159,7 +159,9 @@ const WrongScreen = ({navigation}) =>{
         
                 if (!userInfoQuery.empty) {
                     const userData = userInfoQuery.docs[0].data();
-                
+
+
+                    // 유저 레벨 및 id 셋팅
                     setUserInfo({myLevel: userData.my_level, userId: userData.u_uid})
                 }
             } catch (error) {
@@ -299,7 +301,7 @@ const WrongScreen = ({navigation}) =>{
                     <Text style = {{fontWeight: "bold"}}>랜덤 학습</Text>
                 </TouchableOpacity>
                 <View style = {{flex: 0.1}}/>
-                <TouchableOpacity onPress = {() => {reRender(!render); writeList.current = true; if(writeList.current){randomList.current = false; selectList.current = false;} }} style = {[styles.listBox, {backgroundColor: writeList.current ? "#A4BAA1" : "#D9D9D9"}]}>
+                <TouchableOpacity onPress = {() => {userInfo.myLevel == 1 ? alert("TOPIK1은 쓰기 유형을 제공하지 않습니다.") : reRender(!render); writeList.current = true; if(writeList.current){randomList.current = false; selectList.current = false;} }} style = {[styles.listBox, {backgroundColor: writeList.current ? "#A4BAA1" : "#D9D9D9"}]}>
                     <Text style = {{fontWeight: "bold"}}>쓰기 히스토리</Text>
                 </TouchableOpacity>
                 <View style = {{flex: 0.2}}/>

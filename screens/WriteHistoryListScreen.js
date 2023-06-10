@@ -37,10 +37,10 @@ const WriteHistoryListScreen = ({route, navigation}) => {
                     {route.params.userTag.tagName}
                 </Text>
             </View>
-            <View style = {{flex: 1}}>
-                <Text>
-                    선택한 문제는 {route.params.userRsc.PRB_RSC} {route.params.userRsc.PRB_NUM}번 입니다
-                </Text>
+            <View style = {{flex: 1, paddingVertical: 10}}>
+                <Text> 선택한 문제는 </Text>
+                <Text> {route.params.PRB_RSC} </Text>
+                <Text> {route.params.PRB_ID}번 입니다 </Text>
             </View> 
 
             <View style = {{flex: 8}}>
@@ -52,8 +52,8 @@ const WriteHistoryListScreen = ({route, navigation}) => {
                                     <Text style = {{flex: 5}}>
                                         {data.DATE}
                                     </Text>
-                                    <View style = {{flex: 1, flexDirection: "column"}}>
-                                        <Text style = {{flex: 1}}/>
+                                    <View style = {{flex: 1.5, flexDirection: "column"}}>
+                                        <Text/>
                                         <Text style = {{fontSize: 10}}>
                                         score {data.SCORE}/{data.PRB_POINT}
                                     </Text>
@@ -77,8 +77,11 @@ const styles = StyleSheet.create({
         padding: 32,
 
         flexDirection: "row",
+        alignItems: "center",
+
         backgroundColor: "#D9D9D9"
     },
+
 })
 
 
