@@ -53,7 +53,18 @@ const TypeQuestScreen = ({navigation, route}) =>{
           setLast(null);
         }
         //setProblems(...problems,...prblist);
-        setProblems((prevProblems) => [...prevProblems, ...prblist])
+        //setProblems((prevProblems) => [...prevProblems, ...prblist])
+        setProblems((prevProblems) => {//이미지 로드
+          const newProblems = [...prevProblems, ...prblist];
+          console.log('problems in loadProblems:', newProblems);
+          if (newProblems.length === prblist.length) {
+            // 첫 데이터 로딩 후 이미지 로딩 처리
+            console.log('데이터 적립완료');
+            //console.log(newProblems)
+            ImageLoading(newProblems);
+          }
+          return newProblems;
+        });
         console.log(`problems in loadProblems:`, problems);
         
       } else {
@@ -87,10 +98,12 @@ const TypeQuestScreen = ({navigation, route}) =>{
     if(problems.length!==0 && problems.length-1 === currentIndex){
       //console.log('다다랐음');
       loadProblems()
+      ImageLoading(problems);
     } else if (problems.length !== 0) {
       //console.log('그냥 진입');
       setSelectedChoice(null);
       setSubmitted(false);
+      ImageLoading(problems);
       console.log(currentIndex)
     }
     setIsLoading(false);
@@ -109,24 +122,42 @@ const TypeQuestScreen = ({navigation, route}) =>{
   const handleChoice = (choice) => {
     setSelectedChoice(choice.toString()); 
   };
+
+  const ImageLoading = async (problems_new)=>{
+    console.log('이미지 로드 시작');
+    console.log('문제 아이디', problems_new);
+    const nextProblem = problems_new[currentIndex].PRB_ID;
+    const nextProbslice = nextProblem.slice(0,9)
+    //console.log(`문제 경로: images/${nextProbslice}/${problems_new.find(problem_new => problem_new.PRB_ID === nextProblem).IMG_REF}`)
+    const ImageRef = storage()
+      .ref()
+      .child(`images/${nextProbslice}/${problems_new.find(problem_new => problem_new.PRB_ID === nextProblem).IMG_REF}`);
+
+      try {
+        const imageUrl = await ImageRef.getDownloadURL();
+        setImageUrls(imageUrl);
+        console.log(imageUrl)
+      } catch (error) {
+        console.log('Error occurred while downloading image', error);
+      }
+  }
   //다음 버튼 클릭
   const handleNextProblem = () => {
     if (currentIndex < problems.length - 1) {
       setSelectedChoice(null); // 선택한 답변 초기화
       setSubmitted(false); // 제출 여부 초기화
       setCurrentIndex((prevIndex) => prevIndex + 1);
+      setImageUrls(null);
       //const nextProblem = data[currentIndex + 1];
     } 
   };
-  //문제 끝날 경우 처리
-  const handleEndProblem = () => {
-    navigation.navigate('Type')
-  };
+
   //이전 문제
   const handlePreviousProblem =() =>{
     if (currentIndex > 0) {
       setSelectedChoice(null); // 선택한 답변 초기화
       setSubmitted(false); // 제출 여부 초기화
+      setImageUrls(null);
       setCurrentIndex((prevIndex) => prevIndex - 1);
 
       const prevProblem = problems[currentIndex - 1];
@@ -137,15 +168,19 @@ const TypeQuestScreen = ({navigation, route}) =>{
     console.log('제출 버튼 클릭');
     console.log('선택한 보기:', selectedChoice, '실제 정답:', problems[currentIndex].PRB_CORRT_ANSW);
     const isCorrect = selectedChoice.toString() === problems[currentIndex].PRB_CORRT_ANSW;
-    if(isCorrect){
+    if(isCorrect){ //맞춘 갯수 저장
       setCorrectProb(prevCorrectProb => prevCorrectProb+1)
     }
-    setTotalProblem(prevTotalProblem => prevTotalProblem+1)
+    else if(isCorrect === 'false') {//틀린 경우에 오답노트로 전달, 여기 만들어야 함.
+        console.log('틀렸음',problems[0])
+    }
+    setTotalProblem(prevTotalProblem => prevTotalProblem+1)// 전체 문제 갯수 저장
     console.log(isCorrect,'전체 문제: ', totalProblem, '맞은 문제: ', CorrectProb);
     setSubmitted(true);
     
   };
 //이미지 로드 관련, 에러 있음.
+/*
   useEffect(() => {
     const loadImageUrls = async () => {
       const urls = [];
@@ -167,6 +202,7 @@ const TypeQuestScreen = ({navigation, route}) =>{
   
     loadImageUrls();
   }, [problems]);
+  */
   const handlePress = () => {
     setModalVisible(true);
   };
@@ -212,22 +248,26 @@ const TypeQuestScreen = ({navigation, route}) =>{
             <View>
               {problems.length > 0 && (
                 <>
-                <Text style={{padding:10}}>{currentIndex+1}.{problems[currentIndex].PRB_MAIN_CONT}</Text>
-                {imageUrls.length > 0 && (
-                <Image source={{ uri: imageUrls[currentIndex].image }} style={styles.image} />
+                <Text style={{ padding: 10 }}>{currentIndex + 1}.{problems[currentIndex].PRB_MAIN_CONT}</Text>
+                {imageUrls && imageUrls.length > 0 && imageUrls[currentIndex] ? (
+                  <Image source={{ uri: imageUrls }} style={styles.image} /> 
+                ) : (
+                  <Text style={{ borderWidth: 1, borderColor: 'black', padding: 10 }}>
+                    {problems[currentIndex].PRB_TXT}
+                  </Text>
                 )}
-                <Text style={{borderWidth: 1, borderColor: 'black', padding: 10}}>{problems[currentIndex].PRB_TXT} </Text>
+
                 
-                <TouchableOpacity style={[styles.button,{backgroundColor: submitted? selectedChoice ==='1'? selectedChoice=== problems[currentIndex].PRB_CORRT_ANSW? '#BAD7E9':'#FFACAC': problems[currentIndex].PRB_CORRT_ANSW === '1'? '#BAD7E9': '#D9D9D9' : selectedChoice === '1'? '#BBD6B8': '#D9D9D9'}, { marginTop: 10 } ]} onPress={() => handleChoice(1)}>
+                <TouchableOpacity style={[styles.button,styles.buttonContainer,{backgroundColor: submitted? selectedChoice ==='1'? selectedChoice=== problems[currentIndex].PRB_CORRT_ANSW? '#BAD7E9':'#FFACAC': problems[currentIndex].PRB_CORRT_ANSW === '1'? '#BAD7E9': '#D9D9D9' : selectedChoice === '1'? '#BBD6B8': '#D9D9D9'}, { marginTop: 10 } ]} onPress={() => handleChoice(1)}>
                   <Text style={styles.buttonText}>{problems[currentIndex].PRB_CHOICE1}</Text>
                 </TouchableOpacity>
-                <TouchableOpacity style={[styles.button,{backgroundColor: submitted? selectedChoice ==='2'? selectedChoice=== problems[currentIndex].PRB_CORRT_ANSW? '#BAD7E9':'#FFACAC': problems[currentIndex].PRB_CORRT_ANSW === '2'? '#BAD7E9': '#D9D9D9' : selectedChoice === '2'? '#BBD6B8': '#D9D9D9'}, { marginTop: 10 }]} onPress={() => handleChoice(2)}>
+                <TouchableOpacity style={[styles.button,styles.buttonContainer,{backgroundColor: submitted? selectedChoice ==='2'? selectedChoice=== problems[currentIndex].PRB_CORRT_ANSW? '#BAD7E9':'#FFACAC': problems[currentIndex].PRB_CORRT_ANSW === '2'? '#BAD7E9': '#D9D9D9' : selectedChoice === '2'? '#BBD6B8': '#D9D9D9'}, { marginTop: 10 }]} onPress={() => handleChoice(2)}>
                   <Text style={styles.buttonText}>{problems[currentIndex].PRB_CHOICE2}</Text>
                 </TouchableOpacity>
-                <TouchableOpacity style={[styles.button,{backgroundColor: submitted? selectedChoice ==='3'? selectedChoice=== problems[currentIndex].PRB_CORRT_ANSW? '#BAD7E9':'#FFACAC': problems[currentIndex].PRB_CORRT_ANSW === '3'? '#BAD7E9': '#D9D9D9' : selectedChoice === '3'? '#BBD6B8': '#D9D9D9'}, { marginTop: 10 }]} onPress={() => handleChoice(3)}>
+                <TouchableOpacity style={[styles.button,styles.buttonContainer,{backgroundColor: submitted? selectedChoice ==='3'? selectedChoice=== problems[currentIndex].PRB_CORRT_ANSW? '#BAD7E9':'#FFACAC': problems[currentIndex].PRB_CORRT_ANSW === '3'? '#BAD7E9': '#D9D9D9' : selectedChoice === '3'? '#BBD6B8': '#D9D9D9'}, { marginTop: 10 }]} onPress={() => handleChoice(3)}>
                   <Text style={styles.buttonText}>{problems[currentIndex].PRB_CHOICE3}</Text>
                 </TouchableOpacity>
-                <TouchableOpacity style={[styles.button,{backgroundColor: submitted? selectedChoice ==='4'? selectedChoice=== problems[currentIndex].PRB_CORRT_ANSW? '#BAD7E9':'#FFACAC': problems[currentIndex].PRB_CORRT_ANSW === '4'? '#BAD7E9': '#D9D9D9' : selectedChoice === '4'? '#BBD6B8': '#D9D9D9'}, { marginTop: 10 }]} onPress={() => handleChoice(4)}>
+                <TouchableOpacity style={[styles.button,styles.buttonContainer,{backgroundColor: submitted? selectedChoice ==='4'? selectedChoice=== problems[currentIndex].PRB_CORRT_ANSW? '#BAD7E9':'#FFACAC': problems[currentIndex].PRB_CORRT_ANSW === '4'? '#BAD7E9': '#D9D9D9' : selectedChoice === '4'? '#BBD6B8': '#D9D9D9'}, { marginTop: 10 }]} onPress={() => handleChoice(4)}>
                   <Text style={styles.buttonText}>{problems[currentIndex].PRB_CHOICE4}</Text>
                 </TouchableOpacity>
                 </>
@@ -290,17 +330,22 @@ const styles = StyleSheet.create({
   buttonContainer: {
     flexDirection: 'row',
     marginTop: 10, 
-    //justifyContent: 'space-between',
+    justifyContent: 'center',
+    alignItems: 'center',
+    //flex: 1,
   },
   button: {
     backgroundColor: '#D9D9D9',
     marginBottom: 10,
     borderRadius: 5,
-    height: 30,
+    //height: 30,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
   },
   buttonText:{
     marginLeft: 10,
     fontSize: 15,
+    //flex: 1,
   },
   buttonpass: {
     marginTop: 100,
@@ -377,6 +422,11 @@ const styles = StyleSheet.create({
     color: 'white',
     textAlign:'center',
     fontWeight:'bold',
+  },
+  image:{
+    width: 350,
+    height: 50,
+    alignItems: 'center',
   }
       
 });
