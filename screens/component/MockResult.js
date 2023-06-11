@@ -5,7 +5,7 @@ import { Table, TableWrapper, Row, Cell } from 'react-native-table-component'
 import MockProbModal from './MockProbModal';
 import MockProbWriteModal from './MockProbWriteModal';
 
-const headers = ['No.', 'Your answer', 'Correct Answer', 'Result', 'Review'];
+const headers = ['No.', 'Selected', 'Answer', 'Result', 'Review'];
 
 const MockResult = ({ level, listen, write, read, prevImages, prevAudios }) => {
     /* 푼 문제 재확인(결과화면 모달) */
@@ -35,6 +35,8 @@ const MockResult = ({ level, listen, write, read, prevImages, prevAudios }) => {
             <Text style={styles.text}>Review</Text>
         </TouchableOpacity>
     );
+    
+            
 
     return (
         <ScrollView style={styles.container}>

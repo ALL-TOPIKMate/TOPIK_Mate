@@ -337,10 +337,10 @@ const MockStudyScreen = ({navigation, route}) =>{
         return (
             <View style={styles.container}>
                 {/* 타이머 */}
-                {/* <MockTimer
+                <MockTimer
                     level={route.params.level}
                     setIsEnd={setIsEnd}
-                /> */}
+                />
     
                 {/* 문제 풀이 영역 */}
                 <MockProb
