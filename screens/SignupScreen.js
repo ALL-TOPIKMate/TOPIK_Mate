@@ -68,6 +68,7 @@ const SignupScreen = ({navigation}) =>{
                     onChangeText={(value)=>setForm({displayName: form.displayName, email: form.email, password: value})}
                     value={form.password}
                     placeholder="비밀번호"
+                    secureTextEntry={true}
                 />
                 
                 <TouchableOpacity style={styles.button} onPress={()=> signUpSubmit()}>
