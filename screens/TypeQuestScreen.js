@@ -250,7 +250,9 @@ const TypeQuestScreen = ({navigation, route}) =>{
                 <>
                 <Text style={{ padding: 10 }}>{currentIndex + 1}.{problems[currentIndex].PRB_MAIN_CONT}</Text>
                 {imageUrls && imageUrls.length > 0 && imageUrls[currentIndex] ? (
-                  <Image source={{ uri: imageUrls }} style={styles.image} /> 
+                  <View style={{flex: 1}}>
+                    <Image source={{ uri: imageUrls }} style={styles.image} /> 
+                  </View>
                 ) : (
                   <Text style={{ borderWidth: 1, borderColor: 'black', padding: 10 }}>
                     {problems[currentIndex].PRB_TXT}
@@ -275,7 +277,7 @@ const TypeQuestScreen = ({navigation, route}) =>{
             </View>
           )}
             <View style={styles.buttonSumitContainer}>
-              <TouchableOpacity style={[styles.buttonsubmit]} onPress={handleSubmitProblem}>
+              <TouchableOpacity style={[styles.buttonsubmit, { opacity: selectedChoice !== null ? 1 : 0.5 }]} onPress={handleSubmitProblem} disabled={selectedChoice === null}>
                 <Text style={styles.buttonTextpass}>Submit</Text>
               </TouchableOpacity>
             </View>
@@ -287,13 +289,13 @@ const TypeQuestScreen = ({navigation, route}) =>{
               </TouchableOpacity>
             )}
             {currentIndex < problems.length - 1 ? (
-              <TouchableOpacity style={styles.buttonpass} onPress={handleNextProblem}>
+              <TouchableOpacity style={[styles.buttonpass, { opacity: submitted !== false ? 1 : 0.5 }]} onPress={handleNextProblem} disabled={submitted === false}>
                 <Text style={styles.buttonTextpass}>Next</Text>
               </TouchableOpacity>
             ) : (
               <View style={{flexDirection:'row'}}> 
 
-                <TouchableOpacity style={styles.buttonpass} onPress={handlePress}>
+                <TouchableOpacity style={[styles.buttonpass,  { opacity: submitted !== false ? 1 : 0.5 }]} onPress={handlePress} disabled={submitted === false}>
                   <Text style={styles.buttonTextpass}>End</Text>
                 </TouchableOpacity>
                 <Modal visible={modalVisible} onRequestClose={() => setModalVisible(false)}>
@@ -425,8 +427,9 @@ const styles = StyleSheet.create({
   },
   image:{
     width: 350,
-    height: 50,
+    height: 200,
     alignItems: 'center',
+    resizeMode: 'contain'
   }
       
 });
