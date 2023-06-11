@@ -5,7 +5,7 @@ import {View, Text, StyleSheet, TouchableOpacity, Button, Image} from 'react-nat
 export default ProbChoicePrev = ({ problem, nextBtn, setNextBtn, choiceRef}) =>{
 
     // 제출 여부를 확인하여 렌더링
-    const [subBtn, setSubBtn] = useState(problem.choice ? true : false);
+    const [subBtn, setSubBtn] = useState(problem.PRB_USER_ANSW ? true : false);
 
  
     // 유저가 누르는 버튼 
@@ -47,7 +47,7 @@ export default ProbChoicePrev = ({ problem, nextBtn, setNextBtn, choiceRef}) =>{
     function setBtnColorStop(btn){
         if(btn == problem.PRB_CORRT_ANSW){
             return "#BAD7E9"
-        } else if(btn == problem.choice){
+        } else if(btn == problem.PRB_USER_ANSW){
             return "#FFACAC"
         }else{
             return "#D9D9D9"
@@ -55,12 +55,13 @@ export default ProbChoicePrev = ({ problem, nextBtn, setNextBtn, choiceRef}) =>{
     }
 
 
+
     return (
         <View>
         <Text /><Text />
         {
             isImage ? (   
-                <TouchableOpacity onPress = {() => {setClick(1)}} disabled = {subBtn || problem.choice} style = {[{borderColor: problem.choice ? setBtnColorStop(1) : setBtnColor(1), borderWidth: 5}]}>
+                <TouchableOpacity onPress = {() => {setClick(1)}} disabled = {subBtn || problem.PRB_USER_ANSW} style = {[{borderColor: problem.PRB_USER_ANSW ? setBtnColorStop(1) : setBtnColor(1), borderWidth: 5}]}>
                     <Image
                     style={{height: 200}}
                     resizeMode = "stretch"
@@ -68,7 +69,7 @@ export default ProbChoicePrev = ({ problem, nextBtn, setNextBtn, choiceRef}) =>{
                     />
                 </TouchableOpacity>
             ): (
-                <TouchableOpacity onPress = {() => {setClick(1)}} disabled = {subBtn || problem.choice} style = {[styles.button, {backgroundColor: problem.choice ? setBtnColorStop(1) : setBtnColor(1)}]}>
+                <TouchableOpacity onPress = {() => {setClick(1)}} disabled = {subBtn || problem.PRB_USER_ANSW} style = {[styles.button, {backgroundColor: problem.PRB_USER_ANSW ? setBtnColorStop(1) : setBtnColor(1)}]}>
                     <Text>
                         {problem.PRB_CHOICE1}
                     </Text>
@@ -79,7 +80,7 @@ export default ProbChoicePrev = ({ problem, nextBtn, setNextBtn, choiceRef}) =>{
        <Text/>
         {
             isImage ? (   
-                <TouchableOpacity onPress = {() => {setClick(2)}} disabled = {subBtn || problem.choice} style = {[{borderColor: problem.choice ? setBtnColorStop(2) :setBtnColor(2), borderWidth: 5}]}>
+                <TouchableOpacity onPress = {() => {setClick(2)}} disabled = {subBtn || problem.PRB_USER_ANSW} style = {[{borderColor: problem.PRB_USER_ANSW ? setBtnColorStop(2) :setBtnColor(2), borderWidth: 5}]}>
                     <Image
                     style={{height: 200}}
                     resizeMode = "stretch"
@@ -87,7 +88,7 @@ export default ProbChoicePrev = ({ problem, nextBtn, setNextBtn, choiceRef}) =>{
                     />
                 </TouchableOpacity>
             ):(
-                <TouchableOpacity onPress = {() => {setClick(2)}} disabled = {subBtn || problem.choice} style = {[styles.button, {backgroundColor: problem.choice ? setBtnColorStop(2) :setBtnColor(2)}]}>
+                <TouchableOpacity onPress = {() => {setClick(2)}} disabled = {subBtn || problem.PRB_USER_ANSW} style = {[styles.button, {backgroundColor: problem.PRB_USER_ANSW ? setBtnColorStop(2) :setBtnColor(2)}]}>
                     <Text>
                         {problem.PRB_CHOICE2}
                     </Text>
@@ -98,7 +99,7 @@ export default ProbChoicePrev = ({ problem, nextBtn, setNextBtn, choiceRef}) =>{
        <Text/>
        {
             isImage ? (   
-                <TouchableOpacity onPress = {() => {setClick(3)}} disabled = {subBtn || problem.choice} style = {[{borderColor: problem.choice ? setBtnColorStop(3) :setBtnColor(3), borderWidth: 5}]}>
+                <TouchableOpacity onPress = {() => {setClick(3)}} disabled = {subBtn || problem.PRB_USER_ANSW} style = {[{borderColor: problem.PRB_USER_ANSW ? setBtnColorStop(3) :setBtnColor(3), borderWidth: 5}]}>
                     <Image
                     style={{height: 200}}
                     resizeMode = "stretch"
@@ -106,7 +107,7 @@ export default ProbChoicePrev = ({ problem, nextBtn, setNextBtn, choiceRef}) =>{
                     />
                 </TouchableOpacity>
             ):(
-                <TouchableOpacity onPress = {() => {setClick(3)}} disabled = {subBtn || problem.choice} style = {[styles.button, {backgroundColor: problem.choice ? setBtnColorStop(3) :setBtnColor(3)}]}>
+                <TouchableOpacity onPress = {() => {setClick(3)}} disabled = {subBtn || problem.PRB_USER_ANSW} style = {[styles.button, {backgroundColor: problem.PRB_USER_ANSW ? setBtnColorStop(3) :setBtnColor(3)}]}>
                     <Text>
                         {problem.PRB_CHOICE3}
                     </Text>
@@ -116,7 +117,7 @@ export default ProbChoicePrev = ({ problem, nextBtn, setNextBtn, choiceRef}) =>{
        <Text/>
          {
             isImage ? (   
-                <TouchableOpacity onPress = {() => {setClick(4)}} disabled = {subBtn || problem.choice} style = {[{borderColor: problem.choice ? setBtnColorStop(4) :setBtnColor(4), borderWidth: 5}]}>
+                <TouchableOpacity onPress = {() => {setClick(4)}} disabled = {subBtn || problem.PRB_USER_ANSW} style = {[{borderColor: problem.PRB_USER_ANSW ? setBtnColorStop(4) :setBtnColor(4), borderWidth: 5}]}>
                     <Image
                     style={{height: 200}}
                     resizeMode = "stretch"
@@ -124,7 +125,7 @@ export default ProbChoicePrev = ({ problem, nextBtn, setNextBtn, choiceRef}) =>{
                     />
                 </TouchableOpacity>
             ):(
-                <TouchableOpacity onPress = {() => {setClick(4)}} disabled = {subBtn || problem.choice} style = {[styles.button, {backgroundColor: problem.choice ? setBtnColorStop(4) :setBtnColor(4)}]}>
+                <TouchableOpacity onPress = {() => {setClick(4)}} disabled = {subBtn || problem.PRB_USER_ANSW} style = {[styles.button, {backgroundColor: problem.PRB_USER_ANSW ? setBtnColorStop(4) :setBtnColor(4)}]}>
                     <Text>
                         {problem.PRB_CHOICE4}
                     </Text>
