@@ -55,15 +55,6 @@ const TypeQuestScreenLc = ({navigation, route}) =>{
         }else {
           setLast(null);
         }
-        //setProblems(...problems,...prblist);
-        /*
-        setProblems((prevProblems) => [...prevProblems, ...prblist])
-        console.log(`problems in loadProblems:`, problems);
-        if(problems.length == 0){
-          console.log('aaa', problems.length)
-          //ImageLoading();
-        }
-        */
         setProblems((prevProblems) => {
           const newProblems = [...prevProblems, ...prblist];
           console.log('problems in loadProblems:', newProblems);
@@ -193,7 +184,8 @@ const TypeQuestScreenLc = ({navigation, route}) =>{
       
     }
   };
-  const handleSubmitProblem = () => {
+
+  const handleSubmitProblem = () => { //제출 버튼
     console.log('제출 버튼 클릭');
     console.log('선택한 보기:', selectedChoice, '실제 정답:', problems[currentIndex].PRB_CORRT_ANSW);
     const isCorrect = selectedChoice.toString() === problems[currentIndex].PRB_CORRT_ANSW;
@@ -252,19 +244,19 @@ const TypeQuestScreenLc = ({navigation, route}) =>{
                   <Text>{currentIndex + 1}.{problems[currentIndex].PRB_MAIN_CONT}</Text>
                   {paddedIndex === '001' && (
                     <>
-                      <TouchableOpacity style={[styles.button, choice1ImageUrl ? { height: 130, width: 150 } : null, { backgroundColor: submitted ? (selectedChoice === '1' ? (selectedChoice === problems[currentIndex].PRB_CORRT_ANSW ? '#BAD7E9' : '#FFACAC') : (problems[currentIndex].PRB_CORRT_ANSW === '1' ? '#BAD7E9' : '#D9D9D9')) : (selectedChoice === '1' ? '#BBD6B8' : '#D9D9D9') }]} onPress={() => handleChoice(problems[currentIndex].PRB_CHOICE1)}>
+                      <TouchableOpacity style={[styles.button, choice1ImageUrl ? { height: 103, width: 153, resizeMode: 'contain' } : null, { backgroundColor: submitted ? (selectedChoice === '1' ? (selectedChoice === problems[currentIndex].PRB_CORRT_ANSW ? '#BAD7E9' : '#FFACAC') : (problems[currentIndex].PRB_CORRT_ANSW === '1' ? '#BAD7E9' : '#D9D9D9')) : (selectedChoice === '1' ? '#BBD6B8' : '#D9D9D9') }]} onPress={() => handleChoice(1)}>
                         {choice1ImageUrl && <Image source={{ uri: choice1ImageUrl }} style={styles.choiceImage} />}
                         {!choice1ImageUrl && <Text style={styles.buttonText}>{problems[currentIndex].PRB_CHOICE1}</Text>}
                       </TouchableOpacity>
-                      <TouchableOpacity style={[styles.button, choice2ImageUrl ? { height: 130, width: 150 } : null, { backgroundColor: submitted ? (selectedChoice === '2' ? (selectedChoice === problems[currentIndex].PRB_CORRT_ANSW ? '#BAD7E9' : '#FFACAC') : (problems[currentIndex].PRB_CORRT_ANSW === '2' ? '#BAD7E9' : '#D9D9D9')) : (selectedChoice === '2' ? '#BBD6B8' : '#D9D9D9') }]} onPress={() => handleChoice(problems[currentIndex].PRB_CHOICE2)}>
+                      <TouchableOpacity style={[styles.button, choice2ImageUrl ? { height: 103, width: 153, resizeMode: 'contain' } : null, { backgroundColor: submitted ? (selectedChoice === '2' ? (selectedChoice === problems[currentIndex].PRB_CORRT_ANSW ? '#BAD7E9' : '#FFACAC') : (problems[currentIndex].PRB_CORRT_ANSW === '2' ? '#BAD7E9' : '#D9D9D9')) : (selectedChoice === '2' ? '#BBD6B8' : '#D9D9D9') }]} onPress={() => handleChoice(2)}>
                         {choice2ImageUrl && <Image source={{ uri: choice2ImageUrl }} style={styles.choiceImage} />}
                         {!choice2ImageUrl && <Text style={styles.buttonText}>{problems[currentIndex].PRB_CHOICE2}</Text>}
                       </TouchableOpacity>
-                      <TouchableOpacity style={[styles.button, choice3ImageUrl ? { height: 130, width: 150 } : null, { backgroundColor: submitted ? (selectedChoice === '3' ? (selectedChoice === problems[currentIndex].PRB_CORRT_ANSW ? '#BAD7E9' : '#FFACAC') : (problems[currentIndex].PRB_CORRT_ANSW === '3' ? '#BAD7E9' : '#D9D9D9')) : (selectedChoice === '3' ? '#BBD6B8' : '#D9D9D9') }]} onPress={() => handleChoice(problems[currentIndex].PRB_CHOICE3)}>
+                      <TouchableOpacity style={[styles.button, choice3ImageUrl ? { height: 103, width: 153, resizeMode: 'contain' } : null, { backgroundColor: submitted ? (selectedChoice === '3' ? (selectedChoice === problems[currentIndex].PRB_CORRT_ANSW ? '#BAD7E9' : '#FFACAC') : (problems[currentIndex].PRB_CORRT_ANSW === '3' ? '#BAD7E9' : '#D9D9D9')) : (selectedChoice === '3' ? '#BBD6B8' : '#D9D9D9') }]} onPress={() => handleChoice(3)}>
                         {choice3ImageUrl && <Image source={{ uri: choice3ImageUrl }} style={styles.choiceImage} />}
                         {!choice3ImageUrl && <Text style={styles.buttonText}>{problems[currentIndex].PRB_CHOICE3}</Text>}
                       </TouchableOpacity>
-                      <TouchableOpacity style={[styles.button, choice3ImageUrl ? { height: 130, width: 150 } : null, { backgroundColor: submitted ? (selectedChoice === '4' ? (selectedChoice === problems[currentIndex].PRB_CORRT_ANSW ? '#BAD7E9' : '#FFACAC') : (problems[currentIndex].PRB_CORRT_ANSW === '4' ? '#BAD7E9' : '#D9D9D9')) : (selectedChoice === '4' ? '#BBD6B8' : '#D9D9D9') }]} onPress={() => handleChoice(problems[currentIndex].PRB_CHOICE4)}>
+                      <TouchableOpacity style={[styles.button, choice3ImageUrl ? { height: 103, width: 153, resizeMode: 'contain' } : null, { backgroundColor: submitted ? (selectedChoice === '4' ? (selectedChoice === problems[currentIndex].PRB_CORRT_ANSW ? '#BAD7E9' : '#FFACAC') : (problems[currentIndex].PRB_CORRT_ANSW === '4' ? '#BAD7E9' : '#D9D9D9')) : (selectedChoice === '4' ? '#BBD6B8' : '#D9D9D9') }]} onPress={() => handleChoice(4)}>
                         {choice4ImageUrl && <Image source={{ uri: choice4ImageUrl }} style={styles.choiceImage} />}
                         {!choice4ImageUrl && <Text style={styles.buttonText}>{problems[currentIndex].PRB_CHOICE4}</Text>}
                       </TouchableOpacity>
@@ -287,7 +279,7 @@ const TypeQuestScreenLc = ({navigation, route}) =>{
                     </>
                   )}
                   <View style={styles.buttonSumitContainer}>
-                    <TouchableOpacity style={[styles.buttonsubmit]} onPress={handleSubmitProblem}>
+                    <TouchableOpacity style={[styles.buttonsubmit, { opacity: selectedChoice !== null ? 1 : 0.5 }]} onPress={handleSubmitProblem} disabled={selectedChoice === null} >
                       <Text style={styles.buttonTextpass}>Submit</Text>
                     </TouchableOpacity>
                   </View>
@@ -303,13 +295,13 @@ const TypeQuestScreenLc = ({navigation, route}) =>{
               </TouchableOpacity>
             )}
             {currentIndex < problems.length-1 ? (
-              <TouchableOpacity style={styles.buttonpass} onPress={handleNextProblem}>
+              <TouchableOpacity style={[styles.buttonpass, { opacity: submitted !== false ? 1 : 0.5 }]} onPress={handleNextProblem} disabled={submitted === false}>
                 <Text style={styles.buttonTextpass}>Next</Text>
               </TouchableOpacity>
             ) : (
               <View style={{flexDirection:'row'}}> 
 
-                <TouchableOpacity style={styles.buttonpass} onPress={handlePress}>
+                <TouchableOpacity style={[styles.buttonpass,{ opacity: submitted !== false ? 1 : 0.5 }]} onPress={handlePress} disabled={submitted === false}>
                   <Text style={styles.buttonTextpass}>End</Text>
                 </TouchableOpacity>
                 <Modal visible={modalVisible} onRequestClose={() => setModalVisible(false)}>
@@ -346,8 +338,8 @@ const styles = StyleSheet.create({
   },
   choiceImage: {
     width: 150,
-    height: 130,
-    
+    height: 100,
+    resizeMode: 'contain',
   },
   buttonContainer: {
     flexDirection: 'row',
