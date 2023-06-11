@@ -127,7 +127,7 @@ export default ProbChoice = (props) =>{
             </TouchableOpacity>): 
             (<TouchableOpacity onPress = {() => {props.setNextBtn(props.nextBtn+1)}} style = {[styles.button, {backgroundColor: "#94AF9F"}]}>
                 <Text>
-                    NEXT TO
+                    NEXT
                 </Text>
             </TouchableOpacity>)}
       </View>  

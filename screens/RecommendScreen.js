@@ -1,6 +1,6 @@
 import React, {useEffect, useState} from 'react';
 
-import {Button, View ,Text, StyleSheet, TouchableOpacity, Touchable} from 'react-native'
+import {Button, View ,Text, StyleSheet, TouchableOpacity} from 'react-native'
 import firestore from '@react-native-firebase/firestore';
 
 import {subscribeAuth } from "../lib/auth";

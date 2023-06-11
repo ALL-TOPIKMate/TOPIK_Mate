@@ -1,4 +1,5 @@
 import React from 'react';
+import {Image} from 'react-native'
 
 
 // load navigation
@@ -40,7 +41,36 @@ const Stack = createNativeStackNavigator();
 
 const Home = () =>{
     return (
-      <Tab.Navigator screenOptions={{headerShown: false}}>
+      <Tab.Navigator 
+          screenOptions={({ route }) => ({
+            tabBarIcon: ({ focused, color, size }) =>{
+              let iconImage
+              if(route.name === "Recommend"){
+                iconImage = require("./assets/home.png")
+              }else if(route.name === "Mocktest"){
+                iconImage = require("./assets/mocktest.png")
+              }else if(route.name === "Type"){
+                iconImage = require("./assets/type.png")
+              }else if(route.name === "Wrong"){
+                iconImage = require("./assets/wrong.png")
+              }else{ // Info
+                iconImage = require("./assets/info.png")
+              }
+
+              return <Image source = {iconImage} style = {{width: 23, height: 23}} resizeMode='contain' />
+            },
+          
+            headerShown: false,
+            tabBarActiveTintColor: "black",
+            tabBarInactiveTintColor: "gray",
+            tabBarActiveBackgroundColor: "#94AF9F",
+            // tabBarInactiveBackgroundColor: "#D9D9D9"
+            tabBarLabelStyle: {fontSize: 12, fontWeight: "bold"},
+
+            tabBarStyle:{ height: 64}
+          })
+        }
+      >
           <Tab.Screen name = "Recommend" component = {RecommendScreen}/>
           <Tab.Screen name = "Mocktest" component = {MocktestScreen}/>
           <Tab.Screen name = "Type" component = {TypeScreen}/>   
