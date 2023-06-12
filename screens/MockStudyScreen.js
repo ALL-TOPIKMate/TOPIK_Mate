@@ -1,15 +1,13 @@
 import React, {useState, useEffect, useRef } from 'react';
-import { View, Text, Button, StyleSheet, ScrollView, TouchableOpacity } from 'react-native'
+import { View, StyleSheet } from 'react-native'
 import firebase from '@react-native-firebase/app';
 import firestore from '@react-native-firebase/firestore';
 import { getStorage } from '@react-native-firebase/storage'; // include storage module besides Firebase core(firebase/app)
 import auth from '@react-native-firebase/auth'; // 사용자 정보 가져오기
-import { Table, TableWrapper, Row, Cell } from 'react-native-table-component'
-
 
 import Loading from './component/Loading';
 import MockProb from './component/MockProb';
-import MockProbModal from './component/MockProbModal';
+import MockResult from './component/MockResult';
 import MockTimer from './component/MockTimer';
 
 
@@ -73,7 +71,7 @@ const updateUserWrongColl = async (email, problems, level) => {
                 } else {
 
                     if (problem.USER_CHOICE !== problem.PRB_CORRT_ANSW) {
-                        // // 틀린 문제 wrong list에 삽입
+                        // 틀린 문제 wrong list에 삽입
     
                         // 문제 영역, 태그 별 wrong list에 삽입
                         const sectTagDoc = wrongColl
@@ -202,6 +200,7 @@ const MockStudyScreen = ({navigation, route}) =>{
         
         await audioRef.listAll().then(res => {
             
+            
             const data = {}
             
             res.items.forEach(item => {
@@ -212,11 +211,11 @@ const MockStudyScreen = ({navigation, route}) =>{
                     
                 })
             })
-            
+
             setAudios(data);
             
         });
-            
+
     }
 
     
@@ -233,43 +232,60 @@ const MockStudyScreen = ({navigation, route}) =>{
     /** 데이터 로딩 처리 */
     useEffect(() => {
 
-        setReady(false);
-
-        // 데이터 로딩
+        // let isComponentMounted = true; // 메모리 누수 방지
+        // setReady(false);
+        
         dataLoading();
         imagesLoading(imageRef);
         audiosLoading(audioRef);
 
+        // 데이터 로딩
+        // loadWholeData();
+
+        // if (prevProblems.current.length && prevImages.current.length && prevAudios.current.length) {
+        //     setReady(true); // 데이터 준비 완료
+        // }
+
+        // 데이터 준비
         setTimeout(() => {
-            setReady(true); // 데이터 준비 완료
+            // console.log(prevAudios.current.length);
+            setReady(true);
         }, 3000); // 3초간 로딩
+
+
+        return () => {
+            // 사용자 틀린 문제 DB 업데이트
+            updateUserWrongColl(userEmail, prevProblems.current, route.params.level.toLowerCase());
+        }
 
     }, []);
 
 
+    
+    const [isEnd, setIsEnd] = useState(false); // 타임 아웃 여부
+    
 
-    
     /* 사용자 답안 저장 */
-    const [choice, setChoice] = useState(0);
-    const [direction, setDirection] = useState(0);
-    const [index, setIndex] = useState(0);
+    const [choice, setChoice] = useState(""); // 듣기, 읽기, 쓰기 답안1
+    const [choice2, setChoice2] = useState(""); // 쓰기 답안2
+    const [direction, setDirection] = useState(0); // 문제 이동 방향
+    const [index, setIndex] = useState(0); // 현재 풀이하는 문제의 인덱스
     
+    // 문제 이동이 일어날 때마다 직전 사용자 풀이 정보(choice, choice2) 업데이트
     useEffect(() => {
         if (isEnd || direction !== 0) {
-            console.log(`current index: ${index}`);
-            console.log(`current choice: ${choice}`);
-            console.log(`current direction: ${direction}`);
-            
+
             let newArr = [...prevProblems.current];
             if (newArr !== undefined) {
 
                 // 직전 풀이한 문제의 사용자 선택 저장
                 newArr[index + direction]['USER_CHOICE'] = choice;
+                newArr[index + direction]['USER_CHOICE2'] = choice2;
                 setProblems(newArr);
                 
-                console.log(
-                    `updated ${index + direction}: ${newArr[index + direction].USER_CHOICE}`
-                    );
+                // console.log(
+                //     `updated ${index + direction}: ${newArr[index + direction].USER_CHOICE}`
+                //     );
                         
             }
         }
@@ -278,21 +294,17 @@ const MockStudyScreen = ({navigation, route}) =>{
 
 
     /* 결과 화면 만들기 */
-    const [isEnd, setIsEnd] = useState(false); // 타임 아웃 여부
-    
-    const [listen, setListen] = useState([]);
-    const [write, setWrite] = useState([]);
-    const [read, setRead] = useState([]);
-    
+    const [listen, setListen] = useState([]); // 듣기 영역 문제들
+    const [write, setWrite] = useState([]); // 쓰기 영역 문제들
+    const [read, setRead] = useState([]); // 읽기 영역 문제들
 
-    // 결과 화면 테이블 헤더
-    const headers = ['No.', 'Your answer', 'Correct Answer', 'Result', 'Review'];
     
     useEffect(() => {
-        if (isEnd || index === prevProblems.current.length) {
+        if (listen.length || write.length || read.length) {
+            return;
+        }
 
-            // 사용자 틀린 문제 DB 업데이트
-            updateUserWrongColl(userEmail, prevProblems.current, route.params.level.toLowerCase());
+        if (isEnd || index === prevProblems.current.length) {
 
             // 문제 영역별 분류
             prevProblems.current.map((problem) => {
@@ -311,40 +323,7 @@ const MockStudyScreen = ({navigation, route}) =>{
             });
         }
     }, [isEnd, index]);
-
                 
-
-    /* 푼 문제 재확인(결과화면 모달) */
-    const [modal, setModal] = useState(<MockProbModal />); // 모달 컴포넌트 state
-    const [visible, setVisible] = useState(false); // 모달 비저블
-    
-
-    // 푼 문제 재확인 버튼 요소
-    const element = (data, index) => (
-        // 버튼을 클릭하면 해당 문제를 풀었던 화면을 보여줌(problemStructure[data])
-        <TouchableOpacity onPress={() => {
-            setModal(<MockProbModal 
-                problem={
-                    data == 'LS'
-                    ? listen
-                    : (
-                        data == 'RD'
-                        ? read
-                        : write
-                    )
-                }
-                index={index}
-                setVisible={setVisible}
-                images={prevImages}
-                audios={prevAudios}/>);
-            setVisible(true);}}
-        >
-            <View style={{width: 50, height: 20, backgroundColor: '#94AF9F', borderRadius: 2, marginLeft: 5}}>
-                <Text style={styles.text}>Review</Text>
-            </View>
-        </TouchableOpacity>
-    );
-
 
 
     /** 출력 화면 */ 
@@ -357,26 +336,22 @@ const MockStudyScreen = ({navigation, route}) =>{
         // 문제 풀이 화면
         return (
             <View style={styles.container}>
-                <View>
-                    <TouchableOpacity 
-                        onPress={() => setIsEnd(true)} 
-                        style={styles.exitBtn}>
-                        <Text>Exit</Text>
-                    </TouchableOpacity>
-                </View>
                 {/* 타이머 */}
-                {/* <MockTimer
+                <MockTimer
                     level={route.params.level}
                     setIsEnd={setIsEnd}
-                /> */}
+                />
     
                 {/* 문제 풀이 영역 */}
                 <MockProb
                     problem={prevProblems.current[index]}
                     choice={prevProblems.current[index].USER_CHOICE}
                     setChoice={setChoice}
-                    setIndex={setIndex}
+                    choice2={prevProblems.current[index].USER_CHOICE2}
+                    setChoice2={setChoice2}
                     index={index}
+                    setIndex={setIndex}
+                    setIsEnd={setIsEnd}
                     probListLength={prevProblems.current.length}
                     setDirection={setDirection}
                     images={prevImages}
@@ -387,79 +362,14 @@ const MockStudyScreen = ({navigation, route}) =>{
     } else if (isEnd || index === prevProblems.current.length) {
         // 결과 테이블 화면
         return (
-            <ScrollView style={styles.container}>
-
-                {/* 모달 창 */}
-                {visible && modal}
-                
-                
-                {/* 듣기 */}
-                <View>
-                <Text style={styles.sectionTitle}>듣기</Text>
-                <Table borderStyle={{borderWidth: 1, borderColor: '#C1C0B9'}}>
-                    <Row data={headers} style={[styles.row, {backgroundColor: '#C1C0B9'}]} textStyle={styles.text}/>
-                    {
-                    listen.map((rowData, rowIndex) => {
-                        return (
-                        <TableWrapper key={rowIndex} style={styles.row} >
-                            <Cell key={0} data={rowData['PRB_NUM']} textStyle={styles.text} />
-                            <Cell key={1} data={rowData['USER_CHOICE']} textStyle={styles.text} />
-                            <Cell key={2} data={rowData['PRB_CORRT_ANSW']} textStyle={styles.text} />
-                            <Cell key={3} data={rowData['USER_CHOICE'] === rowData['PRB_CORRT_ANSW'] ? '정답' : '오답'} textStyle={styles.text} />
-                            <Cell key={4} data={element('LS', rowIndex)} textStyle={styles.text} />
-                        </TableWrapper>
-                        )
-                    })
-                    }
-                </Table>
-                </View>
-                
-
-
-                {/* 쓰기 */}
-                {
-                    route.params.length === 'LV2'
-                    ? <View>
-                    <Text style={styles.sectionTitle}>쓰기</Text>
-                    <View>
-                        {
-                        write.map((rowData, rowIndex) => {
-                            return (
-                            <View key={rowIndex}>
-                                <Text>{rowData['PRB_NUM']}</Text>
-                                <Text>{rowData['USER_CHOICE']}</Text>
-                            </View>
-                            )
-                        })
-                        }
-                    </View>
-                    </View>
-                    : null
-                }
-                
-                
-
-                {/* 읽기 */}
-                <View>
-                <Text style={styles.sectionTitle}>읽기</Text>
-                <Table borderStyle={{borderWidth: 1, borderColor: '#C1C0B9'}}>
-                    <Row data={headers} style={[styles.row, {backgroundColor: '#C1C0B9'}]} textStyle={styles.text} />
-                    {
-                    read.map((rowData, rowIndex) => {
-                        return (
-                        <TableWrapper key={rowIndex} style={styles.row} >
-                            <Cell key={0} data={rowData['PRB_NUM']} textStyle={styles.text} />
-                            <Cell key={1} data={rowData['USER_CHOICE']} textStyle={styles.text} />
-                            <Cell key={2} data={rowData['PRB_CORRT_ANSW']} textStyle={styles.text} />
-                            <Cell key={3} data={rowData['USER_CHOICE'] === rowData['PRB_CORRT_ANSW'] ? '정답' : '오답'} textStyle={styles.text} />
-                            <Cell key={4} data={element('RD', rowIndex)} textStyle={styles.text} />
-                        </TableWrapper>
-                        )
-                    })
-                    }
-                </Table>
-                </View>
-            </ScrollView>
+            <MockResult
+                level={route.params.level}
+                listen={listen}
+                write={write}
+                read={read}
+                prevImages={prevImages}
+                prevAudios={prevAudios}
+            />
         );
     }     
 }
@@ -472,37 +382,11 @@ const styles = StyleSheet.create({
         padding: 20,
     },
 
-    exitBtn: {
-        width: 50,
-        left: 300,
-        borderStyle: 'solid',
-        borderColor: 'black',
-        borderWidth: 1,
-        borderRadius: 5,
-        padding: 8,
-        backgroundColor: '#D9D9D9',
-    },
-
     button:{
         flex: 3,
         borderRadius: 10,
         padding: 16,
         backgroundColor: '#BBD6B8',
-        // flexDirection: "row",
-        // justifyContent: "center"
-
-    },
-
-    sectionTitle: {
-        marginBottom: 10,
-        marginTop: 20,
-        fontSize: 20,
-    },
-
-    row: {
-        height: 40,
-        flexDirection: 'row',
-        backgroundColor: '#f6f8fa',
     },
 
     text: { textAlign: 'center' },

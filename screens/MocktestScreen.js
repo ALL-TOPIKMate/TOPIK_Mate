@@ -1,10 +1,9 @@
 import React from 'react';
-
-import { View, Text, Button, StyleSheet, Pressable, Platform } from 'react-native'
-import AppNameHeader from './component/AppNameHeader'
-
+import { View, Text, Image, StyleSheet, Pressable, Platform } from 'react-native'
+import { Table, TableWrapper, Row, Col, Cell } from 'react-native-table-component'
 
 const MocktestScreen = ({navigation: {navigate}}) =>{
+
     return (
         <View style={styles.container}>
             <View style={styles.titleSection}>
@@ -13,20 +12,12 @@ const MocktestScreen = ({navigation: {navigate}}) =>{
                 </Text>
             </View>
 
+            <Text style={styles.infoText}>Mock Informations</Text>
             <View style={styles.infoSection}>
-                <Text>Exam Schedule</Text>
-                <Text style={{fontSize: 20}}>
-                    ㅇㅇㅇㅇ
-                </Text>
-                <Text style={{fontSize: 20}}>
-                    ㅇㅇㅇㅇ
-                </Text>
-                <Text style={{fontSize: 20}}>
-                    ㅇㅇㅇㅇ
-                </Text>
-                <Text style={{fontSize: 20}}>
-                    ㅇㅇㅇㅇ
-                </Text>    
+                <Image
+                    style={styles.infoImg}
+                    source={require('../assets/topik-guide.webp')}
+                />
             </View>
             
             <View style={styles.mockLevelSelectContainer}>
@@ -58,13 +49,22 @@ const styles = StyleSheet.create({
         fontSize: 32,
     },
 
-
     infoSection: {
-        flex: 3,
-        borderWidth: 1,
-        borderStyle: 'solid',
-        borderColor: '#d9d9d9',
+        flex: 2,
+
+        flexDirection: 'column',
         marginBottom: 30,
+        alignContent: 'center',
+    },
+
+    infoText: {
+        fontSize: 20,
+    },
+
+    infoImg: {
+        flex: 2,
+        width: '100%',
+        resizeMode: 'contain',
     },
 
 
@@ -113,7 +113,8 @@ const styles = StyleSheet.create({
         shadowOpacity: 0.25,
         shadowRadius: 3,
         elevation: 5,
-    }
+    },
+
 });
 
 export default MocktestScreen;

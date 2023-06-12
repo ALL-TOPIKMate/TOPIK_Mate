@@ -64,6 +64,7 @@ const SigninScreen = ({navigation}) =>{
                     style={styles.input}
                     onChangeText={(value)=>setForm({ ...form, password: value})}
                     value={form.password} placeholder="비밀번호"
+                    secureTextEntry={true}
                 />
                 
                 
