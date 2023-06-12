@@ -264,7 +264,7 @@ const RecommendStudyScreen = ({route, navigation}) =>{
                 let problem = {}
 
                 Object.keys(loadedProblem[nextBtn-1]).forEach((key) => {
-                    if(key !== "AUD_URL" && key !== "PRB_CHOICE_URL1" && key !== "PRB_CHOICE_URL2" && key !== "PRB_CHOICE_URL3"&& key !== "PRB_CHOICE_URL4" && key != "IMG_URL" || key != "PRB_USER_ANSW"){
+                    if(key !== "AUD_URL" && key !== "PRB_CHOICE_URL1" && key !== "PRB_CHOICE_URL2" && key !== "PRB_CHOICE_URL3"&& key !== "PRB_CHOICE_URL4" && key != "IMG_URL" && key != "PRB_USER_ANSW"){
                         problem[key] = loadedProblem[nextBtn - 1][key]
                     }
                 })
@@ -277,7 +277,7 @@ const RecommendStudyScreen = ({route, navigation}) =>{
                         console.log(err)
                     }else{
                         console.log("success to uploading data")
-                        console.log(loadedProblem[nextBtn-1].PRB_ID)
+                        // console.log(loadedProblem[nextBtn-1].PRB_ID)
                     }
                 })
 

@@ -238,12 +238,6 @@ const WrongStudyScreen = ({route, navigation}) =>{
         async function dataLoading(){
             try{
 
-                if(isAllProblemSolve()){
-                    setNextBtn(-1)
-                    return 
-                }
-
-
                 let problemList = []
 
                 const data = await querySnapshot.get(); // 요청한 데이터가 반환되면 다음 줄 실행
