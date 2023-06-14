@@ -129,7 +129,7 @@ const TypeQuestScreenLc = ({navigation, route}) =>{
     console.log('문제 아이디', problems_new);
     const nextProblem = problems_new[currentIndex].PRB_ID;
     const nextProbslice = nextProblem.slice(0,9)
-    if (paddedIndex === '001') {
+    if ((paddedIndex === '001'&& prbSection === 'LV2') || paddedIndex==='003' && prbSection ==='LV1') {
       try { 
         const choice1ImageRef = storage()
           .ref()
@@ -160,6 +160,7 @@ const TypeQuestScreenLc = ({navigation, route}) =>{
         setChoice2ImageUrl(choice2ImageUrl);
         setChoice3ImageUrl(choice3ImageUrl);
         setChoice4ImageUrl(choice4ImageUrl);
+        //console.log(choice4ImageUrl);
       } catch (error) {
         console.log('Error occurred while downloading image', error);
       }
@@ -242,7 +243,7 @@ const TypeQuestScreenLc = ({navigation, route}) =>{
               {problems.length > 0 && (
                 <>
                   <Text>{currentIndex + 1}.{problems[currentIndex].PRB_MAIN_CONT}</Text>
-                  {paddedIndex === '001' && (
+                  {((paddedIndex === '001' && prbSection==='LV2')|| (paddedIndex ==='003' && prbSection ==='LV1'))&& (
                     <>
                       <TouchableOpacity style={[styles.button, choice1ImageUrl ? { height: 103, width: 153, resizeMode: 'contain' } : null, { backgroundColor: submitted ? (selectedChoice === '1' ? (selectedChoice === problems[currentIndex].PRB_CORRT_ANSW ? '#BAD7E9' : '#FFACAC') : (problems[currentIndex].PRB_CORRT_ANSW === '1' ? '#BAD7E9' : '#D9D9D9')) : (selectedChoice === '1' ? '#BBD6B8' : '#D9D9D9') }]} onPress={() => handleChoice(1)}>
                         {choice1ImageUrl && <Image source={{ uri: choice1ImageUrl }} style={styles.choiceImage} />}
@@ -262,7 +263,7 @@ const TypeQuestScreenLc = ({navigation, route}) =>{
                       </TouchableOpacity>
                     </>
                   )}
-                  {paddedIndex !== '001' && (
+                  {((paddedIndex !== '001' && prbSection==='LV2')|| (paddedIndex !=='003' && prbSection ==='LV1'))&&(
                     <>
                       <TouchableOpacity style={[styles.button, { backgroundColor: submitted ? (selectedChoice === '1' ? (selectedChoice === problems[currentIndex].PRB_CORRT_ANSW ? '#BAD7E9' : '#FFACAC') : (problems[currentIndex].PRB_CORRT_ANSW === '1' ? '#BAD7E9' : '#D9D9D9')) : (selectedChoice === '1' ? '#BBD6B8' : '#D9D9D9') }]} onPress={() => handleChoice(1)}>
                         <Text style={styles.buttonText}>{problems[currentIndex].PRB_CHOICE1}</Text>

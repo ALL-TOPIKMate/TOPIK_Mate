@@ -19,7 +19,7 @@ const TypeQuestScreen = ({navigation, route}) =>{
   const [isLoading, setIsLoading] = useState(true);
   const [totalProblem, setTotalProblem] = useState(0);
   const [CorrectProb, setCorrectProb] = useState(0);
- 
+  
   // 콜렉션 불러오기
   const loadProblems = async () => {
     //console.log('진입')
@@ -129,17 +129,21 @@ const TypeQuestScreen = ({navigation, route}) =>{
     const nextProblem = problems_new[currentIndex].PRB_ID;
     const nextProbslice = nextProblem.slice(0,9)
     //console.log(`문제 경로: images/${nextProbslice}/${problems_new.find(problem_new => problem_new.PRB_ID === nextProblem).IMG_REF}`)
-    const ImageRef = storage()
-      .ref()
-      .child(`images/${nextProbslice}/${problems_new.find(problem_new => problem_new.PRB_ID === nextProblem).IMG_REF}`);
+    const problem = problems_new.find(problem_new => problem_new.PRB_ID === nextProblem);
+    if (problem && problem.IMG_REF !== "") {
+      const ImageRef = storage()
+        .ref()
+        .child(`images/${nextProbslice}/${problem.IMG_REF}`);
 
       try {
         const imageUrl = await ImageRef.getDownloadURL();
         setImageUrls(imageUrl);
-        console.log(imageUrl)
+        console.log(imageUrl);
       } catch (error) {
         console.log('Error occurred while downloading image', error);
       }
+    }
+    
   }
   //다음 버튼 클릭
   const handleNextProblem = () => {

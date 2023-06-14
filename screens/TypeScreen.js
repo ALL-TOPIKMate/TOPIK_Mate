@@ -13,11 +13,11 @@ const TypeScreen = ({ navigation }) => {
   const [listenButtonTags, setListenButtonTags] = useState([]); // 듣기 버튼의 태그 값
   const [readButtonTags, setReadButtonTags] = useState([]); // 읽기 버튼의 태그 값
   const [writeButtonTags, setWriteButtonTags] = useState([]); // 쓰기 버튼의 태그 값
-  //레벨 세팅
+
   useEffect(() => {
     const handleAuthStateChanged = (user) => {
       if (user) {
-        console.log('로그인', user.email);
+        console.log('유형별 문제 진입 페이지');
         //setUserEmail(user.email);
 
         // 이메일에 해당하는 레벨 가져오기
