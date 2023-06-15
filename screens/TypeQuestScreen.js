@@ -9,16 +9,17 @@ import storage from '@react-native-firebase/storage'
 //Reading
 const TypeQuestScreen = ({navigation, route}) =>{
   const { source, paddedIndex, prbSection } = route.params;//이전 페이지에서 정보 받아오기
-  const [problems, setProblems] = useState([]);
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [imageUrls,setImageUrls]=useState(null);
-  const [submitted, setSubmitted]=useState(false);
-  const [selectedChoice, setSelectedChoice] = useState(null);
-  const [modalVisible, setModalVisible] = useState(false);
-  const [Last,setLast] = useState(null)
-  const [isLoading, setIsLoading] = useState(true);
-  const [totalProblem, setTotalProblem] = useState(0);
-  const [CorrectProb, setCorrectProb] = useState(0);
+  const [problems, setProblems] = useState([]); //문제 데이터 적재
+  const [currentIndex, setCurrentIndex] = useState(0); //현재 문제 번호
+  const [imageUrls,setImageUrls]=useState(null); //이미지 링크 적재
+  const [submitted, setSubmitted]=useState(false); //제출여부 
+  const [selectedChoice, setSelectedChoice] = useState(null); //선택한 보기
+  const [modalVisible, setModalVisible] = useState(false); //결과화면 모달
+  const [Last,setLast] = useState(null) //문제 기준 잡기
+  const [isLoading, setIsLoading] = useState(true); //로딩창
+  const [totalProblem, setTotalProblem] = useState(0); // 전체 문제 갯수
+  const [CorrectProb, setCorrectProb] = useState(0); // 맞은 문제 갯수
+  const [prbchoice, setPrbChoice] = useState([]); //문제 풀 때 선택한 정보 저장
   
   // 콜렉션 불러오기
   const loadProblems = async () => {
@@ -101,8 +102,8 @@ const TypeQuestScreen = ({navigation, route}) =>{
       ImageLoading(problems);
     } else if (problems.length !== 0) {
       //console.log('그냥 진입');
-      setSelectedChoice(null);
-      setSubmitted(false);
+      //setSelectedChoice(null);
+      //setSubmitted(false);
       ImageLoading(problems);
       console.log(currentIndex)
     }
@@ -125,7 +126,7 @@ const TypeQuestScreen = ({navigation, route}) =>{
 
   const ImageLoading = async (problems_new)=>{
     console.log('이미지 로드 시작');
-    console.log('문제 아이디', problems_new);
+    //console.log('문제 아이디', problems_new);
     const nextProblem = problems_new[currentIndex].PRB_ID;
     const nextProbslice = nextProblem.slice(0,9)
     //console.log(`문제 경로: images/${nextProbslice}/${problems_new.find(problem_new => problem_new.PRB_ID === nextProblem).IMG_REF}`)
@@ -148,11 +149,18 @@ const TypeQuestScreen = ({navigation, route}) =>{
   //다음 버튼 클릭
   const handleNextProblem = () => {
     if (currentIndex < problems.length - 1) {
+      
       setSelectedChoice(null); // 선택한 답변 초기화
       setSubmitted(false); // 제출 여부 초기화
       setCurrentIndex((prevIndex) => prevIndex + 1);
       setImageUrls(null);
-      //const nextProblem = data[currentIndex + 1];
+      //console.log('같은지 확인중', problems[currentIndex+1].PRB_ID,prbchoice.find(item => item.Prb_num === problems[currentIndex+1].PRB_ID).Prb_num)
+      const check =  prbchoice.find(item => item.Prb_num === problems[currentIndex].PRB_ID).Prb_num
+      if ( problems[currentIndex+1].PRB_ID === check) {
+        console.log('같습니다.')
+        setSubmitted(true); 
+        setSelectedChoice(prbchoice.find(item => item.Prb_num === problems[currentIndex].PRB_ID).User_answer);
+      }
     } 
   };
 
@@ -164,7 +172,14 @@ const TypeQuestScreen = ({navigation, route}) =>{
       setImageUrls(null);
       setCurrentIndex((prevIndex) => prevIndex - 1);
 
-      const prevProblem = problems[currentIndex - 1];
+      //const prevProblem = problems[currentIndex - 1];
+      const check =  prbchoice.find(item => item.Prb_num === problems[currentIndex-1].PRB_ID)?.Prb_num
+      console.log('뒤로 가기 확인',  problems[currentIndex-1].PRB_ID, check);
+      if ( problems[currentIndex-1].PRB_ID === check) {
+        console.log('뒤로 같습니다.')
+        setSubmitted(true); 
+        setSelectedChoice(prbchoice.find(item => item.Prb_num === problems[currentIndex-1].PRB_ID)?.User_answer);
+      }
     } 
   }
   //제출버튼
@@ -178,40 +193,22 @@ const TypeQuestScreen = ({navigation, route}) =>{
     else if(isCorrect === 'false') {//틀린 경우에 오답노트로 전달, 여기 만들어야 함.
         console.log('틀렸음',problems[0])
     }
+    const nowProb = {
+      Prb_num: problems[currentIndex].PRB_ID, //제출 버튼 누르면 번호와
+      User_answer: selectedChoice.toString() //사용자가 선택한 답을 넣어서
+    }; 
+    prbchoice.push(nowProb);   //딕셔너리로 넣어주자
+    console.log('선택지 상태: ' ,prbchoice);
     setTotalProblem(prevTotalProblem => prevTotalProblem+1)// 전체 문제 갯수 저장
     console.log(isCorrect,'전체 문제: ', totalProblem, '맞은 문제: ', CorrectProb);
     setSubmitted(true);
     
   };
-//이미지 로드 관련, 에러 있음.
-/*
-  useEffect(() => {
-    const loadImageUrls = async () => {
-      const urls = [];
-      for (let i = 0; i < problems.length; i++) {
-        const prbIndex = problems[i].id;
-        const modifiedPrbIndex = prbIndex + 54;
-        try {
-          const imageUrl = await imageUrl(modifiedPrbIndex); // 이미지 URL 가져오는 비동기 함수
-          urls.push({
-            id: prbIndex,
-            image: imageUrl,
-          });
-        } catch (error) {
-          console.log(error);
-        }
-      }
-      setImageUrls(urls);
-    };
-  
-    loadImageUrls();
-  }, [problems]);
-  */
-  const handlePress = () => {
+  const handlePress = () => { // 모달창 보이기
     setModalVisible(true);
   };
 
-  const handleConfirm = () => {
+  const handleConfirm = () => { //모달창 확인
     setModalVisible(false);
     navigation.navigate('Home');
   };
@@ -264,16 +261,16 @@ const TypeQuestScreen = ({navigation, route}) =>{
                 )}
 
                 
-                <TouchableOpacity style={[styles.button,styles.buttonContainer,{backgroundColor: submitted? selectedChoice ==='1'? selectedChoice=== problems[currentIndex].PRB_CORRT_ANSW? '#BAD7E9':'#FFACAC': problems[currentIndex].PRB_CORRT_ANSW === '1'? '#BAD7E9': '#D9D9D9' : selectedChoice === '1'? '#BBD6B8': '#D9D9D9'}, { marginTop: 10 } ]} onPress={() => handleChoice(1)}>
+                <TouchableOpacity style={[styles.button,styles.buttonContainer,{backgroundColor: submitted? selectedChoice ==='1'? selectedChoice=== problems[currentIndex].PRB_CORRT_ANSW? '#BAD7E9':'#FFACAC': problems[currentIndex].PRB_CORRT_ANSW === '1'? '#BAD7E9': '#D9D9D9' : selectedChoice === '1'? '#BBD6B8': '#D9D9D9'}, { marginTop: 10 } ]} onPress={() => handleChoice(1)} disabled={submitted}>
                   <Text style={styles.buttonText}>{problems[currentIndex].PRB_CHOICE1}</Text>
                 </TouchableOpacity>
-                <TouchableOpacity style={[styles.button,styles.buttonContainer,{backgroundColor: submitted? selectedChoice ==='2'? selectedChoice=== problems[currentIndex].PRB_CORRT_ANSW? '#BAD7E9':'#FFACAC': problems[currentIndex].PRB_CORRT_ANSW === '2'? '#BAD7E9': '#D9D9D9' : selectedChoice === '2'? '#BBD6B8': '#D9D9D9'}, { marginTop: 10 }]} onPress={() => handleChoice(2)}>
+                <TouchableOpacity style={[styles.button,styles.buttonContainer,{backgroundColor: submitted? selectedChoice ==='2'? selectedChoice=== problems[currentIndex].PRB_CORRT_ANSW? '#BAD7E9':'#FFACAC': problems[currentIndex].PRB_CORRT_ANSW === '2'? '#BAD7E9': '#D9D9D9' : selectedChoice === '2'? '#BBD6B8': '#D9D9D9'}, { marginTop: 10 }]} onPress={() => handleChoice(2)} disabled={submitted}>
                   <Text style={styles.buttonText}>{problems[currentIndex].PRB_CHOICE2}</Text>
                 </TouchableOpacity>
-                <TouchableOpacity style={[styles.button,styles.buttonContainer,{backgroundColor: submitted? selectedChoice ==='3'? selectedChoice=== problems[currentIndex].PRB_CORRT_ANSW? '#BAD7E9':'#FFACAC': problems[currentIndex].PRB_CORRT_ANSW === '3'? '#BAD7E9': '#D9D9D9' : selectedChoice === '3'? '#BBD6B8': '#D9D9D9'}, { marginTop: 10 }]} onPress={() => handleChoice(3)}>
+                <TouchableOpacity style={[styles.button,styles.buttonContainer,{backgroundColor: submitted? selectedChoice ==='3'? selectedChoice=== problems[currentIndex].PRB_CORRT_ANSW? '#BAD7E9':'#FFACAC': problems[currentIndex].PRB_CORRT_ANSW === '3'? '#BAD7E9': '#D9D9D9' : selectedChoice === '3'? '#BBD6B8': '#D9D9D9'}, { marginTop: 10 }]} onPress={() => handleChoice(3)} disabled={submitted}>
                   <Text style={styles.buttonText}>{problems[currentIndex].PRB_CHOICE3}</Text>
                 </TouchableOpacity>
-                <TouchableOpacity style={[styles.button,styles.buttonContainer,{backgroundColor: submitted? selectedChoice ==='4'? selectedChoice=== problems[currentIndex].PRB_CORRT_ANSW? '#BAD7E9':'#FFACAC': problems[currentIndex].PRB_CORRT_ANSW === '4'? '#BAD7E9': '#D9D9D9' : selectedChoice === '4'? '#BBD6B8': '#D9D9D9'}, { marginTop: 10 }]} onPress={() => handleChoice(4)}>
+                <TouchableOpacity style={[styles.button,styles.buttonContainer,{backgroundColor: submitted? selectedChoice ==='4'? selectedChoice=== problems[currentIndex].PRB_CORRT_ANSW? '#BAD7E9':'#FFACAC': problems[currentIndex].PRB_CORRT_ANSW === '4'? '#BAD7E9': '#D9D9D9' : selectedChoice === '4'? '#BBD6B8': '#D9D9D9'}, { marginTop: 10 }]} onPress={() => handleChoice(4)} disabled={submitted}>
                   <Text style={styles.buttonText}>{problems[currentIndex].PRB_CHOICE4}</Text>
                 </TouchableOpacity>
                 </>
@@ -281,7 +278,7 @@ const TypeQuestScreen = ({navigation, route}) =>{
             </View>
           )}
             <View style={styles.buttonSumitContainer}>
-              <TouchableOpacity style={[styles.buttonsubmit, { opacity: selectedChoice !== null ? 1 : 0.5 }]} onPress={handleSubmitProblem} disabled={selectedChoice === null}>
+              <TouchableOpacity style={[styles.buttonsubmit, { opacity: (selectedChoice !== null && !submitted) ? 1 : 0.5 }]} onPress={handleSubmitProblem} disabled={selectedChoice === null || submitted === true}>
                 <Text style={styles.buttonTextpass}>Submit</Text>
               </TouchableOpacity>
             </View>
