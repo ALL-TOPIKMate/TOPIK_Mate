@@ -5,6 +5,9 @@ import firestore from '@react-native-firebase/firestore';
 import {subscribeAuth } from "../lib/auth";
 import firebase from '@react-native-firebase/app';
 import storage from '@react-native-firebase/storage'
+import Sound from 'react-native-sound';
+
+Sound.setCategory('Playback');
 
 //Listening
 const TypeQuestScreenLc = ({navigation, route}) =>{
@@ -22,6 +25,8 @@ const TypeQuestScreenLc = ({navigation, route}) =>{
   const [modalVisible, setModalVisible] = useState(false);
   const [totalProblem, setTotalProblem] = useState(0);
   const [CorrectProb, setCorrectProb] = useState(0);
+  const [isPlaying, setIsPlaying] = useState(false);//재생관련
+  const audioRef = useRef(null);
 
   // 콜렉션 불러오기
   const loadProblems = async () => {
@@ -78,7 +83,7 @@ const TypeQuestScreenLc = ({navigation, route}) =>{
     
   };
 
-  useEffect(() => {
+  useEffect(() => {//새로 진입시 기존 문제 세팅 초기화
     if (problems.length !== 0) {
       setProblems([]);
       //loadProblems();
@@ -86,7 +91,7 @@ const TypeQuestScreenLc = ({navigation, route}) =>{
 
     //
   }, [paddedIndex]);
-  useEffect(() => {
+  useEffect(() => {//길이가 0일 경우에 처리
     if (problems.length === 0) {
       setCurrentIndex(0);
       loadProblems();
@@ -94,17 +99,19 @@ const TypeQuestScreenLc = ({navigation, route}) =>{
     }
   }, [problems]);
 
-  useEffect(() => {
+  useEffect(() => { //제출상태 확인해서 이미지 로딩도 하고 이것저것
 
     console.log('problems.length:', problems.length, currentIndex);
     if (problems.length !== 0 && problems.length - 1 === currentIndex) {
       loadProblems();
       ImageLoading(problems);
+      stopPlaying();
     } else if (problems.length !== 0) {
       setSelectedChoice(null);
       setSubmitted(false);
       console.log(currentIndex);
       ImageLoading(problems);
+      stopPlaying();
     }
     setIsLoading(false);
   }, [currentIndex]);
@@ -118,7 +125,9 @@ const TypeQuestScreenLc = ({navigation, route}) =>{
       console.log(`problems[0].PRB_ID: ${problems[0].PRB_ID}`);
     }
   }, [problems])
-  
+  useEffect(() => {
+    // 상태 변경 시 필요한 업데이트 로직 작성
+  }, [isPlaying]);
   //선택지
   const handleChoice = (choice) => {
     setSelectedChoice(choice.toString());  
@@ -205,6 +214,63 @@ const TypeQuestScreenLc = ({navigation, route}) =>{
     setModalVisible(false);
     navigation.navigate('Home');
   };
+  const getAudioDownloadURL = async (audioRef) => {
+    try {
+      const reference = storage().ref(audioRef); 
+      const downloadURL = await reference.getDownloadURL(); 
+      return downloadURL;
+    } catch (error) {
+      console.log('Failed to get audio download URL', error);
+      return null;
+    }
+  };
+  const handlePlayButtonPress = async () => {//재생버튼
+    console.log(`${problems[currentIndex].AUD_REF}`);
+    if (isPlaying) {
+      stopPlaying();
+    }
+    else{
+      startPlaying()
+    }
+  }
+  const stopPlaying = () => {
+    if (audioRef.current) {
+      audioRef.current.stop();
+      audioRef.current.release();
+      setIsPlaying(false);
+    }
+  };
+  const startPlaying = async () => {
+    if (audioRef.current) {
+      audioRef.current.stop();
+      audioRef.current.release();
+    }
+    const Problem = problems[currentIndex].PRB_ID;
+    const Probslice = Problem.slice(0,9)
+
+    const audiopath = `audios/${Probslice}/${problems[currentIndex].AUD_REF}`; //경로 얻고
+    const downloadUrl = await getAudioDownloadURL(audiopath); // 다운로드 받아서
+    if (downloadUrl){ 
+      audioRef.current = new Sound(downloadUrl, '', (error) => { //세팅하고
+
+      if(error){
+        console.log('Fail to load sound', error); // 실패하면 알려주고
+        return;
+      }
+      console.log('success to load sound');//성공하면 로드되었다고 알려주고
+    
+      audioRef.current.play(() => {
+        setIsPlaying(false);
+        audioRef.current.release();
+      });
+    });
+    setIsPlaying(true);
+    }else{
+      console.log('fail to download url');
+    };
+      
+  };
+  
   
   return (
     <View style={[styles.container, styles.containerPos]}>
@@ -243,6 +309,14 @@ const TypeQuestScreenLc = ({navigation, route}) =>{
               {problems.length > 0 && (
                 <>
                   <Text>{currentIndex + 1}.{problems[currentIndex].PRB_MAIN_CONT}</Text>
+                  <View style={styles.container}>
+                    <TouchableOpacity
+                      style={[styles.button, { backgroundColor: isPlaying ? '#FFACAC' : '#BBD6B8' }]}
+                      onPress={handlePlayButtonPress}
+                    >
+                      <Text style={styles.buttonText}>{isPlaying ? 'Stop' : 'Start'}</Text>
+                    </TouchableOpacity>
+                  </View>
                   {((paddedIndex === '001' && prbSection==='LV2')|| (paddedIndex ==='003' && prbSection ==='LV1'))&& (
                     <>
                       <TouchableOpacity style={[styles.button, choice1ImageUrl ? { height: 103, width: 153, resizeMode: 'contain' } : null, { backgroundColor: submitted ? (selectedChoice === '1' ? (selectedChoice === problems[currentIndex].PRB_CORRT_ANSW ? '#BAD7E9' : '#FFACAC') : (problems[currentIndex].PRB_CORRT_ANSW === '1' ? '#BAD7E9' : '#D9D9D9')) : (selectedChoice === '1' ? '#BBD6B8' : '#D9D9D9') }]} onPress={() => handleChoice(1)}>
