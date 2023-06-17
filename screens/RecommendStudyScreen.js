@@ -1,5 +1,5 @@
 import React, {useState, useEffect, useRef} from 'react';
-import {View, Text, StyleSheet, ScrollView} from 'react-native';
+import {View, Text, StyleSheet, ScrollView, BackHandler} from 'react-native';
 import firestore from '@react-native-firebase/firestore';
 import firebase from '@react-native-firebase/app';
 
@@ -164,7 +164,6 @@ const RecommendStudyScreen = ({route, navigation}) =>{
         dataLoading();
 
 
-        
         return () => {
             console.log("문제 풀이 완료")
 
@@ -176,6 +175,8 @@ const RecommendStudyScreen = ({route, navigation}) =>{
                 userIndex: Number(userIndex) + Number(problemCount.current),
                 userCorrect: Number(userCorrect)+Number(correctCount.current)
             })
+            
+            // navigation.navigate("Result", {CORRT_CNT: correctCount.current, ALL_CNT: problemCount.current, PATH: "Recommend"})
         }
     }, []);
 

@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, {useEffect, useState, useRef} from 'react';
 
 import {Button, View ,Text, StyleSheet, TouchableOpacity} from 'react-native'
 import firestore from '@react-native-firebase/firestore';
@@ -9,13 +9,15 @@ import {subscribeAuth } from "../lib/auth";
 import AppNameHeader from './component/AppNameHeader'
 
 
-const RecommendScreen = ({navigation}) =>{
+const RecommendScreen = ({route, navigation}) =>{
     // 유저 정보 setting
     const [userEmail, setUserEmail] = useState("")
     const [userInfo, setUserInfo] = useState(null)
     const [userRecommendInfo, setUserRecommendInfo] = useState({userIndex: "0"})
 
     const querySnapshot = firestore().collection('users');
+
+    
 
 
     useEffect(() => {
@@ -27,12 +29,12 @@ const RecommendScreen = ({navigation}) =>{
         }
         // 유저 찾기
         const unsubscribe = subscribeAuth(handleAuthStateChanged);
-        
+    
 
-        // 컴포넌트 언마운트 시 구독 해제
-        return () => unsubscribe();
+        return () => unsubscribe();  // 컴포넌트 언마운트 시 구독 해제
     }, []);
 
+    
 
     // 유저 정보 setting (my_level, u_uid)
     useEffect(()=>{
