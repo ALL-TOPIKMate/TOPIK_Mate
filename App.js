@@ -1,5 +1,9 @@
-import React from 'react';
-import {Image} from 'react-native'
+import React, { useEffect } from 'react';
+import {Image} from 'react-native';
+
+
+// 첫 실행 화면
+import SplashScreen from 'react-native-splash-screen';
 
 
 // load navigation
@@ -82,6 +86,14 @@ const Home = () =>{
 
 
 const App = () => {
+
+  // 첫 실행 화면 종료
+  useEffect(() => {
+    setTimeout(() => {
+      SplashScreen.hide();
+    }, 1000);
+  }, []);
+
   return (
       <NavigationContainer>
         <Stack.Navigator initialRouteName='Signin'>

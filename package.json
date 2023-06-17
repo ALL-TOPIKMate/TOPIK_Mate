@@ -29,6 +29,7 @@
     "react-native-screens": "^3.20.0",
     "react-native-simple-modal": "^9.0.1",
     "react-native-sound": "^0.11.2",
+    "react-native-splash-screen": "^3.3.0",
     "react-native-table-component": "^1.2.2",
     "react-native-uuid": "^2.0.1",
     "uuid": "^9.0.0"
