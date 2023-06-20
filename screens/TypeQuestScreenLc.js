@@ -11,7 +11,7 @@ Sound.setCategory('Playback');
 
 //Listening
 const TypeQuestScreenLc = ({navigation, route}) =>{
-  const { source, paddedIndex, prbSection } = route.params;//이전 페이지에서 정보 받아오기
+  const { source, paddedIndex, prbSection,userEmail } = route.params;//이전 페이지에서 정보 받아오기
   const [problems, setProblems] = useState([]); //문제 구성
   const [currentIndex, setCurrentIndex] = useState(0); // 현재 인덱스이고
   const [choice1ImageUrl, setChoice1ImageUrl] = useState(null) //선택지1 이미지
@@ -26,7 +26,9 @@ const TypeQuestScreenLc = ({navigation, route}) =>{
   const [totalProblem, setTotalProblem] = useState(0);
   const [CorrectProb, setCorrectProb] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);//재생관련
-  const audioRef = useRef(null);
+  const [prbchoice, setPrbChoice] = useState([]); //문제 풀 때 선택한 정보 저장
+  const [prbstatus, setprbstatus]=useState(true); // 문제끝
+  const audioRef = useRef(null); 
 
   // 콜렉션 불러오기
   const loadProblems = async () => {
@@ -51,11 +53,14 @@ const TypeQuestScreenLc = ({navigation, route}) =>{
         const data = doc.data();
         prblist.push(data);
       });
+      if(temp_snapshot.empty){
+        setprbstatus(false);
+      }
       //console.log(`데이터 불러오기 완료. temp:`, prblist);
-      if(prblist.length > 0){
+      if(prblist.length > 0  &&prbstatus == true ){
         const lastDoc = temp_snapshot.docs[temp_snapshot.docs.length - 1];
         if (lastDoc) {
-          const lastDocId = lastDoc.id;
+          const lastDocId = lastDoc.id; 
           setLast(lastDocId);
         }else {
           setLast(null);
@@ -107,8 +112,8 @@ const TypeQuestScreenLc = ({navigation, route}) =>{
       ImageLoading(problems);
       stopPlaying();
     } else if (problems.length !== 0) {
-      setSelectedChoice(null);
-      setSubmitted(false);
+      //setSelectedChoice(null);
+      //setSubmitted(false);
       console.log(currentIndex);
       ImageLoading(problems);
       stopPlaying();
@@ -135,7 +140,7 @@ const TypeQuestScreenLc = ({navigation, route}) =>{
   //이미지 로드
   const ImageLoading = async (problems_new)=>{
     console.log('이미지 로드 시작');
-    console.log('문제 아이디', problems_new);
+    //console.log('문제 아이디', problems_new);
     const nextProblem = problems_new[currentIndex].PRB_ID;
     const nextProbslice = nextProblem.slice(0,9)
     if ((paddedIndex === '001'&& prbSection === 'LV2') || paddedIndex==='003' && prbSection ==='LV1') {
@@ -178,43 +183,129 @@ const TypeQuestScreenLc = ({navigation, route}) =>{
   //다음버튼
   const handleNextProblem = async () => {
     if (currentIndex < problems.length - 1) {
+      console.log('앞으로가기 진입');
       setSelectedChoice(null);
       setSubmitted(false);
       setCurrentIndex((prevIndex) => prevIndex + 1);
-      
+      const check =  prbchoice.find(item => item.Prb_num === problems[currentIndex+1].PRB_ID);
+      if ( check && problems[currentIndex+1].PRB_ID === check.Prb_num) {
+        console.log('같습니다.', currentIndex+1)
+        setSubmitted(true); 
+        setSelectedChoice(prbchoice.find(item => item.Prb_num === problems[currentIndex+1].PRB_ID).User_answer);
+      }
     } 
   };
   
   //이전 문제
   const handlePreviousProblem = async () => {
-    if (currentIndex >= 0) {
+    if (currentIndex > 0) {
       setSelectedChoice(null);
       setSubmitted(false);
       setCurrentIndex((prevIndex) => prevIndex - 1);
-      
+      const check =  prbchoice.find(item => item.Prb_num === problems[currentIndex-1].PRB_ID)?.Prb_num
+      console.log('뒤로 가기 확인',  problems[currentIndex-1].PRB_ID, check);
+      if ( problems[currentIndex-1].PRB_ID === check) {
+        console.log('뒤로 같습니다.')
+        setSubmitted(true); 
+        setSelectedChoice(prbchoice.find(item => item.Prb_num === problems[currentIndex-1].PRB_ID)?.User_answer);
+        console.log('상태확인2',submitted, selectedChoice)
+      }
     }
   };
 
-  const handleSubmitProblem = () => { //제출 버튼
+  const handleSubmitProblem = async () => {
     console.log('제출 버튼 클릭');
     console.log('선택한 보기:', selectedChoice, '실제 정답:', problems[currentIndex].PRB_CORRT_ANSW);
-    const isCorrect = selectedChoice.toString() === problems[currentIndex].PRB_CORRT_ANSW;
-    if(isCorrect){
-      setCorrectProb(prevCorrectProb => prevCorrectProb+1)
+    const isCorrect = selectedChoice === problems[currentIndex].PRB_CORRT_ANSW;
+    const nowProb = {
+      Prb_num: problems[currentIndex].PRB_ID, //제출 버튼 누르면 번호와
+      User_answer: selectedChoice.toString() //사용자가 선택한 답을 넣어서
+    };
+    prbchoice.push(nowProb);   //딕셔너리로 넣어주자
+    console.log('선택지 상태: ', prbchoice);
+    if (isCorrect) { //맞춘 갯수 저장
+      setCorrectProb(prevCorrectProb => prevCorrectProb + 1);
+    } else if (!isCorrect) { //틀린 경우에 오답노트로 전달, 여기 만들어야 함.
+      console.log('틀렸음', problems[0]);
+      try {
+        const querySnapshot = await firestore()
+          .collection('users')
+          .where('email', '==', userEmail)
+          .get();
+  
+        if (!querySnapshot.empty) {
+          const userDoc = querySnapshot.docs[0];
+          const userData = userDoc.data();
+          const userId = userData.u_uid;
+          console.log(userId);
+          let collectionPath = '';
+  
+          if (prbSection == 'LV1') {
+            collectionPath = `wrong_lv1/${source}/PRB_TAG/${paddedIndex}/PRB_LIST`;
+          } else {
+            collectionPath = `wrong_lv2/${source}/PRB_TAG/${paddedIndex}/PRB_LIST`;
+          }
+  
+          console.log('경로확인', collectionPath);
+          //const collectionPath = `${source}/PRB_TAG/${paddedIndex}/PRB_LIST`;
+          const problemId = problems[currentIndex].PRB_ID;
+  
+          const querySnapshot2 = await firestore()
+            .collection(collectionPath)
+            .where('PRB_ID', '==', problemId)
+            .get();
+  
+          if (querySnapshot2.empty) {
+            const docId = problems[currentIndex].PRB_ID;
+            console.log(problems[currentIndex]);
+            const docData = {
+              AUD_REF: problems[currentIndex].AUD_REF,
+              IMG_REF: problems[currentIndex].IMG_REF,
+              PRB_CHOICE1: problems[currentIndex].PRB_CHOICE1,
+              PRB_CHOICE2: problems[currentIndex].PRB_CHOICE2,
+              PRB_CHOICE3: problems[currentIndex].PRB_CHOICE3,
+              PRB_CHOICE4: problems[currentIndex].PRB_CHOICE4,
+              PRB_CORRT_ANSW: problems[currentIndex].PRB_CORRT_ANSW,
+              PRB_ID: problems[currentIndex].PRB_ID,
+              PRB_MAIN_CONT: problems[currentIndex].PRB_MAIN_CONT,
+              PRB_NUM: problems[currentIndex].PRB_NUM,
+              PRB_POINT: problems[currentIndex].PRB_POINT,
+              PRB_RSC: problems[currentIndex].PRB_RSC,
+              PRB_SCRPT: problems[currentIndex].PRB_SCRPT,
+              PRB_SECT: problems[currentIndex].PRB_SECT,
+              PRB_SUB_CONT: problems[currentIndex].PRB_SUB_CONT,
+              PRB_TXT: problems[currentIndex].PRB_TXT,
+              TAG: problems[currentIndex].TAG,
+              USER_CHOICE: prbchoice.find(item => item.Prb_num === problems[currentIndex].PRB_ID)?.User_answer,
+              듣기대본: problems[currentIndex].듣기대본,
+              연속문제: problems[currentIndex].연속문제,
+            };
+            console.log(`최종 확인 users/${userId}/${collectionPath}/${docId}`)
+            await firestore().doc(`users/${userId}/${collectionPath}/${docId}`).set(docData);
+            console.log('새로운 문서 생성 완료');
+          } else {
+            console.log('이미 같은 PRB_ID를 가진 문서가 존재합니다.');
+          }
+        } else {
+          console.log('일치하는 이메일을 가진 사용자가 존재하지 않습니다.');
+        }
+      } catch (error) {
+        console.error('문서 생성 에러:', error);
+      }
     }
-    setTotalProblem(prevTotalProblem => prevTotalProblem+1)
-    console.log(isCorrect,'전체 문제: ', totalProblem, '맞은 문제: ', CorrectProb);
-    console.log(isCorrect)
+    setTotalProblem(prevTotalProblem => prevTotalProblem + 1); // 전체 문제 갯수 저장
+    console.log(isCorrect, '전체 문제: ', totalProblem, '맞은 문제: ', CorrectProb);
     setSubmitted(true);
   };
   const handlePress = () => {//모달창 처리
+    stopPlaying();
     setModalVisible(true);
   };
   const handleConfirm = () => { //모달 확인버튼
     setModalVisible(false);
     navigation.navigate('Home');
   };
-  const getAudioDownloadURL = async (audioRef) => {
+  const getAudioDownloadURL = async (audioRef) => { //오디오 다운로드
     try {
       const reference = storage().ref(audioRef); 
       const downloadURL = await reference.getDownloadURL(); 
@@ -233,14 +324,14 @@ const TypeQuestScreenLc = ({navigation, route}) =>{
       startPlaying()
     }
   }
-  const stopPlaying = () => {
+  const stopPlaying = () => { //재생중지
     if (audioRef.current) {
       audioRef.current.stop();
       audioRef.current.release();
       setIsPlaying(false);
     }
   };
-  const startPlaying = async () => {
+  const startPlaying = async () => { //재생시작
     if (audioRef.current) {
       audioRef.current.stop();
       audioRef.current.release();
@@ -276,7 +367,7 @@ const TypeQuestScreenLc = ({navigation, route}) =>{
     <View style={[styles.container, styles.containerPos]}>
       <ScrollView>
         <View style={[styles.container, styles.containerPos]}>
-          <Text> {source} , {paddedIndex} </Text>
+          <Text> {source} , {paddedIndex} {currentIndex} </Text>
           <View style={{flexDirection:'row'}}>
               <TouchableOpacity style={{ marginLeft: 'auto' }} onPress={handlePress}> 
               <View>
@@ -339,22 +430,22 @@ const TypeQuestScreenLc = ({navigation, route}) =>{
                   )}
                   {((paddedIndex !== '001' && prbSection==='LV2')|| (paddedIndex !=='003' && prbSection ==='LV1'))&&(
                     <>
-                      <TouchableOpacity style={[styles.button, { backgroundColor: submitted ? (selectedChoice === '1' ? (selectedChoice === problems[currentIndex].PRB_CORRT_ANSW ? '#BAD7E9' : '#FFACAC') : (problems[currentIndex].PRB_CORRT_ANSW === '1' ? '#BAD7E9' : '#D9D9D9')) : (selectedChoice === '1' ? '#BBD6B8' : '#D9D9D9') }]} onPress={() => handleChoice(1)}>
+                      <TouchableOpacity style={[styles.button,styles.buttonContainer,{backgroundColor: submitted? selectedChoice ==='1'? selectedChoice=== problems[currentIndex].PRB_CORRT_ANSW? '#BAD7E9':'#FFACAC': problems[currentIndex].PRB_CORRT_ANSW === '1'? '#BAD7E9': '#D9D9D9' : selectedChoice === '1'? '#BBD6B8': '#D9D9D9'}, { marginTop: 10 } ]} onPress={() => handleChoice(1)} disabled={submitted}>
                         <Text style={styles.buttonText}>{problems[currentIndex].PRB_CHOICE1}</Text>
                       </TouchableOpacity>
-                      <TouchableOpacity style={[styles.button, { backgroundColor: submitted ? (selectedChoice === '2' ? (selectedChoice === problems[currentIndex].PRB_CORRT_ANSW ? '#BAD7E9' : '#FFACAC') : (problems[currentIndex].PRB_CORRT_ANSW === '2' ? '#BAD7E9' : '#D9D9D9')) : (selectedChoice === '2' ? '#BBD6B8' : '#D9D9D9') }]} onPress={() => handleChoice(2)}>
+                      <TouchableOpacity style={[styles.button,styles.buttonContainer,{backgroundColor: submitted? selectedChoice ==='2'? selectedChoice=== problems[currentIndex].PRB_CORRT_ANSW? '#BAD7E9':'#FFACAC': problems[currentIndex].PRB_CORRT_ANSW === '2'? '#BAD7E9': '#D9D9D9' : selectedChoice === '2'? '#BBD6B8': '#D9D9D9'}, { marginTop: 10 }]} onPress={() => handleChoice(2)} disabled={submitted}>
                         <Text style={styles.buttonText}>{problems[currentIndex].PRB_CHOICE2}</Text>
                       </TouchableOpacity>
-                      <TouchableOpacity style={[styles.button, { backgroundColor: submitted ? (selectedChoice === '3' ? (selectedChoice === problems[currentIndex].PRB_CORRT_ANSW ? '#BAD7E9' : '#FFACAC') : (problems[currentIndex].PRB_CORRT_ANSW === '3' ? '#BAD7E9' : '#D9D9D9')) : (selectedChoice === '3' ? '#BBD6B8' : '#D9D9D9') }]} onPress={() => handleChoice(3)}>
+                      <TouchableOpacity style={[styles.button,styles.buttonContainer,{backgroundColor: submitted? selectedChoice ==='3'? selectedChoice=== problems[currentIndex].PRB_CORRT_ANSW? '#BAD7E9':'#FFACAC': problems[currentIndex].PRB_CORRT_ANSW === '3'? '#BAD7E9': '#D9D9D9' : selectedChoice === '3'? '#BBD6B8': '#D9D9D9'}, { marginTop: 10 }]} onPress={() => handleChoice(3)} disabled={submitted}>
                         <Text style={styles.buttonText}>{problems[currentIndex].PRB_CHOICE3}</Text>
                       </TouchableOpacity>
-                      <TouchableOpacity style={[styles.button, { backgroundColor: submitted ? (selectedChoice === '4' ? (selectedChoice === problems[currentIndex].PRB_CORRT_ANSW ? '#BAD7E9' : '#FFACAC') : (problems[currentIndex].PRB_CORRT_ANSW === '4' ? '#BAD7E9' : '#D9D9D9')) : (selectedChoice === '4' ? '#BBD6B8' : '#D9D9D9') }]} onPress={() => handleChoice(4)}>
+                      <TouchableOpacity style={[styles.button,styles.buttonContainer,{backgroundColor: submitted? selectedChoice ==='4'? selectedChoice=== problems[currentIndex].PRB_CORRT_ANSW? '#BAD7E9':'#FFACAC': problems[currentIndex].PRB_CORRT_ANSW === '4'? '#BAD7E9': '#D9D9D9' : selectedChoice === '4'? '#BBD6B8': '#D9D9D9'}, { marginTop: 10 }]} onPress={() => handleChoice(4)} disabled={submitted}>
                         <Text style={styles.buttonText}>{problems[currentIndex].PRB_CHOICE4}</Text>
                       </TouchableOpacity>
                     </>
                   )}
                   <View style={styles.buttonSumitContainer}>
-                    <TouchableOpacity style={[styles.buttonsubmit, { opacity: selectedChoice !== null ? 1 : 0.5 }]} onPress={handleSubmitProblem} disabled={selectedChoice === null} >
+                    <TouchableOpacity style={[styles.buttonsubmit, { opacity: (selectedChoice !== null && !submitted) ? 1 : 0.5 }]} onPress={handleSubmitProblem} disabled={selectedChoice === null || submitted === true}>
                       <Text style={styles.buttonTextpass}>Submit</Text>
                     </TouchableOpacity>
                   </View>
@@ -419,14 +510,17 @@ const styles = StyleSheet.create({
   buttonContainer: {
     flexDirection: 'row',
     marginTop: 10, 
+    justifyContent: 'center',
+    alignItems: 'center',
+    //flex: 1,
   },
   button: {
     backgroundColor: '#D9D9D9',
     marginBottom: 10,
     borderRadius: 5,
-    flexDirection: 'row',
-    alignItems: 'center',
-    //marginRight: 30,
+    //height: 30,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
   },
   buttonText:{
     marginLeft: 10,

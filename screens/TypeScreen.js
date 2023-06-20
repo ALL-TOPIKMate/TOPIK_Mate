@@ -14,7 +14,7 @@ const TypeScreen = ({ navigation }) => {
   const [readButtonTags, setReadButtonTags] = useState([]); // 읽기 버튼의 태그 값
   const [writeButtonTags, setWriteButtonTags] = useState([]); // 쓰기 버튼의 태그 값
   const [selectedButton, setSelectedButton] = useState(null);//버튼 클릭하는것 감지
-
+  const [userEmail, setUseremail] = useState(null);
   useEffect(() => {
     const handleAuthStateChanged = (user) => {
       if (user) {
@@ -44,9 +44,10 @@ const TypeScreen = ({ navigation }) => {
         const my_Level = userData.my_level;
         setmy_Level(my_Level)
         setprbSection('LV'+my_Level);
+        setUseremail(email);
         return my_Level;
       }
-  
+      setUseremail(null);
       return null; // 해당 이메일에 대한 사용자가 없을 경우 null 반환
     } catch (error) {
       console.error('Error fetching user data:', error);
@@ -155,7 +156,7 @@ const TypeScreen = ({ navigation }) => {
               onPress={() => {
                 const paddedIndex = (index+1).toString().padStart(3, '0');
                 console.log('paddedIndex:', paddedIndex);
-                navigation.navigate('TypeQuestLc',{source:'LS_TAG', paddedIndex:paddedIndex, prbSection:prbSection});
+                navigation.navigate('TypeQuestLc',{source:'LS_TAG', paddedIndex:paddedIndex, prbSection:prbSection, userEmail: userEmail});
               }}
             >
               <Text style={styles.columnbutton}> {button.tag} </Text>
@@ -174,7 +175,7 @@ const TypeScreen = ({ navigation }) => {
               onPress={() => {
                 const paddedIndex = (index+1).toString().padStart(3, '0');
                 console.log('paddedIndex:', paddedIndex);
-                navigation.navigate('TypeQuest',{source:'RD_TAG', paddedIndex:paddedIndex, prbSection:prbSection});
+                navigation.navigate('TypeQuest',{source:'RD_TAG', paddedIndex:paddedIndex, prbSection:prbSection , userEmail: userEmail});
               }}
             >
               <Text style={styles.columnbutton}>{button.tag} </Text>
@@ -191,7 +192,7 @@ const TypeScreen = ({ navigation }) => {
               onPress={() => {
                 const paddedIndex = (index+1).toString().padStart(3, '0');
                 console.log('paddedIndex:', paddedIndex);
-                navigation.navigate('TypeQuestWr',{source:'WR_TAG', paddedIndex:paddedIndex, prbSection:prbSection});
+                navigation.navigate('TypeQuestWr',{source:'WR_TAG', paddedIndex:paddedIndex, prbSection:prbSection , userEmail: userEmail});
               }}
             >
             <Text style={styles.columnbutton}>{button.tag} </Text>

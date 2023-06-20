@@ -2,13 +2,13 @@ import React, { useState, useEffect,useRef } from 'react';
 import { View, Text, Button, StyleSheet,TouchableOpacity,Image, Modal,ScrollView } from 'react-native';
 import AppNameHeader from './component/AppNameHeader';
 import firestore from '@react-native-firebase/firestore';
-import {subscribeAuth } from "../lib/auth";
+import {subscribeAuth,getCurrentUserEmail } from "../lib/auth";
 import storage from '@react-native-firebase/storage'
 
 
 //Reading
 const TypeQuestScreen = ({navigation, route}) =>{
-  const { source, paddedIndex, prbSection } = route.params;//이전 페이지에서 정보 받아오기
+  const { source, paddedIndex, prbSection, userEmail } = route.params;//이전 페이지에서 정보 받아오기
   const [problems, setProblems] = useState([]); //문제 데이터 적재
   const [currentIndex, setCurrentIndex] = useState(0); //현재 문제 번호
   const [imageUrls,setImageUrls]=useState(null); //이미지 링크 적재
@@ -20,6 +20,8 @@ const TypeQuestScreen = ({navigation, route}) =>{
   const [totalProblem, setTotalProblem] = useState(0); // 전체 문제 갯수
   const [CorrectProb, setCorrectProb] = useState(0); // 맞은 문제 갯수
   const [prbchoice, setPrbChoice] = useState([]); //문제 풀 때 선택한 정보 저장
+  const [prbstatus, setprbstatus]=useState(true); //문제 끝
+  //const [useremail, setuseremail]= useState(null)
   
   // 콜렉션 불러오기
   const loadProblems = async () => {
@@ -28,7 +30,7 @@ const TypeQuestScreen = ({navigation, route}) =>{
     try {
       const prblist = [];
       const problemCollection = firestore()
-        .collection('problems')
+        .collection('problems') 
         .doc(prbSection)
         .collection(source)
         .doc(paddedIndex)
@@ -44,15 +46,21 @@ const TypeQuestScreen = ({navigation, route}) =>{
         const data = doc.data();
         prblist.push(data);
       });
+      if(temp_snapshot.empty){
+        setprbstatus(false);
+      }
+      //console.log('확인', temp_snapshot.empty);
       //console.log(`데이터 불러오기 완료. temp:`, prblist);
-      if(prblist.length > 0){
+      if(prblist.length > 0 &&prbstatus == true){
         const lastDoc = temp_snapshot.docs[temp_snapshot.docs.length - 1];
+        console.log('문제 끝: ', lastDoc.id);
         if (lastDoc) {
           const lastDocId = lastDoc.id;
           setLast(lastDocId);
         }else {
           setLast(null);
         }
+
         //setProblems(...problems,...prblist);
         //setProblems((prevProblems) => [...prevProblems, ...prblist])
         setProblems((prevProblems) => {//이미지 로드
@@ -83,9 +91,9 @@ const TypeQuestScreen = ({navigation, route}) =>{
       setProblems([]);
       //loadProblems();
     }
-
-    //
+    //console.log('email get', userEmail);
   }, [paddedIndex]);
+
   useEffect(() => {
     if (problems.length === 0) {
       setCurrentIndex(0);
@@ -96,6 +104,7 @@ const TypeQuestScreen = ({navigation, route}) =>{
   useEffect(()=>{
     //setIsLoading(true);
     console.log('problems.length:', problems.length, currentIndex);
+    //console.log('길이 확인', problems.length-1 === currentIndex);
     if(problems.length!==0 && problems.length-1 === currentIndex){
       //console.log('다다랐음');
       loadProblems()
@@ -154,12 +163,13 @@ const TypeQuestScreen = ({navigation, route}) =>{
       setSubmitted(false); // 제출 여부 초기화
       setCurrentIndex((prevIndex) => prevIndex + 1);
       setImageUrls(null);
+      console.log('현재 문제 번호', currentIndex+1)
       //console.log('같은지 확인중', problems[currentIndex+1].PRB_ID,prbchoice.find(item => item.Prb_num === problems[currentIndex+1].PRB_ID).Prb_num)
-      const check =  prbchoice.find(item => item.Prb_num === problems[currentIndex].PRB_ID).Prb_num
-      if ( problems[currentIndex+1].PRB_ID === check) {
-        console.log('같습니다.')
+      const check =  prbchoice.find(item => item.Prb_num === problems[currentIndex+1].PRB_ID);
+      if ( check && problems[currentIndex+1].PRB_ID === check.Prb_num) {
+        console.log('같습니다.', currentIndex+1)
         setSubmitted(true); 
-        setSelectedChoice(prbchoice.find(item => item.Prb_num === problems[currentIndex].PRB_ID).User_answer);
+        setSelectedChoice(prbchoice.find(item => item.Prb_num === problems[currentIndex+1].PRB_ID).User_answer);
       }
     } 
   };
@@ -176,34 +186,98 @@ const TypeQuestScreen = ({navigation, route}) =>{
       const check =  prbchoice.find(item => item.Prb_num === problems[currentIndex-1].PRB_ID)?.Prb_num
       console.log('뒤로 가기 확인',  problems[currentIndex-1].PRB_ID, check);
       if ( problems[currentIndex-1].PRB_ID === check) {
-        console.log('뒤로 같습니다.')
+        console.log('뒤로 같습니다.', currentIndex-1)
         setSubmitted(true); 
         setSelectedChoice(prbchoice.find(item => item.Prb_num === problems[currentIndex-1].PRB_ID)?.User_answer);
       }
     } 
   }
   //제출버튼
-  const handleSubmitProblem = () => {
+  const handleSubmitProblem = async () => {
     console.log('제출 버튼 클릭');
     console.log('선택한 보기:', selectedChoice, '실제 정답:', problems[currentIndex].PRB_CORRT_ANSW);
-    const isCorrect = selectedChoice.toString() === problems[currentIndex].PRB_CORRT_ANSW;
-    if(isCorrect){ //맞춘 갯수 저장
-      setCorrectProb(prevCorrectProb => prevCorrectProb+1)
-    }
-    else if(isCorrect === 'false') {//틀린 경우에 오답노트로 전달, 여기 만들어야 함.
-        console.log('틀렸음',problems[0])
-    }
+    const isCorrect = selectedChoice === problems[currentIndex].PRB_CORRT_ANSW;
     const nowProb = {
       Prb_num: problems[currentIndex].PRB_ID, //제출 버튼 누르면 번호와
       User_answer: selectedChoice.toString() //사용자가 선택한 답을 넣어서
-    }; 
+    };
     prbchoice.push(nowProb);   //딕셔너리로 넣어주자
-    console.log('선택지 상태: ' ,prbchoice);
-    setTotalProblem(prevTotalProblem => prevTotalProblem+1)// 전체 문제 갯수 저장
-    console.log(isCorrect,'전체 문제: ', totalProblem, '맞은 문제: ', CorrectProb);
+    console.log('선택지 상태: ', prbchoice);
+    if (isCorrect) { //맞춘 갯수 저장
+      setCorrectProb(prevCorrectProb => prevCorrectProb + 1);
+    } else if (!isCorrect) { //틀린 경우에 오답노트로 전달, 여기 만들어야 함.
+      console.log('틀렸음', problems[0]);
+      try {
+        const querySnapshot = await firestore()
+          .collection('users')
+          .where('email', '==', userEmail)
+          .get();
+  
+        if (!querySnapshot.empty) {
+          const userDoc = querySnapshot.docs[0];
+          const userData = userDoc.data();
+          const userId = userData.u_uid;
+          console.log(userId);
+          let collectionPath = '';
+  
+          if (prbSection == 'LV1') {
+            collectionPath = `wrong_lv1/${source}/PRB_TAG/${paddedIndex}/PRB_LIST`;
+          } else {
+            collectionPath = `wrong_lv2/${source}/PRB_TAG/${paddedIndex}/PRB_LIST`;
+          }
+  
+          console.log('경로확인', collectionPath);
+          //const collectionPath = `${source}/PRB_TAG/${paddedIndex}/PRB_LIST`;
+          const problemId = problems[currentIndex].PRB_ID;
+  
+          const querySnapshot2 = await firestore()
+            .collection(collectionPath)
+            .where('PRB_ID', '==', problemId)
+            .get();
+  
+          if (querySnapshot2.empty) {
+            const docId = problems[currentIndex].PRB_ID;
+            console.log(problems[currentIndex]);
+            const docData = {
+              AUD_REF: problems[currentIndex].AUD_REF,
+              IMG_REF: problems[currentIndex].IMG_REF,
+              PRB_CHOICE1: problems[currentIndex].PRB_CHOICE1,
+              PRB_CHOICE2: problems[currentIndex].PRB_CHOICE2,
+              PRB_CHOICE3: problems[currentIndex].PRB_CHOICE3,
+              PRB_CHOICE4: problems[currentIndex].PRB_CHOICE4,
+              PRB_CORRT_ANSW: problems[currentIndex].PRB_CORRT_ANSW,
+              PRB_ID: problems[currentIndex].PRB_ID,
+              PRB_MAIN_CONT: problems[currentIndex].PRB_MAIN_CONT,
+              PRB_NUM: problems[currentIndex].PRB_NUM,
+              PRB_POINT: problems[currentIndex].PRB_POINT,
+              PRB_RSC: problems[currentIndex].PRB_RSC,
+              PRB_SCRPT: problems[currentIndex].PRB_SCRPT,
+              PRB_SECT: problems[currentIndex].PRB_SECT,
+              PRB_SUB_CONT: problems[currentIndex].PRB_SUB_CONT,
+              PRB_TXT: problems[currentIndex].PRB_TXT,
+              TAG: problems[currentIndex].TAG,
+              USER_CHOICE: prbchoice.find(item => item.Prb_num === problems[currentIndex].PRB_ID)?.User_answer,
+              듣기대본: problems[currentIndex].듣기대본,
+              연속문제: problems[currentIndex].연속문제,
+            };
+            console.log(`최종 확인 users/${userId}/${collectionPath}/${docId}`)
+            await firestore().doc(`users/${userId}/${collectionPath}/${docId}`).set(docData);
+            console.log('새로운 문서 생성 완료');
+          } else {
+            console.log('이미 같은 PRB_ID를 가진 문서가 존재합니다.');
+          }
+        } else {
+          console.log('일치하는 이메일을 가진 사용자가 존재하지 않습니다.');
+        }
+      } catch (error) {
+        console.error('문서 생성 에러:', error);
+      }
+    }
+    setTotalProblem(prevTotalProblem => prevTotalProblem + 1); // 전체 문제 갯수 저장
+    console.log(isCorrect, '전체 문제: ', totalProblem, '맞은 문제: ', CorrectProb);
     setSubmitted(true);
-    
   };
+  
   const handlePress = () => { // 모달창 보이기
     setModalVisible(true);
   };
@@ -217,7 +291,7 @@ const TypeQuestScreen = ({navigation, route}) =>{
     <View style={[styles.container, styles.containerPos]}>
       <View style={[styles.container, styles.containerPos]}>
         <ScrollView>
-          <Text> {source} , {paddedIndex} </Text>
+          <Text> {source} , {paddedIndex} , {currentIndex}</Text>
           <View style={{flexDirection:'row'}}>
             <TouchableOpacity style={{ marginLeft: 'auto' }} onPress={handlePress}> 
             <View>
