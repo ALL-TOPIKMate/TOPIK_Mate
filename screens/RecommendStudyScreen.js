@@ -157,11 +157,16 @@ const RecommendStudyScreen = ({route, navigation}) =>{
     }
 
 
-
     // MOUNT 
     useEffect(()=> {
         // promise 객체를 반환하는 함수
         dataLoading();
+
+        const backHandler = BackHandler.addEventListener("hardWareBackPress", ()=>{
+            navigation.navigate("Result", {CORRT_CNT: correctCount.current, ALL_CNT: problemCount.current, PATH: "Recommend"})
+        
+            return true
+        })
 
 
         return () => {
@@ -175,8 +180,8 @@ const RecommendStudyScreen = ({route, navigation}) =>{
                 userIndex: Number(userIndex) + Number(problemCount.current),
                 userCorrect: Number(userCorrect)+Number(correctCount.current)
             })
-            
-            // navigation.navigate("Result", {CORRT_CNT: correctCount.current, ALL_CNT: problemCount.current, PATH: "Recommend"})
+
+            backHandler.remove()
         }
     }, []);
 
@@ -305,7 +310,7 @@ const RecommendStudyScreen = ({route, navigation}) =>{
                     (<Loading />) : 
                         ( correct == -1 && nextBtn < 10)? 
                             ( <RecommendProb problem = {loadedProblem[nextBtn]} nextBtn={nextBtn} setNextBtn = {setNextBtn} choiceRef = {choiceRef} key = {nextBtn} /> ) :
-                            ( <Result CORRT_CNT = {correct} ALL_CNT = "10" navigation = {navigation} PATH = "Recommend" /> )
+                            ( navigation.navigate("Result", {CORRT_CNT: correctCount.current, ALL_CNT: problemCount.current, PATH: "Recommend"}) )
         
             }
 

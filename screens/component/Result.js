@@ -19,7 +19,7 @@ export default Result = (props) =>{
                 잘하고 있어요!    
             </Text>
 
-            <TouchableOpacity onPress = {() => props.navigation.navigate(props.PATH)} style = {{backgroundColor: "#94AF9F", padding: 20, borderRadius: 20, width: 300}}>
+            <TouchableOpacity onPress = {() => props.navigation.popTopop()} style = {{backgroundColor: "#94AF9F", padding: 20, borderRadius: 20, width: 300}}>
                 <Text style = {[styles.text, {color: "white"}]}>
                     END LEARNING
                 </Text>
