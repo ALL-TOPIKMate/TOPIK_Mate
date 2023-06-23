@@ -9,6 +9,8 @@ import {subscribeAuth } from "../lib/auth";
 import AppNameHeader from './component/AppNameHeader'
 
 
+
+
 const RecommendScreen = ({route, navigation}) =>{
     // 유저 정보 setting
     const [userEmail, setUserEmail] = useState("")
@@ -16,8 +18,6 @@ const RecommendScreen = ({route, navigation}) =>{
     const [userRecommendInfo, setUserRecommendInfo] = useState({userIndex: "0"})
 
     const querySnapshot = firestore().collection('users');
-
-    
 
 
     useEffect(() => {
@@ -144,6 +144,14 @@ const styles = StyleSheet.create({
         
         alignItems: "center",
         justifyContent: "center" 
+    },
+
+    modalcontainer:{
+        marginBottom: 64,
+    },
+
+    modal:{
+        padding: 16
     }
 })
 
