@@ -52,7 +52,7 @@ const Home = ({route, navigation}) =>{
       const index = navigation.getState().index
       const path = navigation.getState().routes[index].name
 
-      console.log(path)
+      // console.log(path)
      
       if(path == "Home"){
         Alert.alert("Quit", "Are you sure you want to quit the app??", [
