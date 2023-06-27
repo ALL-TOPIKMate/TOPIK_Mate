@@ -1,11 +1,12 @@
-import React from 'react';
+import React, {useEffect} from 'react';
 import {View, Text, StyleSheet, TouchableOpacity} from 'react-native';
 
 
-export default ResultScreen = ({route, navigation}) =>{
+const ResultScreen = ({route, navigation}) =>{
     const CORRT_CNT = route.params.CORRT_CNT
     const ALL_CNT = route.params.ALL_CNT
     const PATH = route.params.PATH
+
 
     return (
         <View style = {{flex: 1, padding: 14, alignItems: "center", justifyContent: "space-between"}}>
@@ -23,7 +24,7 @@ export default ResultScreen = ({route, navigation}) =>{
                 잘하고 있어요!    
             </Text>
 
-            <TouchableOpacity onPress = {() => navigation.navigate(PATH)} style = {{backgroundColor: "#94AF9F", padding: 20, borderRadius: 20, width: 300}}>
+            <TouchableOpacity onPress = {() => navigation.navigate("Home")} style = {{backgroundColor: "#94AF9F", padding: 20, borderRadius: 20, width: 300}}>
                 <Text style = {[styles.text, {color: "white"}]}>
                     END LEARNING
                 </Text>
@@ -40,3 +41,5 @@ const styles = StyleSheet.create({
 
     }
 })
+
+export default ResultScreen;

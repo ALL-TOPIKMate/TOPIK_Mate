@@ -188,6 +188,7 @@ const WrongScreen = ({navigation}) =>{
                 const typeList_r = await querySnapshot.doc(userInfo.userId).collection(`wrong_lv${userInfo.myLevel}`).doc("RD_TAG").collection("PRB_TAG").get()
                 const typeList_w = await querySnapshot.doc(userInfo.userId).collection(`wrong_lv${userInfo.myLevel}`).doc("WR_TAG").collection("PRB_TAG").get()
                 
+
                 typeList_l.docs.forEach((doc) => {if(doc.id !== "Wrong"){typeList.push({type: doc.id, section: "LS", choice: false})}})
                 typeList_r.docs.forEach((doc) => {if(doc.id !== "Wrong"){typeList.push({type: doc.id, section: "RD", choice: false})}})
                 typeList_w.docs.forEach((doc) => {if(doc.id !== "Wrong"){typeList.push({type: doc.id, section: "WR", choice: false})}})

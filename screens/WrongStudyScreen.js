@@ -16,8 +16,6 @@ Sound.setCategory('Playback');
 
 
 import WrongProb from './component/WrongProb';
-import Result from "./component/Result";
-
 
 
 
@@ -475,7 +473,7 @@ const WrongStudyScreen = ({route, navigation}) =>{
         <View style = {{flex: 1}}>
             {   
                 (nextBtn == -1) ? (
-                    <Result CORRT_CNT = {correct} ALL_CNT = {problemCount.current} navigation = {navigation} PATH = "Wrong"/>
+                    navigation.navigate("Result", {CORRT_CNT: correct, ALL_CNT: problemCount.cnrrent, PATH : "Wrong"})
                 ): 
                     ((loadedProblem.length && nextBtn < loadedProblem.length && ready) ? 
                         <WrongProb 

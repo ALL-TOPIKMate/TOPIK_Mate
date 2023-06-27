@@ -13,7 +13,6 @@ Sound.setCategory('Playback');
 
 
 import RecommendProb from './component/RecommendProb';
-import Result from './component/Result';
 import Loading from './component/Loading';
 
 
@@ -79,7 +78,7 @@ const imagesURL = async (problemList, imageStorage) =>{
 }
 
 const loadMultimedia = async (problemList, audioStorage, imageStorage, setLoadedProblem) =>{
-    try{
+    /*try{
         let size = problemList.length
 
         for(var i=0; i<size; i++){
@@ -96,7 +95,7 @@ const loadMultimedia = async (problemList, audioStorage, imageStorage, setLoaded
     }catch(err){
         console.log(err)
     }
-
+    */
     // console.log(problemList)
 
     setLoadedProblem(problemList)
@@ -148,7 +147,7 @@ const RecommendStudyScreen = ({route, navigation}) =>{
 
 
 
-    // firebase update
+    // recommend collection firebase update
     const updateUserAnswer = async () =>{
         await recommendCollection.doc("Recommend").update({
             userIndex: Number(userIndex) + Number(problemCount.current),
@@ -162,12 +161,7 @@ const RecommendStudyScreen = ({route, navigation}) =>{
         // promise 객체를 반환하는 함수
         dataLoading();
 
-        const backHandler = BackHandler.addEventListener("hardWareBackPress", ()=>{
-            navigation.navigate("Result", {CORRT_CNT: correctCount.current, ALL_CNT: problemCount.current, PATH: "Recommend"})
         
-            return true
-        })
-
 
         return () => {
             console.log("문제 풀이 완료")
@@ -181,11 +175,29 @@ const RecommendStudyScreen = ({route, navigation}) =>{
                 userCorrect: Number(userCorrect)+Number(correctCount.current)
             })
 
-            backHandler.remove()
+            //navigation.navigate("Result", {CORRT_CNT: correctCount.current, ALL_CNT: problemCount.current, PATH: "Recommend"})
         }
     }, []);
 
 
+    useEffect(()=>{
+        let show = false
+        // 문제 풀이 화면에서 나갈시, 
+        const beforeRemove = navigation.addListener("beforeRemove", (e)=> {
+            if(show){
+                
+            }     
+            
+            show = true
+            e.preventDefault()
+
+            // console.log(navigation.getState())
+            navigation.navigate("Result", {CORRT_CNT: correctCount.current, ALL_CNT: problemCount.current, PATH: "Recommend"})
+        })
+
+
+        return beforeRemove
+    }, [navigation])
     
 
     // 문제 데이터 load
@@ -241,8 +253,9 @@ const RecommendStudyScreen = ({route, navigation}) =>{
                 const sectTadDoc = wrongCollection.doc(`${loadedProblem[nextBtn-1].PRB_SECT}_TAG`); sectTadDoc.set({})
                 
 
-                const tagDoc = sectTadDoc.collection("PRB_TAG").doc(loadedProblem[nextBtn-1].TAG); tagDoc.set({})
+                const tagDoc = sectTadDoc.collection("PRB_TAG").doc(loadedProblem[nextBtn-1].TAG);
 
+                console.log(tagDoc.get()._data)
             
                 tagDoc.collection("PRB_LIST").doc(loadedProblem[nextBtn-1].PRB_ID).delete().then((err)=>{
                     if(err){

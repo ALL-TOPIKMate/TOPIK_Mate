@@ -1,5 +1,5 @@
 import React, {useRef, useState, useEffect} from 'react';
-import {Image, BackHandler} from 'react-native'
+import {Image, BackHandler, Alert} from 'react-native'
 
 
 // load navigation
@@ -42,19 +42,29 @@ const Stack = createNativeStackNavigator();
 
 const Home = ({route, navigation}) =>{
 
-
+  
   useEffect(()=>{
 
     // 뒤로가기를 누를 경우 감지 -> 홈화면일 경우, 앱 종료
     const backHandler = BackHandler.addEventListener("hardWareBackPress", ()=>{
 
-      //console.log(navigation.getState())
+      // console.log(navigation.getState())
       const index = navigation.getState().index
       const path = navigation.getState().routes[index].name
 
+      console.log(path)
      
       if(path == "Home"){
-        BackHandler.exitApp()
+        Alert.alert("Quit", "Are you sure you want to quit the app??", [
+          {
+            text: "No quit"
+          },
+          {
+            text: "Quit",
+            onPress: () =>{BackHandler.exitApp()},
+          }
+        ])
+        
         
         return true
       }
@@ -67,7 +77,7 @@ const Home = ({route, navigation}) =>{
 
     return () => backHandler.remove()
   }, [])
-
+  
 
     return (
       <Tab.Navigator 
