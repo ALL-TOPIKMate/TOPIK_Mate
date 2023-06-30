@@ -8,6 +8,14 @@ const ResultScreen = ({route, navigation}) =>{
     const PATH = route.params.PATH
 
 
+
+    const clickHandler = () =>{
+        navigation.pop(1)
+        // navigation.popToTop()
+    }
+
+
+
     return (
         <View style = {{flex: 1, padding: 14, alignItems: "center", justifyContent: "space-between"}}>
             <View style = {{marginTop: 32}}>
@@ -24,7 +32,7 @@ const ResultScreen = ({route, navigation}) =>{
                 잘하고 있어요!    
             </Text>
 
-            <TouchableOpacity onPress = {() => navigation.navigate("Home")} style = {{backgroundColor: "#94AF9F", padding: 20, borderRadius: 20, width: 300}}>
+            <TouchableOpacity onPress = {() => {clickHandler()}} style = {{backgroundColor: "#94AF9F", padding: 20, borderRadius: 20, width: 300}}>
                 <Text style = {[styles.text, {color: "white"}]}>
                     END LEARNING
                 </Text>

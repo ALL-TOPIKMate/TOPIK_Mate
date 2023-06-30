@@ -1,4 +1,4 @@
-import React, {useState, useEffect} from 'react';
+import React, {useState, useEffect, useRef} from 'react';
 
 import {View, Text, StyleSheet, TouchableOpacity, Button, Image} from 'react-native'
 
@@ -6,7 +6,7 @@ import {View, Text, StyleSheet, TouchableOpacity, Button, Image} from 'react-nat
 export default ProbChoice = (props) =>{
 
     // 제출 여부를 확인하여 렌더링
-    const [subBtn, setSubBtn] = useState(false);
+    const [subBtn, setSubBtn] = useState(false)
 
 
     // 유저가 누르는 버튼 
@@ -16,7 +16,7 @@ export default ProbChoice = (props) =>{
     // 4지선다 이미지 여부
     const isImage = (props.PRB_CHOICE_URL1) ? true: false
 
-
+    
 
     function setBtnColor(btn){
         if(subBtn){ // 4지선다 비활성화 (사용자 정답 결과)
@@ -120,7 +120,7 @@ export default ProbChoice = (props) =>{
 
         <Text/>
         {!subBtn ? 
-            (<TouchableOpacity onPress = {() => {props.choiceRef.current = click; setSubBtn(true)}} disabled = {click==0} style = {[styles.button, {backgroundColor: click == 0 ? "#D9D9D9" : "#94AF9F"}]}>
+            (<TouchableOpacity onPress = {() => {props.problem.PRB_USER_ANSW = click; props.setIsSubmit(!props.isSubmit); setSubBtn(true)}} disabled = {click==0} style = {[styles.button, {backgroundColor: click == 0 ? "#D9D9D9" : "#94AF9F"}]}>
                 <Text>
                     SUBMIT
                 </Text>

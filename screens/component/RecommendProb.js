@@ -18,7 +18,7 @@ import ProbScrpt from './ProbScrpt';
 
 
 
-const AudRef = (audio) =>{
+const AudRef = (audio, key) =>{
 
     const [isRunning, setIsRunning] = useState(false);
 
@@ -48,7 +48,7 @@ const AudRef = (audio) =>{
     }
 
     return (
-        <View style = {styles.btnBox}>
+        <View style = {styles.btnBox} key = {`RECOMMEND_PROB${key}`}>
             <TouchableOpacity onPress={()=>{audioPlay()}} style = {styles.btnPlay}>
                     {
                         isRunning
@@ -65,24 +65,24 @@ const AudRef = (audio) =>{
 }
 
 // component화 하기
-const problemStructure = (problem, nextBtn, setNextBtn, choiceRef, audio) =>{
+const problemStructure = (problem, nextBtn, setNextBtn, isSubmit, setIsSubmit, audio) =>{
     let question = []
 
     // PRB_MAIN_CONT: 메인 문제
-    question.push(<ProbMain PRB_MAIN_CONT = {problem.PRB_MAIN_CONT} PRB_NUM = {problem.PRB_NUM} />)
+    question.push(<ProbMain PRB_MAIN_CONT = {problem.PRB_MAIN_CONT} PRB_NUM = {problem.PRB_NUM} key = {`RECOMMEND_PROB${nextBtn*10+0}`}/>)
     if(problem.PRB_SECT == "LS"){
-        question.push(AudRef(audio))
+        question.push(AudRef(audio, nextBtn*10+1))
 
 
         // IMG_REF: 이미지 문제
         if(problem.IMG_REF){
-            question.push(<ImgRef IMG_REF = {problem.IMG_URL}/>)    
+            question.push(<ImgRef IMG_REF = {problem.IMG_URL} key = {`RECOMMEND_PROB${nextBtn*10+2}`}/>)    
         }
         
 
         // PRB_SUB_CONT: 서브 문제
         if(problem.PRB_SUB_CONT){
-            question.push(<ProbSub PRB_SUB_CONT = {problem.PRB_SUB_CONT}/>)
+            question.push(<ProbSub PRB_SUB_CONT = {problem.PRB_SUB_CONT} key = {`RECOMMEND_PROB${nextBtn*10+3}`}/>)
         }
 
 
@@ -92,27 +92,27 @@ const problemStructure = (problem, nextBtn, setNextBtn, choiceRef, audio) =>{
 
         // IMG_REF: 이미지 문제
         if(problem.IMG_REF){
-            question.push(<ImgRef IMG_REF = {problem.IMG_URL}/>)    
+            question.push(<ImgRef IMG_REF = {problem.IMG_URL} key = {`RECOMMEND_PROB${nextBtn*10+4}`}/>)    
         }
 
 
 
         // PRB_TXT: 지문
         if(problem.PRB_TXT){
-            question.push(<ProbTxt PRB_TXT = {problem.PRB_TXT}/>)
+            question.push(<ProbTxt PRB_TXT = {problem.PRB_TXT} key = {`RECOMMEND_PROB${nextBtn*10+5}`}/>)
         }
 
 
 
         // PRB_SUB_CONT: 서브 문제
         if(problem.PRB_SUB_CONT){
-            question.push(<ProbSub PRB_SUB_CONT = {problem.PRB_SUB_CONT}/>)
+            question.push(<ProbSub PRB_SUB_CONT = {problem.PRB_SUB_CONT} key = {`RECOMMEND_PROB${nextBtn*10+6}`}/>)
         }
         
         
         // PRB_SCRPT: 서브 지문
         if(problem.PRB_SCRPT){
-            question.push(<ProbScrpt PRB_SCRPT = {problem.PRB_SCRPT} />)
+            question.push(<ProbScrpt PRB_SCRPT = {problem.PRB_SCRPT} key = {`RECOMMEND_PROB${nextBtn*10+7}`} />)
         }
     }
 
@@ -130,9 +130,15 @@ const problemStructure = (problem, nextBtn, setNextBtn, choiceRef, audio) =>{
         PRB_CORRT_ANSW = {problem.PRB_CORRT_ANSW}
 
 
-        choiceRef = {choiceRef}
         nextBtn = {nextBtn}
         setNextBtn = {setNextBtn}
+
+        isSubmit = {isSubmit}
+        setIsSubmit = {setIsSubmit}
+        problem = {problem}
+
+        
+        key = {`RECOMMEND_PROB${nextBtn*10+8}`}
     />)
 
 
@@ -140,7 +146,7 @@ const problemStructure = (problem, nextBtn, setNextBtn, choiceRef, audio) =>{
     return question
 }
 
-export default recommendProb = ({ problem, nextBtn, setNextBtn, choiceRef }) =>{
+export default recommendProb = ({ problem, nextBtn, setNextBtn, isSubmit, setIsSubmit}) =>{
 
     const audio = problem.AUD_URL ? problem.AUD_URL : null
 
@@ -157,7 +163,7 @@ export default recommendProb = ({ problem, nextBtn, setNextBtn, choiceRef }) =>{
 
     return (
         <ScrollView style = {styles.container}>
-            { problemStructure(problem, nextBtn, setNextBtn, choiceRef, audio) }
+            { problemStructure(problem, nextBtn, setNextBtn, isSubmit, setIsSubmit, audio) }
         </ScrollView>
     )
 }
