@@ -64,7 +64,9 @@ const RecommendScreen = ({route, navigation}) =>{
 
     // 추천 문제 풀이 갯수 load
     useEffect(()=>{
-        getRecommendIndex()
+        if(userInfo!=null){
+            getRecommendIndex()
+        }
     }, [userInfo])
 
     

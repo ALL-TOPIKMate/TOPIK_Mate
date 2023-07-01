@@ -170,7 +170,9 @@ const WrongStudyScreen = ({route, navigation}) =>{
     
     // 유저의 복습하기 콜렉션을 load
     const querySnapshot = route.params.querySnapshot
-    const wrongCollection = (route.params.key !== "write") ? (querySnapshot.doc(route.params.userInfo.userId).collection(`wrong_lv${route.params.userInfo.myLevel}`)) : null
+    const wrongCollection = (route.params.key !== "write") ? 
+        querySnapshot.doc(route.params.userInfo.userId).collection(`wrong_lv${route.params.userInfo.myLevel}`)
+        : null
     
 
 

@@ -84,23 +84,23 @@ const imagesURL = async (problemList, imageStorage) =>{
 }
 
 const loadMultimedia = async (problemList, audioStorage, imageStorage, setLoadedProblem, countAudio, setReadyAudio) =>{
-    // try{
-    //     let size = problemList.length
+    try{
+        let size = problemList.length
 
-    //     for(var i=0; i<size; i++){
-    //         const imageIndex = problemList[i].PRB_CHOICE1.search(".png")
+        for(var i=0; i<size; i++){
+            const imageIndex = problemList[i].PRB_CHOICE1.search(".png")
 
-    //         if(problemList[i].AUD_REF){
-    //             await audioURL(problemList[i], audioStorage, countAudio, setReadyAudio)
-    //         }if(problemList[i].IMG_REF){
-    //             await imageURL(problemList[i], imageStorage)
-    //         }if(imageIndex != -1){
-    //             await imagesURL(problemList[i], imageStorage)
-    //         }
-    //     }
-    // }catch(err){
-    //     console.log(err)
-    // }
+            if(problemList[i].AUD_REF){
+                await audioURL(problemList[i], audioStorage, countAudio, setReadyAudio)
+            }if(problemList[i].IMG_REF){
+                await imageURL(problemList[i], imageStorage)
+            }if(imageIndex != -1){
+                await imagesURL(problemList[i], imageStorage)
+            }
+        }
+    }catch(err){
+        console.log(err)
+    }
     
 
 
@@ -115,10 +115,12 @@ const RecommendStudyScreen = ({route, navigation}) =>{
     const audioStorage = storage.ref().child(`/audios`);
     const imageStorage = storage.ref().child(`/images`);
 
+    
     // 콜렉션 불러오기
     const querySnapshot = route.params.querySnapshot
     const recommendCollection = querySnapshot.doc(route.params.userInfo.userId).collection("recommend")
-    const wrongCollection = querySnapshot.doc(route.params.userInfo.userId).collection(`wrong_lv${route.params.userInfo.myLevel}`)
+    const wrongCollection_lv1 = querySnapshot.doc(route.params.userInfo.userId).collection(`wrong_lv1`) 
+    const wrongCollection_lv2 = querySnapshot.doc(route.params.userInfo.userId).collection(`wrong_lv2`)
 
 
 
@@ -272,7 +274,7 @@ const RecommendStudyScreen = ({route, navigation}) =>{
                 
                 // 멀티미디어 로드 완료
                 setReadyProblem(true)
-                setReadyAudio(true)
+                // setReadyAudio(true)
             })
 
         }
@@ -296,6 +298,103 @@ const RecommendStudyScreen = ({route, navigation}) =>{
 
     
 
+
+    // 복습하기 콜렉션에서 유저가 맞춘 문제를 제거
+    // LSTAG -> PRB_TAG -> 001 문서의 field인 PRB_LIST_COUNT를 1만큼 감소시킴
+    const deleteToWrongColl = async ( wrongCollection ) =>{
+        const sectTadDoc = wrongCollection.doc(`${loadedProblem[nextBtn].PRB_SECT}_TAG`); sectTadDoc.set({})
+                
+
+        const tagDoc = sectTadDoc.collection("PRB_TAG").doc(loadedProblem[nextBtn].TAG); 
+        
+        // field 수정
+        const tagDocs = await tagDoc.get()
+
+        const listcount = tagDocs.data().PRB_LIST_COUNT
+
+        if(listcount){
+
+            await tagDoc.update({
+                PRB_LIST_COUNT: listcount - 1
+            })
+
+        }else{ // 필드가 존재하지 않거나 더이상 문제가 존재하지 않을경우
+            
+            tagDoc.set({
+                PRB_LIST_COUNT: 0
+            })
+
+        }
+
+
+        // delete document
+        tagDoc.collection("PRB_LIST").doc(loadedProblem[nextBtn].PRB_ID).delete().then((err)=>{
+            if(err){
+                console.log(err)
+            }else{
+                console.log("success to delete data")
+            }
+
+        })
+    }
+
+
+    // 복습하기 콜렉션에서 유저가 틀린문제를 추가
+    // LS_TAG -> PRB_TAG -> 001 문서의 field인 PRB_LIST_COUNT를 1만큼 증가시킴
+    const addToWrongColl = async ( wrongCollection ) => {
+        
+        const sectTadDoc = wrongCollection.doc(`${loadedProblem[nextBtn].PRB_SECT}_TAG`); sectTadDoc.set({})
+                
+
+        const tagDoc = sectTadDoc.collection("PRB_TAG").doc(loadedProblem[nextBtn].TAG); 
+
+
+        // field 수정
+        const tagDocs = await tagDoc.get()
+
+        const listcount = tagDocs.data().PRB_LIST_COUNT
+
+        if(listcount){
+
+            await tagDoc.update({
+                PRB_LIST_COUNT: listcount + 1
+            })
+
+        }else{ // 필드가 존재하지 않거나 문제가 없는 경우
+            
+            tagDoc.set({
+                PRB_LIST_COUNT: 1
+            })
+
+        }
+    
+
+        // add document
+        let problem = {}
+
+        Object.keys(loadedProblem[nextBtn]).forEach((key) => {
+            if(key !== "AUD_URL" && key !== "PRB_CHOICE_URL1" && key !== "PRB_CHOICE_URL2" && key !== "PRB_CHOICE_URL3" && key !== "PRB_CHOICE_URL4" && key != "IMG_URL" && key != "PRB_USER_ANSW"){
+                problem[key] = loadedProblem[nextBtn][key]
+            }
+        })
+        
+
+
+
+        tagDoc.collection("PRB_LIST").doc(loadedProblem[nextBtn].PRB_ID).set(problem).then((err)=>{
+            if(err){
+                console.log(err)
+            }else{
+                console.log("success to uploading data")
+                // console.log(loadedProblem[nextBtn].PRB_ID)
+            }
+        })
+
+
+    }
+
+
+
     // 문제 제출시 채점
     useEffect(()=>{
        
@@ -304,25 +403,19 @@ const RecommendStudyScreen = ({route, navigation}) =>{
        
        if(loadedProblem.length && loadedProblem[nextBtn].PRB_USER_ANSW){
 
-        
+            // 해당 문제의 토픽 레벨을 찾음
+            const PRB_TOPIK_LEVEL = loadedProblem[nextBtn].PRB_ID[2] // ex) LV20041001
+            
+            const wrongCollection = PRB_TOPIK_LEVEL == 1 ? wrongCollection_lv1 : wrongCollection_lv2
+
+
+
+            
             // 유저가 답안을 맞췄을 경우
             if(loadedProblem[nextBtn].PRB_CORRT_ANSW == loadedProblem[nextBtn].PRB_USER_ANSW){ 
         
 
-                const sectTadDoc = wrongCollection.doc(`${loadedProblem[nextBtn].PRB_SECT}_TAG`); sectTadDoc.set({})
-                
-
-                const tagDoc = sectTadDoc.collection("PRB_TAG").doc(loadedProblem[nextBtn].TAG);
-
-            
-                tagDoc.collection("PRB_LIST").doc(loadedProblem[nextBtn].PRB_ID).delete().then((err)=>{
-                    if(err){
-                        console.log(err)
-                    }else{
-                        console.log("success to delete data")
-                    }
-
-                })
+                deleteToWrongColl(wrongCollection)
                 
                 
                 // 정답 카운트
@@ -331,32 +424,7 @@ const RecommendStudyScreen = ({route, navigation}) =>{
 
             }else{ // 유저가 답안을 틀렸을 경우
 
-
-                const sectTadDoc = wrongCollection.doc(`${loadedProblem[nextBtn].PRB_SECT}_TAG`); sectTadDoc.set({})
-                
-
-                const tagDoc = sectTadDoc.collection("PRB_TAG").doc(loadedProblem[nextBtn].TAG); tagDoc.set({})
-
-            
-                let problem = {}
-
-                Object.keys(loadedProblem[nextBtn]).forEach((key) => {
-                    if(key !== "AUD_URL" && key !== "PRB_CHOICE_URL1" && key !== "PRB_CHOICE_URL2" && key !== "PRB_CHOICE_URL3" && key !== "PRB_CHOICE_URL4" && key != "IMG_URL" && key != "PRB_USER_ANSW"){
-                        problem[key] = loadedProblem[nextBtn][key]
-                    }
-                })
-                
-
-
-
-                tagDoc.collection("PRB_LIST").doc(loadedProblem[nextBtn].PRB_ID).set(problem).then((err)=>{
-                    if(err){
-                        console.log(err)
-                    }else{
-                        console.log("success to uploading data")
-                        // console.log(loadedProblem[nextBtn].PRB_ID)
-                    }
-                })
+                addToWrongColl(wrongCollection)
 
             }
 
@@ -368,6 +436,8 @@ const RecommendStudyScreen = ({route, navigation}) =>{
     }, [isSubmit])
     
 
+
+    
     if(readyProblem === false || readyAudio === false) {
         return (
             <Loading />
