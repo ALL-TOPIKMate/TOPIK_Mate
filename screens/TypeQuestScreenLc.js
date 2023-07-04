@@ -282,6 +282,7 @@ const TypeQuestScreenLc = ({navigation, route}) =>{
             };
             console.log(`최종 확인 users/${userId}/${collectionPath}/${docId}`)
             await firestore().doc(`users/${userId}/${collectionPath}/${docId}`).set(docData);
+            await firestore().doc(`users/${userId}/${collectionPath}/${docId}`).set(docData);
             console.log('새로운 문서 생성 완료');
           } else {
             console.log('이미 같은 PRB_ID를 가진 문서가 존재합니다.');

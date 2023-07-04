@@ -1,5 +1,5 @@
 import React, {useState, useEffect} from 'react';
-import {signIn } from "../lib/auth";
+import {signIn, checkUserSession } from "../lib/auth";
 import {Button, View ,TextInput, StyleSheet, Text, Alert, TouchableOpacity} from 'react-native'
 //import AppNameHeader from './component/AppNameHeader'
 
@@ -16,10 +16,12 @@ const SigninScreen = ({navigation}) =>{
         
     });
     useEffect(() => {
-        return () => {
-          // 컴포넌트가 언마운트될 때 상태 초기화
-          setForm({ email: "", password: "" });
-        };
+        checkUserSession().then((user) => {
+          if (user) {
+            console.log('사용자 세션 찾음:', user);
+            navigation.navigate('Home');
+          }
+        });
       }, []);
     const resultMessages = {
         "auth/email-already-in-use": "이미 가입된 이메일입니다.",
