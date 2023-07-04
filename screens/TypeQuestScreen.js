@@ -221,9 +221,9 @@ const TypeQuestScreen = ({navigation, route}) =>{
           let collectionPath = '';
   
           if (prbSection == 'LV1') {
-            collectionPath = `wrong_lv1/${source}/PRB_TAG/${paddedIndex}/PRB_LIST`;
+            collectionPath = `wrong_lv1/${source}/PRB_TAG/${paddedIndex}`;
           } else {
-            collectionPath = `wrong_lv2/${source}/PRB_TAG/${paddedIndex}/PRB_LIST`;
+            collectionPath = `wrong_lv2/${source}/PRB_TAG/${paddedIndex}`;
           }
   
           console.log('경로확인', collectionPath);
@@ -260,8 +260,9 @@ const TypeQuestScreen = ({navigation, route}) =>{
               듣기대본: problems[currentIndex].듣기대본,
               연속문제: problems[currentIndex].연속문제,
             };
-            console.log(`최종 확인 users/${userId}/${collectionPath}/${docId}`)
-            await firestore().doc(`users/${userId}/${collectionPath}/${docId}`).set(docData);
+            console.log(`최종 확인 users/${userId}/${collectionPath}/PRB_LIST/${docId}`)
+            await firestore().doc(`users/${userId}/${collectionPath}/PRB_LIST/${docId}`).set(docData); //기존 문제 로드
+            await firestore().doc(`users/${userId}/${collectionPath}`).set({ PRB_LIST_COUNT: 1 }); //문제 수 카운트
             console.log('새로운 문서 생성 완료');
           } else {
             console.log('이미 같은 PRB_ID를 가진 문서가 존재합니다.');
