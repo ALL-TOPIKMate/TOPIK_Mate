@@ -1,88 +1,57 @@
 import React, {useEffect, useState, useRef} from 'react';
-
 import {Button, View ,Text, StyleSheet, TouchableOpacity, Alert} from 'react-native'
-import firestore from '@react-native-firebase/firestore';
 
-import {subscribeAuth } from "../lib/auth";
+import firestore from '@react-native-firebase/firestore';
+import auth from "@react-native-firebase/auth"
+
+// import {subscribeAuth } from "../lib/auth";
 
 
 import AppNameHeader from './component/AppNameHeader'
 
 
-
-
 const RecommendScreen = ({route, navigation}) =>{
-    // 유저 정보 setting
-    const [userEmail, setUserEmail] = useState("")
-    const [userInfo, setUserInfo] = useState(null)
-    const [userRecommendInfo, setUserRecommendInfo] = useState({userIndex: "0"})
 
-    const querySnapshot = firestore().collection('users');
 
+    // 유저의 uid, 토픽레벨, 추천 문제 인덱스, 추천 문제 맞춘 개수 setting 
+    const [user, setUser] = useState(null)
+    
 
     useEffect(() => {
-        // 유저 이메일 setting
-        const handleAuthStateChanged = (user) => {
-          if (user) {
-            setUserEmail(user.email)
-        }
-        }
-        // 유저 찾기
-        const unsubscribe = subscribeAuth(handleAuthStateChanged);
-    
+        const loadUser = async () => {
+            const user = auth().currentUser
+            const userId = user.uid
+            
+            const USER = { userId: userId }
+            
 
-        return () => unsubscribe();  // 컴포넌트 언마운트 시 구독 해제
+            // user의 토픽 레벨 field load
+            const getUserLevel = async () => {
+                const data = await firestore().collection("users").doc(userId).get()
+
+                USER.userLevel = data._data.my_level
+            }
+
+            // user의 추천 문제 field load
+            const getUserRecommend = async () => {
+                const data = await firestore().collection("users").doc(userId).collection("recommend").doc("Recommend").get()
+
+
+                USER.userIndex = data._data.userIndex
+                USER.userCorrect = data._data.userCorrect
+            }
+
+
+            // await getUserLevel()
+            await getUserRecommend()
+
+            setUser(USER)
+        }
+
+        loadUser()
+        
     }, []);
 
-    
-
-    // 유저 정보 setting (my_level, u_uid)
-    useEffect(()=>{
-        const getMyInfo = async (email) => {
-            try {
-                const userInfoQuery = await querySnapshot
-                    .where('email', '==', email)
-                    .get();
-        
-                if (!userInfoQuery.empty) {
-                    const userData = userInfoQuery.docs[0].data();
-                    
-                    setUserInfo({myLevel: userData.my_level, userId: userData.u_uid})
-                }
-            } catch (error) {
-                console.error('Error fetching user data:', error);
-            }
-            
-        };
-        if(userEmail !== ""){
-            // console.log(`email 변경: ${userEmail}`)
-            
-            getMyInfo(userEmail)  
-        }
-    }, [userEmail])
-
-
-    // 추천 문제 풀이 갯수 load
-    useEffect(()=>{
-        if(userInfo!=null){
-            getRecommendIndex()
-        }
-    }, [userInfo])
-
-    
-
-    const getRecommendIndex = async () =>{
-        try{
-            // userIndex, userCorrect
-            const data = await querySnapshot.doc(userInfo.userId).collection("recommend").doc("Recommend").get()
-
-            console.log(data._data) 
-
-            setUserRecommendInfo(data._data)
-        }catch(e){
-            console.log(e)
-        }
-    }
 
 
 
@@ -109,19 +78,31 @@ const RecommendScreen = ({route, navigation}) =>{
                 
                 
                 <View style = {[styles.recommend, {flex: 1.8,}]}>
-                    <TouchableOpacity style = {styles.recommendBtn} onPress={()=> (userRecommendInfo.userIndex == 10) ? (Alert.alert("", "모든 문제를 풀었습니다 다음에 도전하세요.")): (navigation.navigate("RecommendStudy", {userRecommendInfo: userRecommendInfo, setUserRecommendInfo: setUserRecommendInfo, querySnapshot: querySnapshot, userInfo: userInfo})) }>
+
+                    <TouchableOpacity style = {styles.recommendBtn} disabled = {user==null} onPress={()=> (user.userIndex == 10) ? (Alert.alert("", "모든 문제를 풀었습니다 다음에 도전하세요.")): (navigation.navigate("RecommendStudy", {user: user, setUser: setUser})) }>
                         <Text style = {{color: "#F6F1F1", fontSize: 24, fontWeight: "bold", paddingVertical: 5}}>
                             추천 문제 풀기
                         </Text>
-                        <Text style = {{color: "#F6F1F1", fontSize: 20}}>
-                            {10 - Number(userRecommendInfo.userIndex)} / 10
-                        </Text>
+                        {
+                            (user != null) ? (
+                                <Text style = {{color: "#F6F1F1", fontSize: 20}}>                        
+                                    {10 - Number(user.userIndex)} / 10
+                                </Text>
+                            ): (
+                                <Text style = {{color: "#F6F1F1", fontSize: 20}}>                        
+                                    ...
+                                </Text>
+                            )
+
+                        }
                     </TouchableOpacity>
+                    
                 </View>
 
             </View>
         </View>
     );
+    
 }
 
 const styles = StyleSheet.create({

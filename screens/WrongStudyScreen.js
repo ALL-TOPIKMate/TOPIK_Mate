@@ -111,6 +111,9 @@ const loadMultimedia = async (problemList, audioStorage, imageStorage) =>{
 
 const WrongStudyScreen = ({route, navigation}) =>{
 
+    // 유저 정보
+    const user = route.params.user
+
     // 멀티미디어
     const storage = getStorage(firebase);
     const audioStorage = storage.ref().child(`/audios`);
@@ -143,7 +146,7 @@ const WrongStudyScreen = ({route, navigation}) =>{
     
 
 
-    // 문제를 불러오기 전일때 false
+    // 대기 상태 (로딩화면)
     const [ready, setReady] = useState(false) 
 
 
@@ -169,10 +172,20 @@ const WrongStudyScreen = ({route, navigation}) =>{
 
     
     // 유저의 복습하기 콜렉션을 load
-    const querySnapshot = route.params.querySnapshot
-    const wrongCollection = (route.params.key !== "write") ? 
-        querySnapshot.doc(route.params.userInfo.userId).collection(`wrong_lv${route.params.userInfo.myLevel}`)
-        : null
+    const wrongCollection = route.params.key !== "write" ? 
+                            firestore().collection("users")
+                            .doc(user.userId)
+                            .collection(`wrong_lv${user.userLevel}`)
+                            : 
+                            firestore().collection("users")
+                            .doc(user.userId)
+                            .collection(`wrong_lv${user.userLevel}`)
+                            .doc("WR_TAG").
+                            collection("PRB_TAG")
+                            .doc(route.params.userTag.tag)
+                            .collection("PRB_RSC_LIST")
+                            .doc(route.params.PRB_ID)
+                            .collection("PRB_LIST")
     
 
 
@@ -240,10 +253,10 @@ const WrongStudyScreen = ({route, navigation}) =>{
 
                 let problemList = []
 
-                const data = await querySnapshot.get(); // 요청한 데이터가 반환되면 다음 줄 실행
+                const data = await wrongCollection.get(); // 요청한 데이터가 반환되면 다음 줄 실행
                 
 
-                data.docs.forEach((doc) => {if(doc._data.DATE) problemList.push(doc._data)})
+                data.docs.forEach((doc) => {problemList.push(doc._data)})
             
 
                 // 멀티미디어 load

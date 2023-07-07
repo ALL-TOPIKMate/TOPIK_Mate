@@ -1,8 +1,7 @@
 import React, {useState, useEffect, useRef} from 'react';
-import {View, Text, StyleSheet, ScrollView, BackHandler} from 'react-native';
+
 import firestore from '@react-native-firebase/firestore';
 import firebase from '@react-native-firebase/app';
-
 import { getStorage } from '@react-native-firebase/storage'; // include storage module besides Firebase core(firebase/app)
 
 
@@ -110,6 +109,11 @@ const loadMultimedia = async (problemList, audioStorage, imageStorage, setLoaded
 
 const RecommendStudyScreen = ({route, navigation}) =>{
 
+    // 유저 
+    const user = route.params.user
+    const setUser = route.params.setUser
+
+
     // 멀티미디어
     const storage = getStorage(firebase);
     const audioStorage = storage.ref().child(`/audios`);
@@ -117,10 +121,10 @@ const RecommendStudyScreen = ({route, navigation}) =>{
 
     
     // 콜렉션 불러오기
-    const querySnapshot = route.params.querySnapshot
-    const recommendCollection = querySnapshot.doc(route.params.userInfo.userId).collection("recommend")
-    const wrongCollection_lv1 = querySnapshot.doc(route.params.userInfo.userId).collection(`wrong_lv1`) 
-    const wrongCollection_lv2 = querySnapshot.doc(route.params.userInfo.userId).collection(`wrong_lv2`)
+    const querySnapshot = firestore().collection("users").doc(user.userId)
+    const recommendColl = querySnapshot.collection("recommend")
+    const wrongColl_lv1 = querySnapshot.collection(`wrong_lv1`) 
+    const wrongColl_lv2 = querySnapshot.collection(`wrong_lv2`)
 
 
 
@@ -129,7 +133,7 @@ const RecommendStudyScreen = ({route, navigation}) =>{
     const [loadedProblem, setLoadedProblem] = useState([]); // json
 
     // 다음 문제를 넘길 때 사용
-    const [nextBtn, setNextBtn] = useState(route.params.userRecommendInfo.userIndex);
+    const [nextBtn, setNextBtn] = useState(user.userIndex);
     
     // 제출 감지
     const [isSubmit, setIsSubmit] = useState(false)
@@ -159,8 +163,8 @@ const RecommendStudyScreen = ({route, navigation}) =>{
 
 
     // 추천문제 인덱스 및 정답 수 load
-    const userIndex = route.params.userRecommendInfo.userIndex    
-    const userCorrect = route.params.userRecommendInfo.userCorrect
+    const userIndex = user.userIndex    
+    const userCorrect = user.userCorrect
 
 
 
@@ -179,9 +183,11 @@ const RecommendStudyScreen = ({route, navigation}) =>{
 
 
             // RecommendScreen update
-            route.params.setUserRecommendInfo({
+            setUser({
+                ...user,
+                
                 userIndex: Number(userIndex) + Number(problemCount.current),
-                userCorrect: Number(userCorrect)+Number(correctCount.current)
+                userCorrect: Number(userCorrect) + Number(correctCount.current)
             })
 
         }
@@ -193,7 +199,7 @@ const RecommendStudyScreen = ({route, navigation}) =>{
     
     // recommend collection firebase update
     const updateUserAnswer = async () =>{
-        await recommendCollection.doc("Recommend").update({
+        await recommendColl.doc("Recommend").update({
             userIndex: Number(userIndex) + Number(problemCount.current),
             userCorrect: Number(userCorrect)+Number(correctCount.current)
         })
@@ -201,6 +207,7 @@ const RecommendStudyScreen = ({route, navigation}) =>{
 
 
 
+    // 뒤로가기 제어
     useEffect(()=>{
         let isChanged = false
 
@@ -239,7 +246,7 @@ const RecommendStudyScreen = ({route, navigation}) =>{
         try{
 
             let dataList = []
-            const data = await recommendCollection.where("PRB_ID", ">=", "").orderBy("PRB_ID").get()
+            const data = await recommendColl.where("PRB_ID", ">=", "").orderBy("PRB_ID").get()
 
 
             data.forEach((doc)=>{
@@ -406,7 +413,7 @@ const RecommendStudyScreen = ({route, navigation}) =>{
             // 해당 문제의 토픽 레벨을 찾음
             const PRB_TOPIK_LEVEL = loadedProblem[nextBtn].PRB_ID[2] // ex) LV20041001
             
-            const wrongCollection = PRB_TOPIK_LEVEL == 1 ? wrongCollection_lv1 : wrongCollection_lv2
+            const wrongCollection = PRB_TOPIK_LEVEL == 1 ? wrongColl_lv1 : wrongColl_lv2
 
 
 
