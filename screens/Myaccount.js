@@ -36,6 +36,7 @@ const Myaccount = ({navigation}) => {
       updateUserPassword(currentPassword, newPassword)
         .then(() => {
           console.log('비밀번호 변경 성공');
+          Alert.alert('비밀번호 변경 성공');
           setIsModalVisible(false);
           setCurrentPassword('');
           setNewPassword('');

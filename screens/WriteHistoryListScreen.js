@@ -4,12 +4,24 @@ import firestore from '@react-native-firebase/firestore';
 
 
 const WriteHistoryListScreen = ({route, navigation}) => {
-    const [data, setData] = useState([]);
+    
+    // 유저 정보
+    const user = route.params.user
+
+    const [data, setData] = useState([])
+
 
     // 최대 10문제까지만 저장 
     // 유저가 고른 회차의 문제 도큐먼트를 불러옴 route.params.userRsc+route.params.userPrbNum
-    const querySnapshot = route.params.querySnapshot
-    const wrongCollection = querySnapshot.doc(route.params.PRB_ID).collection("PRB_LIST")
+    const wrongCollection = firestore().collection("users")
+                            .doc(user.userId)
+                            .collection("wrong_lv2")
+                            .doc("WR_TAG")
+                            .collection("PRB_TAG")
+                            .doc(route.params.userTag.tag)
+                            .collection("PRB_RSC_LIST")
+                            .doc(route.params.PRB_ID)
+                            .collection("PRB_LIST")
    
    
     useEffect(()=>{
@@ -18,7 +30,7 @@ const WriteHistoryListScreen = ({route, navigation}) => {
                 let problemList = []
                 const data = await wrongCollection.get(); // 요청한 데이터가 반환되면 다음 줄 실행
                 
-                data.docs.forEach((doc) => {if(doc._data.DATE) problemList.push(doc._data)})
+                data.docs.forEach((doc) => {problemList.push({...doc._data, DATE: doc.id})})
             
                 // console.log(problemList)
                 setData(problemList)
@@ -48,7 +60,7 @@ const WriteHistoryListScreen = ({route, navigation}) => {
                     {
                         data.map((data, index)=>{
                             return (
-                                <TouchableOpacity key = {index} style = {styles.tagList} onPress = {()=>{navigation.push("WrongStudy", {key: "write", order: index, querySnapshot: wrongCollection})}}>
+                                <TouchableOpacity key = {index} style = {styles.tagList} onPress = {()=>{navigation.push("WrongStudy", {key: "write", order: index, userTag: route.params.userTag, PRB_ID: route.params.PRB_ID, user: user})}}>
                                     <Text style = {{flex: 5}}>
                                         {data.DATE}
                                     </Text>

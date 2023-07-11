@@ -4,11 +4,13 @@ import firestore from '@react-native-firebase/firestore';
 
 
 const WriteHistoryScreen = ({route, navigation}) =>{
+
+    // 유저 정보
+    const user = route.params.user
     const [data, setData] = useState([]);
 
 
-    const querySnapshot = route.params.querySnapshot
-    const wrongCollection = querySnapshot.doc(route.params.userInfo.userId).collection(`wrong_lv${route.params.userInfo.myLevel}`).doc("WR_TAG").collection("PRB_TAG").doc(route.params.userTag.tag).collection("PRB_RSC_LIST")
+    const wrongCollection = firestore().collection("users").doc(user.userId).collection("wrong_lv2").doc("WR_TAG").collection("PRB_TAG").doc(route.params.userTag.tag).collection("PRB_RSC_LIST")
     
     
     useEffect(()=>{
@@ -46,7 +48,7 @@ const WriteHistoryScreen = ({route, navigation}) =>{
                     {
                         data.map((data, index)=>{
                             return (
-                                <TouchableOpacity key = {index} style = {styles.buttonList} onPress = {() => navigation.push("WriteHistoryList", {userTag: route.params.userTag, PRB_RSC: data.PRB_RSC, PRB_ID: data.PRB_ID, querySnapshot: wrongCollection})} >
+                                <TouchableOpacity key = {index} style = {styles.buttonList} onPress = {() => navigation.push("WriteHistoryList", {userTag: route.params.userTag, PRB_RSC: data.PRB_RSC, PRB_ID: data.PRB_ID, user: user})} >
                                     <Text>{data.PRB_RSC}</Text>
                                     <Text>{data.PRB_ID}번</Text> 
                                 </TouchableOpacity>

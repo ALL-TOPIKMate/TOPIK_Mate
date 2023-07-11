@@ -1,5 +1,5 @@
-import React from 'react';
-import {Image} from 'react-native'
+import React, {useRef, useState, useEffect} from 'react';
+import {Image, BackHandler, Alert} from 'react-native'
 
 
 // load navigation
@@ -34,12 +34,51 @@ import Myaccount from "./screens/Myaccount";
 import Inquiry from "./screens/Inquiry";
 import InfoApp from './screens/InfoApp';
 import WriteHistoryListScreen from './screens/WriteHistoryListScreen';
+import ResultScreen from './screens/ResultScreen';
 
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
 
 
-const Home = () =>{
+const Home = ({route, navigation}) =>{
+
+  
+  useEffect(()=>{
+
+    // 뒤로가기를 누를 경우 감지 -> 홈화면일 경우, 앱 종료
+    const backHandler = BackHandler.addEventListener("hardWareBackPress", ()=>{
+
+      // console.log(navigation.getState())
+      const index = navigation.getState().index
+      const path = navigation.getState().routes[index].name
+
+      // console.log(path)
+     
+      if(path == "Home"){
+        Alert.alert("Quit", "Are you sure you want to quit the app??", [
+          {
+            text: "No quit"
+          },
+          {
+            text: "Quit",
+            onPress: () =>{BackHandler.exitApp()},
+          }
+        ])
+        
+        
+        return true
+      }
+        
+      // 홈 화면이 아닌 경우, 기존 뒤로가기 실행
+      return false
+    })
+
+
+
+    return () => backHandler.remove()
+  }, [])
+  
+
     return (
       <Tab.Navigator 
           screenOptions={({ route }) => ({
@@ -82,10 +121,10 @@ const Home = () =>{
 
 
 const App = () => {
-  return (
+    return (
       <NavigationContainer>
         <Stack.Navigator initialRouteName='Signin'>
-          <Stack.Screen name = "Home" component = {Home} options = {({route})=>({headerBackVisible: false, title: "TOPIK MATE"})}/>
+          <Stack.Screen name = "Home" component = {Home} options = {({route})=>({headerBackVisible: false, title: "TOPIK MATE", })}/>
           <Stack.Screen name = "Signin" component = {SigninScreen}/>
           <Stack.Screen name = "Signup" component = {SignupScreen}/>
           <Stack.Screen name="InfoSetting" component = {InfoSetting}/>
@@ -105,6 +144,7 @@ const App = () => {
           <Stack.Screen name="Inquiry" component={Inquiry}/>
           <Stack.Screen name="InfoApp" component={InfoApp}/>
           <Stack.Screen name="WriteHistoryList" component = {WriteHistoryListScreen}/>
+          <Stack.Screen name = "Result" component = {ResultScreen} />
         </Stack.Navigator>
       </NavigationContainer>    
   );

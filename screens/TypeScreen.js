@@ -1,5 +1,5 @@
 import React, { useState,useEffect } from 'react';
-import { View, Text, Button, StyleSheet,Image } from 'react-native';
+import { View, Text, Button, StyleSheet,Image, TouchableOpacity } from 'react-native';
 import AppNameHeader from './component/AppNameHeader';
 import firebase from '@react-native-firebase/app';
 import firestore from '@react-native-firebase/firestore';
@@ -13,11 +13,12 @@ const TypeScreen = ({ navigation }) => {
   const [listenButtonTags, setListenButtonTags] = useState([]); // 듣기 버튼의 태그 값
   const [readButtonTags, setReadButtonTags] = useState([]); // 읽기 버튼의 태그 값
   const [writeButtonTags, setWriteButtonTags] = useState([]); // 쓰기 버튼의 태그 값
-  //레벨 세팅
+  const [selectedButton, setSelectedButton] = useState(null);//버튼 클릭하는것 감지
+  const [userEmail, setUseremail] = useState(null);
   useEffect(() => {
     const handleAuthStateChanged = (user) => {
       if (user) {
-        console.log('로그인', user.email);
+        console.log('유형별 문제 진입 페이지');
         //setUserEmail(user.email);
 
         // 이메일에 해당하는 레벨 가져오기
@@ -43,9 +44,10 @@ const TypeScreen = ({ navigation }) => {
         const my_Level = userData.my_level;
         setmy_Level(my_Level)
         setprbSection('LV'+my_Level);
+        setUseremail(email);
         return my_Level;
       }
-  
+      setUseremail(null);
       return null; // 해당 이메일에 대한 사용자가 없을 경우 null 반환
     } catch (error) {
       console.error('Error fetching user data:', error);
@@ -56,6 +58,7 @@ const TypeScreen = ({ navigation }) => {
   };
   const handleListenButtonPress = async () => {
     console.log("Listen Button press");
+    setSelectedButton('listen');
     setShowListenButtons(true);
     setShowReadButtons(false);
     setShowWriteButtons(false);
@@ -79,6 +82,7 @@ const TypeScreen = ({ navigation }) => {
 
   const handleReadButtonPress = async () => {
     console.log("Read Button press");
+    setSelectedButton('read');
     setShowReadButtons(true);
     setShowListenButtons(false);
     setShowWriteButtons(false);
@@ -101,6 +105,7 @@ const TypeScreen = ({ navigation }) => {
   };
   
   const handleWriteButtonPress = async () => {
+    setSelectedButton('write');
     console.log("Write Button press");
     setShowWriteButtons(true);
     setShowListenButtons(false);
@@ -122,28 +127,40 @@ const TypeScreen = ({ navigation }) => {
       console.error('Error fetching Write button data:', error);
     }
   };
-
+  const handleShowDetail=()=>{
+    console.log('디테일 부분');
+  };
   return (
     <View>
       <AppNameHeader />
       <View style={styles.buttonRow}>
-        <Button color="#91aa9e" title="듣기" onPress={handleListenButtonPress} />
-        <Button color="#91aa9e" title="읽기" onPress={handleReadButtonPress} />
-        <Button color="#91aa9e" title="쓰기" onPress={handleWriteButtonPress} />
+        <TouchableOpacity
+          style={[styles.buttonContainer, selectedButton === 'listen'? styles.selectedButton : null]} onPress={handleListenButtonPress}>
+          <Button title="듣기" onPress={handleListenButtonPress} color={selectedButton === 'listen' ? '#8caf95' : '#c9c9c9'} />
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={[styles.buttonContainer, selectedButton === 'read'? styles.selectedButton : null]} onPress={handleReadButtonPress} >
+          <Button title="읽기" onPress={handleReadButtonPress} color={selectedButton === 'read' ? '#8caf95' : '#c9c9c9'} />
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={[styles.buttonContainer, selectedButton === 'write' ? styles.selectedButton : null]} onPress={handleWriteButtonPress}>
+          <Button title="쓰기" onPress={handleWriteButtonPress} color={selectedButton === 'write' ? '#8caf95' : '#c9c9c9'} />
+        </TouchableOpacity>
       </View>
       {showListenButtons && (
         <View style={styles.buttonColumn}>
           {listenButtonTags.map((button, index) => (
-            <Button
+            <TouchableOpacity
               key={index}
-              color="#8caf95"
-              title={button.tag}
+              style={[styles.button,styles.buttonMargin]}
               onPress={() => {
                 const paddedIndex = (index+1).toString().padStart(3, '0');
                 console.log('paddedIndex:', paddedIndex);
-                navigation.navigate('TypeQuestLc',{source:'LS_TAG', paddedIndex:paddedIndex, prbSection:prbSection});
+                navigation.navigate('TypeQuestLc',{source:'LS_TAG', paddedIndex:paddedIndex, prbSection:prbSection, userEmail: userEmail});
               }}
-            />
+            >
+              <Text style={styles.columnbutton}> {button.tag} </Text>
+            </TouchableOpacity>
           ))}
         </View>
       )}
@@ -152,32 +169,34 @@ const TypeScreen = ({ navigation }) => {
       {showReadButtons && (
         <View style={styles.buttonColumn}>
           {readButtonTags.map((button, index) => (
-            <Button
+            <TouchableOpacity
               key={index}
-              color="#8caf95"
-              title={button.tag}
+              style={[styles.button,styles.buttonMargin]}
               onPress={() => {
                 const paddedIndex = (index+1).toString().padStart(3, '0');
                 console.log('paddedIndex:', paddedIndex);
-                navigation.navigate('TypeQuest',{source:'RD_TAG', paddedIndex:paddedIndex, prbSection:prbSection});
+                navigation.navigate('TypeQuest',{source:'RD_TAG', paddedIndex:paddedIndex, prbSection:prbSection , userEmail: userEmail});
               }}
-            />
+            >
+              <Text style={styles.columnbutton}>{button.tag} </Text>
+            </TouchableOpacity>
           ))}
         </View>
       )}
       {showWriteButtons && (
         <View style={styles.buttonColumn}>
           {writeButtonTags.map((button, index) => (
-            <Button
+            <TouchableOpacity
               key={index}
-              color="#8caf95"
-              title={button.tag}
+              style={[styles.button,styles.buttonMargin]}
               onPress={() => {
                 const paddedIndex = (index+1).toString().padStart(3, '0');
                 console.log('paddedIndex:', paddedIndex);
-                navigation.navigate('TypeQuestWr',{source:'WR_TAG', paddedIndex:paddedIndex, prbSection:prbSection});
+                navigation.navigate('TypeQuestWr',{source:'WR_TAG', paddedIndex:paddedIndex, prbSection:prbSection , userEmail: userEmail});
               }}
-            />
+            >
+            <Text style={styles.columnbutton}>{button.tag} </Text>
+            </TouchableOpacity>
           ))}
         </View>
       )}
@@ -189,13 +208,39 @@ const TypeScreen = ({ navigation }) => {
 const styles = StyleSheet.create({
   buttonRow: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    justifyContent: 'flex-start',
     marginBottom: 30,
+    //marginRight: 20,
   },
   buttonColumn: {
     flexDirection: 'column',
     marginBottom: 20,
+    width: 300,
+    //borderRadius: 10,
   },
+  buttonContainer:{
+    marginRight: 5,
+  },
+  button:{
+    backgroundColor: "#8caf95",
+    borderRadius: 5,
+    width: 300,
+    height: 40,
+    justifyContent: 'center',
+    paddingLeft: 20,
+  },
+  columnbutton:{
+    //borderRadius: 20,
+    textAlign: 'left',
+    color: '#ffffff',
+  },
+  buttonMargin: {
+    marginTop: 5, // 버튼 간의 간격 조정
+  },
+  selectedButton:{
+    color:'#8caf95'
+  },
+  
 });
 
 export default TypeScreen;
