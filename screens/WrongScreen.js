@@ -192,7 +192,9 @@ const WrongScreen = ({navigation}) =>{
     
 
 
-   
+    useEffect(()=>{
+
+    }, [data])
 
 
 
