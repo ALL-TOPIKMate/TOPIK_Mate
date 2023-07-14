@@ -1,10 +1,11 @@
-import React, {useRef, useState, useEffect} from 'react';
-import {Image, BackHandler, Alert} from 'react-native'
-
+import React, { useRef, useState, useEffect } from 'react';
+import { Image, BackHandler, Alert } from 'react-native'
+import { checkUserSession, subscribeAuth } from './lib/auth';
+import auth from "@react-native-firebase/auth";
 
 // load navigation
-import {NavigationContainer} from '@react-navigation/native';
-import {createNativeStackNavigator} from '@react-navigation/native-stack';
+import { NavigationContainer } from '@react-navigation/native';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
 
 // bottom tabs navigator
@@ -43,40 +44,40 @@ const Stack = createNativeStackNavigator();
 const Home = ({route, navigation}) =>{
 
   
-  useEffect(()=>{
+  // useEffect(()=>{
 
-    // 뒤로가기를 누를 경우 감지 -> 홈화면일 경우, 앱 종료
-    const backHandler = BackHandler.addEventListener("hardWareBackPress", ()=>{
+  //   // 뒤로가기를 누를 경우 감지 -> 홈화면일 경우, 앱 종료
+  //   const backHandler = BackHandler.addEventListener("hardWareBackPress", ()=>{
 
-      // console.log(navigation.getState())
-      const index = navigation.getState().index
-      const path = navigation.getState().routes[index].name
+  //     // console.log(navigation.getState())
+  //     const index = navigation.getState().index
+  //     const path = navigation.getState().routes[index].name
 
-      // console.log(path)
+  //     // console.log(path)
      
-      if(path == "Home"){
-        Alert.alert("Quit", "Are you sure you want to quit the app??", [
-          {
-            text: "No quit"
-          },
-          {
-            text: "Quit",
-            onPress: () =>{BackHandler.exitApp()},
-          }
-        ])
+  //     if(path == "Home"){
+  //       Alert.alert("Quit", "Are you sure you want to quit the app??", [
+  //         {
+  //           text: "No quit"
+  //         },
+  //         {
+  //           text: "Quit",
+  //           onPress: () =>{BackHandler.exitApp()},
+  //         }
+  //       ])
         
         
-        return true
-      }
+  //       return true
+  //     }
         
-      // 홈 화면이 아닌 경우, 기존 뒤로가기 실행
-      return false
-    })
+  //     // 홈 화면이 아닌 경우, 기존 뒤로가기 실행
+  //     return false
+  //   })
 
 
 
-    return () => backHandler.remove()
-  }, [])
+  //   return () => backHandler.remove()
+  // }, [])
   
 
     return (
@@ -121,9 +122,11 @@ const Home = ({route, navigation}) =>{
 
 
 const App = () => {
+    const [path, setPath] = useState(auth().currentUser ? "Home" : "Signin");
+ 
     return (
       <NavigationContainer>
-        <Stack.Navigator initialRouteName='Signin'>
+        <Stack.Navigator initialRouteName = {path}>
           <Stack.Screen name = "Home" component = {Home} options = {({route})=>({headerBackVisible: false, title: "TOPIK MATE", })}/>
           <Stack.Screen name = "Signin" component = {SigninScreen}/>
           <Stack.Screen name = "Signup" component = {SignupScreen}/>

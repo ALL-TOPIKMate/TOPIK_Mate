@@ -1,54 +1,78 @@
-import React, {useState} from 'react';
+import React, { useState } from 'react';
 
-import {signUp } from "../lib/auth";
+import { signUp } from "../lib/auth";
 import firestore from '@react-native-firebase/firestore';
-import {Button, View ,TextInput, StyleSheet, Text, TouchableOpacity, Alert} from 'react-native'
+import { Button, View ,TextInput, StyleSheet, Text, TouchableOpacity, Alert } from 'react-native'
+import { CommonActions } from '@react-navigation/native'; // CommonActions 추가
+
 import AppNameHeader from './component/AppNameHeader'
 
 
-const SignupScreen = ({navigation}) =>{
-    const random = (length = 8) => {
-        return Math.random().toString(16).substring(2, length);
-      };
+
+
+const resultMessages = {
+    "auth/email-already-in-use": "이미 가입된 이메일입니다.",
+    "auth/wrong-password": "잘못된 비밀번호입니다.",
+    "auth/user-not-found": "존재하지 않는 계정입니다.",
+    "auth/invalid-email": "유효하지 않은 이메일 주소입니다."
+}
+
+
+const SignupScreen = ({ navigation }) =>{
+    
     const [form, setForm] = useState({
         email: "",
         password: "",
         
     });
-    const resultMessages = {
-        "auth/email-already-in-use": "이미 가입된 이메일입니다.",
-        "auth/wrong-password": "잘못된 비밀번호입니다.",
-        "auth/user-not-found": "존재하지 않는 계정입니다.",
-        "auth/invalid-email": "유효하지 않은 이메일 주소입니다."
-    }
-    const signUpSubmit = async () => { // 회원가입 함수
+    
+
+    // 랜덤 난수 생성
+    const random = (length = 8) => {
+        return Math.random().toString(16).substring(2, length);
+    };
+
+
+    // 회원가입 함수
+    const signUpSubmit = async () => { 
+        
         const {email, password} = form;
         const info = {email, password};
+
         const nickname=(random(10));
         const my_level = 1;
 
         try {
-          const {user} = await signUp(info);
-          const u_uid = user.uid
-          console.log(user);
-          console.log('닉네임',nickname);
-          console.log('나의 레벨', my_level);
-          
-          await firestore().collection("users").doc(user.uid).set({ email, nickname, my_level, u_uid});
-          await firestore().collection("users").doc(user.uid).collection("wrong_lv1").doc('LS_TAG').set({ Type: 'Wrong' });
-          await firestore().collection("users").doc(user.uid).collection("wrong_lv1").doc('RD_TAG').set({ Type: 'Wrong' });
-          await firestore().collection("users").doc(user.uid).collection("wrong_lv2").doc('LS_TAG').set({ Type: 'Wrong' });
-          await firestore().collection("users").doc(user.uid).collection("wrong_lv2").doc('RD_TAG').set({ Type: 'Wrong' });
-          await firestore().collection("users").doc(user.uid).collection("wrong_lv2").doc('WR_TAG').set({ Type: 'Wrong' });
-          await firestore().collection("users").doc(user.uid).collection("recommend").doc('추천').set({ Type: 'Recom' });
-          navigation.navigate('Home')
-          return user;
-          
+            const {user} = await signUp(info);
+            const u_uid = user.uid
+
+            console.log(user);
+            console.log('닉네임', nickname);
+            console.log('나의 레벨', my_level);
+            
+            await firestore().collection("users").doc(user.uid).set({ email, nickname, my_level, u_uid});
+            await firestore().collection("users").doc(user.uid).collection("wrong_lv1").doc('LS_TAG').collection("PRB_TAG").doc("Wrong").set({})
+            await firestore().collection("users").doc(user.uid).collection("wrong_lv1").doc('RD_TAG').collection("PRB_TAG").doc("Wrong").set({})
+            await firestore().collection("users").doc(user.uid).collection("wrong_lv2").doc('LS_TAG').collection("PRB_TAG").doc("Wrong").set({})
+            await firestore().collection("users").doc(user.uid).collection("wrong_lv2").doc('RD_TAG').collection("PRB_TAG").doc("Wrong").set({})
+            await firestore().collection("users").doc(user.uid).collection("wrong_lv2").doc('WR_TAG').collection("PRB_TAG").doc("Wrong").set({})
+            await firestore().collection("users").doc(user.uid).collection("recommend").doc('Recommend').set({ userCorrect: 0, userIndex: 10 })
+
+            navigation.dispatch(
+                CommonActions.reset({
+                  index: 0,
+                  routes: [{ name: 'Home' }] // 홈페이지 이름으로 변경
+                })
+            );
+            
+            return user;
         } catch (e) {
             const alertMessage = resultMessages[e.code] ? 
             resultMessages[e.code] : "알 수 없는 이유로 회원가입에 실패하였습니다.";
+
             Alert.alert("회원가입 실패", alertMessage);
         }
+
     }
 
     
