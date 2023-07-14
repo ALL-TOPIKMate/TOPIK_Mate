@@ -15,8 +15,8 @@ import MockTimer from './component/MockTimer';
 import { getNow } from '../utils/DateUtil';
 
 // 현재 로그인한 사용자 정보 가져오기
-const user = auth().currentUser;
-const userEmail = user.email;
+// const user = auth().currentUser;
+// const userEmail = user.email;
 
 
 // users 컬렉션으로부터 현재 로그인한 사용자의 도큐먼트 REF GET
