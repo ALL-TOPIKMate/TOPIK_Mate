@@ -1,6 +1,7 @@
-import React, { useRef, useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext, useRef } from 'react';
 import { Image, BackHandler, Alert } from 'react-native'
 import { checkUserSession, subscribeAuth } from './lib/auth';
+import UserContext from "./lib/UserContext"
 import auth from "@react-native-firebase/auth";
 
 // load navigation
@@ -19,7 +20,6 @@ import TypeScreen from "./screens/TypeScreen";
 import WrongScreen from "./screens/WrongScreen";
 import InfoScreen from "./screens/InfoScreen";
 import InfoSetting from "./screens/InfoSetting";
-
 import SigninScreen from "./screens/SigninScreen";
 import SignupScreen from "./screens/SignupScreen";
 import RecommendStudyScreen from "./screens/RecommendStudyScreen";
@@ -36,10 +36,16 @@ import Inquiry from "./screens/Inquiry";
 import InfoApp from './screens/InfoApp';
 import WriteHistoryListScreen from './screens/WriteHistoryListScreen';
 import ResultScreen from './screens/ResultScreen';
+import SplashScreen from './screens/SplashScreen';
+
+
 
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
 
+
+const HomeStack = createNativeStackNavigator();
+const AuthStack = createNativeStackNavigator();
 
 const Home = ({route, navigation}) =>{
 
@@ -81,75 +87,95 @@ const Home = ({route, navigation}) =>{
   
 
     return (
-      <Tab.Navigator 
-          screenOptions={({ route }) => ({
-            tabBarIcon: ({ focused, color, size }) =>{
-              let iconImage
-              if(route.name === "Recommend"){
-                iconImage = require("./assets/home.png")
-              }else if(route.name === "Mocktest"){
-                iconImage = require("./assets/mocktest.png")
-              }else if(route.name === "Type"){
-                iconImage = require("./assets/type.png")
-              }else if(route.name === "Wrong"){
-                iconImage = require("./assets/wrong.png")
-              }else{ // Info
-                iconImage = require("./assets/info.png")
-              }
+        <Tab.Navigator 
+            screenOptions={({ route }) => ({
+                tabBarIcon: ({ focused, color, size }) =>{
+                    let iconImage
+                    if(route.name === "Recommend"){
+                        iconImage = require("./assets/home.png")
+                    }else if(route.name === "Mocktest"){
+                        iconImage = require("./assets/mocktest.png")
+                    }else if(route.name === "Type"){
+                        iconImage = require("./assets/type.png")
+                    }else if(route.name === "Wrong"){
+                        iconImage = require("./assets/wrong.png")
+                    }else{ // Info
+                        iconImage = require("./assets/info.png")
+                    }
 
-              return <Image source = {iconImage} style = {{width: 23, height: 23}} resizeMode='contain' />
-            },
-          
-            headerShown: false,
-            tabBarActiveTintColor: "black",
-            tabBarInactiveTintColor: "gray",
-            tabBarActiveBackgroundColor: "#94AF9F",
-            // tabBarInactiveBackgroundColor: "#D9D9D9"
-            tabBarLabelStyle: {fontSize: 12, fontWeight: "bold"},
+                    return <Image source = {iconImage} style = {{width: 23, height: 23}} resizeMode='contain' />
+                },
+            
+                headerShown: false,
+                tabBarActiveTintColor: "black",
+                tabBarInactiveTintColor: "gray",
+                tabBarActiveBackgroundColor: "#94AF9F",
+                // tabBarInactiveBackgroundColor: "#D9D9D9"
+                tabBarLabelStyle: {fontSize: 12, fontWeight: "bold"},
 
-            tabBarStyle:{ height: 64}
-          })
-        }
-      >
-          <Tab.Screen name = "Recommend" component = {RecommendScreen}/>
-          <Tab.Screen name = "Mocktest" component = {MocktestScreen}/>
-          <Tab.Screen name = "Type" component = {TypeScreen}/>   
-          <Tab.Screen name = "Wrong" component = {WrongScreen}/>
-          <Tab.Screen name = "Info" component = {InfoScreen}/>
-      </Tab.Navigator>
+                tabBarStyle:{ height: 64}
+            })}
+        >
+            <Tab.Screen name = "Recommend" component = {RecommendScreen}/>
+            <Tab.Screen name = "Mocktest" component = {MocktestScreen}/>
+            <Tab.Screen name = "Type" component = {TypeScreen}/>   
+            <Tab.Screen name = "Wrong" component = {WrongScreen}/>
+            <Tab.Screen name = "Info" component = {InfoScreen}/>
+        </Tab.Navigator>
     );
+}
+
+const HomeStackScreen = () => {
+    return (
+        <Stack.Navigator initialRouteName = 'Home'>
+            <HomeStack.Screen name = "Home" component = {Home} options = {({route})=>({headerBackVisible: false, title: "TOPIK MATE", })}/>
+            <HomeStack.Screen name="InfoSetting" component = {InfoSetting}/>
+            <HomeStack.Screen name = "RecommendStudy" component = {RecommendStudyScreen}/>
+            <HomeStack.Screen name="MockStudy" component = {MockStudyScreen}/>
+            <HomeStack.Screen name = "MockList" component = {MockListScreen}/>
+            <HomeStack.Screen name="TypeQuest" component = {TypeQuestScreen}/>
+            <HomeStack.Screen name="TypeQuestLc" component = {TypeQuestScreenLc}/>
+            <HomeStack.Screen name="TypeQuestWr" component = {TypeQuestScreenWr}/>
+            <HomeStack.Screen name="WrongStudy" component = {WrongStudyScreen}/>
+            <HomeStack.Screen name="WriteHistory" component = {WriteHistoryScreen}/>
+            <HomeStack.Screen name="Notice" component={Notice}/>
+            <HomeStack.Screen name="Myaccount" component={Myaccount}/>
+            <HomeStack.Screen name="Inquiry" component={Inquiry}/>
+            <HomeStack.Screen name="InfoApp" component={InfoApp}/>
+            <HomeStack.Screen name="WriteHistoryList" component = {WriteHistoryListScreen}/>
+            <HomeStack.Screen name = "Result" component = {ResultScreen} />
+        </Stack.Navigator>
+    )
+}
+
+
+const AuthStackScreen =  () => {
+    return (
+        <Stack.Navigator initialRouteName = 'Signin'>
+            <AuthStack.Screen name = "Signin" component = {SigninScreen}/>
+            <AuthStack.Screen name = "Signup" component = {SignupScreen}/>
+        </Stack.Navigator>
+    )
 }
 
 
 const App = () => {
-    const [path, setPath] = useState(auth().currentUser ? "Home" : "Signin");
- 
+    
+    // 유저 전역변수
+    const USER = useContext(UserContext)
+    
+
+
     return (
-      <NavigationContainer>
-        <Stack.Navigator initialRouteName = {path}>
-          <Stack.Screen name = "Home" component = {Home} options = {({route})=>({headerBackVisible: false, title: "TOPIK MATE", })}/>
-          <Stack.Screen name = "Signin" component = {SigninScreen}/>
-          <Stack.Screen name = "Signup" component = {SignupScreen}/>
-          <Stack.Screen name="InfoSetting" component = {InfoSetting}/>
-
-
-          <Stack.Screen name = "RecommendStudy" component = {RecommendStudyScreen}/>
-          <Stack.Screen name="MockStudy" component = {MockStudyScreen}/>
-          <Stack.Screen name = "MockList" component = {MockListScreen}/>
-          <Stack.Screen name = "Type" component={TypeScreen}/>
-          <Stack.Screen name="TypeQuest" component = {TypeQuestScreen}/>
-          <Stack.Screen name="TypeQuestLc" component = {TypeQuestScreenLc}/>
-          <Stack.Screen name="TypeQuestWr" component = {TypeQuestScreenWr}/>
-          <Stack.Screen name="WrongStudy" component = {WrongStudyScreen}/>
-          <Stack.Screen name="WriteHistory" component = {WriteHistoryScreen}/>
-          <Stack.Screen name="Notice" component={Notice}/>
-          <Stack.Screen name="Myaccount" component={Myaccount}/>
-          <Stack.Screen name="Inquiry" component={Inquiry}/>
-          <Stack.Screen name="InfoApp" component={InfoApp}/>
-          <Stack.Screen name="WriteHistoryList" component = {WriteHistoryListScreen}/>
-          <Stack.Screen name = "Result" component = {ResultScreen} />
-        </Stack.Navigator>
-      </NavigationContainer>    
+        <UserContext.Provider value = {USER}>
+        <NavigationContainer>
+            <Stack.Navigator initialRouteName = "Splash">
+                <Stack.Screen name = "Splash" component = {SplashScreen} options = { () => ({ headerShown : false }) } />
+                <Stack.Screen name = "HomeStack" component = {HomeStackScreen} options = { () => ({ headerShown : false }) } />
+                <Stack.Screen name = "AuthStack" component = {AuthStackScreen} options = { () => ({ headerShown : false }) } />
+            </Stack.Navigator>
+        </NavigationContainer>    
+        </UserContext.Provider>
   );
 }
 

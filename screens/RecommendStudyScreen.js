@@ -1,4 +1,4 @@
-import React, {useState, useEffect, useRef} from 'react';
+import React, {useState, useEffect, useRef, useContext} from 'react';
 
 import firestore from '@react-native-firebase/firestore';
 import firebase from '@react-native-firebase/app';
@@ -10,7 +10,7 @@ import Sound from 'react-native-sound';
 Sound.setCategory('Playback');
 
 
-
+import UserContext from '../lib/UserContext';
 import RecommendProb from './component/RecommendProb';
 import Loading from './component/Loading';
 
@@ -108,10 +108,10 @@ const loadMultimedia = async (problemList, audioStorage, imageStorage, setLoaded
 }
 
 const RecommendStudyScreen = ({route, navigation}) =>{
-
-    // 유저 
-    const user = route.params.user
-    const setUser = route.params.setUser
+    const User = useContext(UserContext)
+    
+    const recRender = route.params.recRender
+    const recRerender = route.params.recRerender.func
 
 
     // 멀티미디어
@@ -121,7 +121,7 @@ const RecommendStudyScreen = ({route, navigation}) =>{
 
     
     // 콜렉션 불러오기
-    const querySnapshot = firestore().collection("users").doc(user.userId)
+    const querySnapshot = firestore().collection("users").doc(User.uid)
     const recommendColl = querySnapshot.collection("recommend")
     const wrongColl_lv1 = querySnapshot.collection(`wrong_lv1`) 
     const wrongColl_lv2 = querySnapshot.collection(`wrong_lv2`)
@@ -133,7 +133,7 @@ const RecommendStudyScreen = ({route, navigation}) =>{
     const [loadedProblem, setLoadedProblem] = useState([]); // json
 
     // 다음 문제를 넘길 때 사용
-    const [nextBtn, setNextBtn] = useState(user.userIndex);
+    const [nextBtn, setNextBtn] = useState(User.recIndex);
     
     // 제출 감지
     const [isSubmit, setIsSubmit] = useState(false)
@@ -163,16 +163,16 @@ const RecommendStudyScreen = ({route, navigation}) =>{
 
 
     // 추천문제 인덱스 및 정답 수 load
-    const userIndex = user.userIndex    
-    const userCorrect = user.userCorrect
+    const userIndex = User.recIndex
+    const userCorrect = User.recCorrect
 
 
 
     // MOUNT 
     useEffect(()=> {
+        
         // promise 객체를 반환하는 함수
         dataLoading();
-
         
 
         // UNMOUNT
@@ -183,13 +183,11 @@ const RecommendStudyScreen = ({route, navigation}) =>{
 
 
             // RecommendScreen update
-            setUser({
-                ...user,
-                
-                userIndex: Number(userIndex) + Number(problemCount.current),
-                userCorrect: Number(userCorrect) + Number(correctCount.current)
-            })
+            User.recIndex = Number(userIndex) + Number(problemCount.current)
+            User.recCorrect = Number(userCorrect) + Number(correctCount.current)
+            
 
+            recRerender(!recRender)
         }
 
     }, []);

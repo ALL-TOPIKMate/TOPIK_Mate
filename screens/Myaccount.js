@@ -59,7 +59,7 @@ const Myaccount = ({navigation}) => {
           navigation.dispatch(
             CommonActions.reset({
               index: 0,
-              routes: [{ name: 'Signin' }] // 로그인 페이지 이름으로 변경
+              routes: [{ name: 'AuthStack' }] // 로그인 페이지 이름으로 변경
             })
           );
         })

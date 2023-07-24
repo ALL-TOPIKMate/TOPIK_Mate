@@ -1,8 +1,11 @@
-import React, { useState, useEffect} from 'react';
-import { View, Text, FlatList, StyleSheet, TouchableOpacity} from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, FlatList, StyleSheet, TouchableOpacity } from 'react-native';
 //import firestore from '@react-native-firebase/firestore';
 
+
+
 const InfoSetting = ({ navigation }) => {
+
     const [isButton1Visible, setButton1Visible] = useState(false);
     const [isButton2Visible, setButton2Visible] = useState(false);
     const [isButton3Visible, setButton3Visible] = useState(false);
@@ -24,32 +27,34 @@ const InfoSetting = ({ navigation }) => {
         setButton4Visible(!isButton4Visible);
         navigation.navigate("InfoApp");
     };
+
     return (
         <View style={styles.container}>
+
             <Text> 보여주어야 하는 것들 </Text>
             <Text> 개인 정보 관련, 로그인 정보, 닉네임 변경 </Text>
-            <FlatList data ={[
-                {key: '계정', onPress: handleButton1Press},
-                {key: '공지사항', onPress: handleButton2Press},
-                {key: '문의', onPress: handleButton3Press},
-                {key: '앱 정보', onPress: handleButton4Press},
+
+            <FlatList data={[
+                { key: '계정', onPress: handleButton1Press },
+                { key: '공지사항', onPress: handleButton2Press },
+                { key: '문의', onPress: handleButton3Press },
+                { key: '앱 정보', onPress: handleButton4Press },
             ]}
-            renderItem={({ item }) => (
-                <TouchableOpacity style={styles.button} onPress={item.onPress}>
-                  <Text style={styles.buttonText}>{item.key}</Text>
-                </TouchableOpacity>
-              )}
+                renderItem={({ item }) => (
+                    <TouchableOpacity style={styles.button} onPress={item.onPress}>
+                        <Text style={styles.buttonText}>{item.key}</Text>
+                    </TouchableOpacity>
+                )}
             />
-      
+
         </View>
     );
-    
 };
 
 const styles = StyleSheet.create({
     container: {
-      flex: 1,
-      paddingTop: 22,
+        flex: 1,
+        paddingTop: 22,
     },
     button: {
         padding: 10,
@@ -57,9 +62,9 @@ const styles = StyleSheet.create({
         marginBottom: 10,
         alignItems: 'flex-start',
         justifyContent: 'center',
-      },
-      buttonText: {
+    },
+    buttonText: {
         fontSize: 18,
-      },
-  });
+    },
+});
 export default InfoSetting;

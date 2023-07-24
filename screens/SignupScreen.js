@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 
 import { signUp } from "../lib/auth";
 import firestore from '@react-native-firebase/firestore';
 import { Button, View ,TextInput, StyleSheet, Text, TouchableOpacity, Alert } from 'react-native'
 import { CommonActions } from '@react-navigation/native'; // CommonActions 추가
 
+import UserContext from '../lib/UserContext';
 import AppNameHeader from './component/AppNameHeader'
 
 
@@ -20,12 +21,20 @@ const resultMessages = {
 
 const SignupScreen = ({ navigation }) =>{
     
+    const USER = useContext(UserContext)
+
     const [form, setForm] = useState({
         email: "",
         password: "",
         
     });
     
+
+    
+    const readUser = async() => {
+        await USER.initUserInfo()
+    }
+
 
     // 랜덤 난수 생성
     const random = (length = 8) => {
@@ -58,12 +67,18 @@ const SignupScreen = ({ navigation }) =>{
             await firestore().collection("users").doc(user.uid).collection("wrong_lv2").doc('WR_TAG').collection("PRB_TAG").doc("Wrong").set({})
             await firestore().collection("users").doc(user.uid).collection("recommend").doc('Recommend').set({ userCorrect: 0, userIndex: 10 })
 
-            navigation.dispatch(
-                CommonActions.reset({
-                  index: 0,
-                  routes: [{ name: 'Home' }] // 홈페이지 이름으로 변경
-                })
-            );
+
+             // initialize uid, email
+             USER.initUser(user)
+             readUser().then(()=>{
+                 navigation.dispatch(
+                     CommonActions.reset({
+                       index: 0,
+                       routes: [{ name: 'HomeStack' }]
+                     })
+                   );
+ 
+             })
             
             return user;
         } catch (e) {

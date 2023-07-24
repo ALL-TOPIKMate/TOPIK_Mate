@@ -1,6 +1,12 @@
-import React, { useState, useEffect } from 'react';
-import { signIn, checkUserSession } from "../lib/auth";
+import React, { useState, useEffect, useContext } from 'react';
 import { Button, View ,TextInput, StyleSheet, Text, Alert, TouchableOpacity } from 'react-native'
+import { CommonActions } from '@react-navigation/native'; // CommonActions 추가
+
+
+import UserContext from "../lib/UserContext"
+import { signIn, checkUserSession } from "../lib/auth";
+
+
 
 
 
@@ -13,12 +19,19 @@ const resultMessages = {
 
 
 const SigninScreen = ({navigation}) =>{
+    const USER = useContext(UserContext)
 
     const [form, setForm] = useState({
         email: "",
         password: "",
         
     });
+
+
+    const readUser = async() => {
+        await USER.initUserInfo()
+    }
+
 
 
     // 로그인 함수
@@ -33,7 +46,22 @@ const SigninScreen = ({navigation}) =>{
             console.log(user);
             console.log('성공')
 
-            navigation.replace('Home')
+
+            // initialize uid, email
+            USER.initUser(user)
+            readUser().then(()=>{
+
+                console.log(`login: ${JSON.stringify(USER, null, 2)}`)
+            
+                navigation.dispatch(
+                    CommonActions.reset({
+                      index: 0,
+                      routes: [{ name: 'HomeStack' }]
+                    })
+                  );
+
+            })
+            
         } catch (e) {
             const alertMessage = resultMessages[e.code] ? 
             resultMessages[e.code] : "알 수 없는 이유로 로그인에 실패하였습니다.";
