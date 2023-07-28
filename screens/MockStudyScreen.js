@@ -1,9 +1,11 @@
-import React, {useState, useEffect, useRef } from 'react';
+import React, {useState, useEffect, useRef, useContext } from 'react';
 import { View, StyleSheet } from 'react-native'
 import firebase from '@react-native-firebase/app';
 import firestore from '@react-native-firebase/firestore';
 import { getStorage } from '@react-native-firebase/storage'; // include storage module besides Firebase core(firebase/app)
 import auth from '@react-native-firebase/auth'; // 사용자 정보 가져오기
+
+import UserContext from '../lib/UserContext';
 
 import Loading from './component/Loading';
 import MockProb from './component/MockProb';
@@ -14,37 +16,12 @@ import MockTimer from './component/MockTimer';
 // import 유틸
 import { getNow } from '../utils/DateUtil';
 
-// 현재 로그인한 사용자 정보 가져오기
-// const user = auth().currentUser;
-// const userEmail = user.email;
 
-
-// users 컬렉션으로부터 현재 로그인한 사용자의 도큐먼트 REF GET
-const getUserDocRef = async (email) => {
-
-    try {
-        const querySnapshot = await firestore()
-            .collection('users')
-            .where('email', '==', email)
-            .get();
-
-
-        console.log(`querySnapshot.docs[0].data().u_uid: ${querySnapshot.docs[0].data().u_uid}`);
-        return querySnapshot.docs[0].ref;
-
-    } catch (err) {
-        
-        console.log(err);
-
-        return null;
-    }
-
-}
 
 // 틀린 문제 업데이트
-const updateUserWrongColl = async (email, problems, level) => {
+const updateUserWrongColl = async (uid, problems, level) => {
 
-    const userDocRef = await getUserDocRef(email);
+    const userDocRef = firestore().collection("users").doc(uid)
 
     try {
         const wrongColl = userDocRef.collection(`wrong_${level}`);
@@ -118,7 +95,10 @@ const updateUserWrongColl = async (email, problems, level) => {
 
 
 const MockStudyScreen = ({navigation, route}) =>{
-    
+
+    const USER = useContext(UserContext)
+
+
     const storage = getStorage(firebase);
     
     // 콜렉션 불러오기
@@ -255,7 +235,7 @@ const MockStudyScreen = ({navigation, route}) =>{
 
         return () => {
             // 사용자 틀린 문제 DB 업데이트
-            updateUserWrongColl(userEmail, prevProblems.current, route.params.level.toLowerCase());
+            updateUserWrongColl(USER.uid, prevProblems.current, route.params.level.toLowerCase());
         }
 
     }, []);

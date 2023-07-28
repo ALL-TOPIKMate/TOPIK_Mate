@@ -1,29 +1,85 @@
 import React, { useState, useEffect } from 'react'
 import { View, Text, Image, TextInput, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
 
+
+import ProbMain from './ProbMain';
+import ImgRef from './ImgRef';
+
+
 import Sound from 'react-native-sound';
 
 Sound.setCategory('Playback');
 
 
+
+const AudRef = (audio) =>{
+
+    const [isRunning, setIsRunning] = useState(false);
+
+    function audioPlay(){
+        if(audio){
+            
+            if(audio.isPlaying()){
+                audio.pause()
+
+                setIsRunning(false)
+            }else{
+                setIsRunning(true)
+        
+                // audio.play()
+
+                audio.play((success) => {
+                    if (success) {
+                      setIsRunning(false);
+                      console.log('successfully finished playing');
+                    } else {
+                      setIsRunning(false);
+                      console.log('playback failed due to audio decoding errors');
+                    }
+                })
+            }
+        }
+    }
+
+    return (
+        <View style = {styles.btnBox}>
+            <TouchableOpacity onPress={()=>{audioPlay()}} style = {styles.btnPlay}>
+                    {
+                        isRunning
+                        ? <Text style = {{color: "#F6F1F1", fontSize: 20, textAlign: "center"}}>
+                        Stop
+                        </Text>
+                        : <Text style = {{color: "#F6F1F1", fontSize: 20, textAlign: "center"}}>
+                        Start
+                        </Text>
+                    }
+            </TouchableOpacity>
+        </View>  
+    )
+}
+
+
+
+
+
 const MockProb = ({ problem, choice, setChoice, choice2, setChoice2, index, setIndex, setIsEnd, probListLength, setDirection, images, audios }) => {
-  
+
     // 사용자 선택 저장
     const [click, setClick] = useState(choice);
     const [click2, setClick2] = useState(choice2);
-      
+
     useEffect(() => {
-      setClick(choice);
+        setClick(choice);
     }, [choice]);
-    
+
     useEffect(() => {
-      setClick2(choice2);
+        setClick2(choice2);
     }, [choice2]);
 
     // 오디오 파일이 있으면 download URL 가져오기
     let audioRef = undefined;
     if (problem.AUD_REF in audios.current) {
-      audioRef = audios.current[problem.AUD_REF].url;
+        audioRef = audios.current[problem.AUD_REF].url;
     }
 
     // 로컬적으로 사용될 오디오 state
@@ -31,280 +87,229 @@ const MockProb = ({ problem, choice, setChoice, choice2, setChoice2, index, setI
 
 
     useEffect(() => {
-      if (audioRef === undefined) {
-        setAudio(undefined);
-      } else {
-        // 오디오 URL이 있으면 새로운 Sound 객체 생성. -> 로컬적으로 사용
-        setAudio(new Sound(audios.current[problem.AUD_REF].url, null, err => {
-      
-          if (err) {
-            console.log('Failed to load the sound', err);
-            return undefined;
-          }
-          
-          // 로드 성공
-          console.log(`오디오 로드 성공. ${problem.AUD_REF}`);
-          
-        }));
-      }
-    }, [audioRef]);
-
-
-    // 오디오 재생 상태 state
-    const [playing, setPlaying] = useState(false);
-    
-    
-    // 오디오 재생 제어
-    const playPause = (audio) => {
-      if (audio !== undefined) {
-
-        if (audio.isPlaying()) {
-          // 재생 중 -> 일시 정지
-          audio.pause();
-          setPlaying(false);
-
+        if (audioRef === undefined) {
+            setAudio(undefined);
         } else {
-          // 일시 정지 -> 재생
-          setPlaying(true);
+            // 오디오 URL이 있으면 새로운 Sound 객체 생성. -> 로컬적으로 사용
+            setAudio(new Sound(audios.current[problem.AUD_REF].url, null, err => {
 
-          audio.play(success => {
-            if (success) {
-              setPlaying(false);
-              console.log('successfully finished playing');
-            } else {
-              setPlaying(false);
-              console.log('playback failed due to audio decoding errors');
-            }
-          });
+                if (err) {
+                    console.log('Failed to load the sound', err);
+                    return undefined;
+                }
 
+                // 로드 성공
+                console.log(`오디오 로드 성공. ${problem.AUD_REF}`);
+
+            }));
         }
-      }
-    };
-
-    const stopAudio = (audio) => {
-      if (audio !== undefined) {
-        audio.stop();
-      }
-    }
+    }, [audioRef]);
 
 
     // 언마운트 시 자원 삭제
     useEffect(() => {
-      return () => {
-        if (audio !== undefined) {
-          audio.release();
-        }
-      };
+        return () => {
+            if (audio !== undefined) {
+                audio.release();
+            }
+        };
     }, []);
-    
+
 
     return (
-      <View>
         <View>
-            <TouchableOpacity 
-                onPress={() => {
-                  stopAudio(audio);
-                  setIsEnd(true);
-                }} 
-                style={styles.exitBtn}>
-                <Text>Exit</Text>
-            </TouchableOpacity>
-        </View>
-        <ScrollView>
             <View>
-              {/* 오디오 */}
-              {
-                problem.AUD_REF in audios.current
-                ? <TouchableOpacity onPress={() => playPause(audio)}>
-                  <Text>
-                    {
-                      playing
-                      ? '멈추기'
-                      : '재생하기'
-                    }
-                  </Text>
+                <TouchableOpacity
+                    onPress={() => {
+                        audio.stop();
+                        setIsEnd(true);
+                    }}
+                    style={styles.exitBtn}>
+                    <Text>Exit</Text>
                 </TouchableOpacity>
-                : null
-              }
+            </View>
+            <ScrollView>
+                <View>
+                    {/* 오디오 */}
+                    {
+                        problem.AUD_REF in audios.current
+                            ? AudRef(audio)
+                            : null
+                    }
 
-              {/* ProbMain */}
-              <View style={styles.probMainContainer}>
-                  <Text style={styles.probMainCnt}>Q{ problem.PRB_NUM } { problem.PRB_MAIN_CONT} </Text>
-              </View>
+                    {/* ProbMain */}
+                    <ProbMain PRB_MAIN_CONT = {problem.PRB_MAIN_CONT} PRB_NUM = {problem.PRB_NUM}/>
 
-              
-              {/* 이미지 */}
-              {
-                problem.IMG_REF in images.current
-                ? <View style={{alignContent: 'center'}}> 
-                  <Image 
-                    style={styles.mainImg}
-                    source={{ uri: images.current[problem.IMG_REF].url }}
-                  />
+
+                    {/* 이미지 */}
+                    {
+                        problem.IMG_REF in images.current
+                            ? <ImgRef IMG_REF = {images.current[problem.IMG_REF].url} />
+                            : null
+                    }
+
+                    {/* 문항, 지문 텍스트 */}
+                    {
+                        problem.PRB_TXT !== ''
+                            ? <Text style={{ marginVertical: 16 }}>{problem.PRB_TXT}</Text>
+                            : null
+                    }
+                    {
+                        problem.PRB_SUB_CONT !== ''
+                            ? <Text style={{ marginVertical: 16 }}>{problem.PRB_SUB_CONT}</Text>
+                            : null
+                    }
+                    {
+                        problem.PRB_SCRPT !== ''
+                            ? <Text style={{ marginVertical: 16 }}>{problem.PRB_SCRPT}</Text>
+                            : null
+                    }
                 </View>
-                : null
-              }
-
-              {/* 문항, 지문 텍스트 */}
-              {
-                problem.PRB_TXT !== ''
-                ? <Text style={{marginVertical: 16}}>{ problem.PRB_TXT }</Text>
-                : null
-              }
-              {
-                problem.PRB_SUB_CONT !== ''
-                ? <Text style={{marginVertical: 16}}>{ problem.PRB_SUB_CONT }</Text> 
-                : null
-              }
-              {
-                problem.PRB_SCRPT !== ''
-                ? <Text style={{marginVertical: 16}}>{ problem.PRB_SCRPT }</Text>
-                : null
-              }
-            </View>
 
 
 
-            {
-              problem.PRB_SECT === "LS" || problem.PRB_SECT === "RD"
-              ? <View>
-                  {
-                    problem.PRB_CHOICE1 in images.current
-                    ? <TouchableOpacity onPress = {() => {setClick("1");}} style={[styles.choiceImgConainer]}>
-                      <Image
-                        style={[styles.choiceImg, {borderColor: click === "1" ? "#BBD6B8" : "#D9D9D9"}]}
-                        source={{uri: images.current[problem.PRB_CHOICE1].url}} />
-                    </TouchableOpacity>
-                    : <TouchableOpacity onPress = {() => {setClick("1");}} style={[styles.choiceButton, {backgroundColor: click === "1" ? "#BBD6B8" : "#D9D9D9"}]}>
-                      <Text>{ problem.PRB_CHOICE1 }</Text>
-                    </TouchableOpacity>
-                  }
-                  {
-                    problem.PRB_CHOICE2 in images.current
-                    ? <TouchableOpacity onPress = {() => {setClick("2");}} style={[styles.choiceImgConainer]}>
-                      <Image
-                        style={[styles.choiceImg, {borderColor: click === "2" ? "#BBD6B8" : "#D9D9D9"}]}
-                        source={{uri: images.current[problem.PRB_CHOICE2].url}} />
-                    </TouchableOpacity>
-                    : <TouchableOpacity onPress = {() => {setClick("2");}} style={[styles.choiceButton, {backgroundColor: click === "2" ? "#BBD6B8" : "#D9D9D9"}]}>
-                      <Text>{ problem.PRB_CHOICE2 }</Text>
-                    </TouchableOpacity>
-                  }
-                  {
-                    problem.PRB_CHOICE3 in images.current
-                    ? <TouchableOpacity onPress = {() => {setClick("3");}} style={[styles.choiceImgConainer]}>
-                      <Image
-                        style={[styles.choiceImg, {borderColor: click === "3" ? "#BBD6B8" : "#D9D9D9"}]}
-                        source={{uri: images.current[problem.PRB_CHOICE3].url}} />
-                    </TouchableOpacity>
-                    : <TouchableOpacity onPress = {() => {setClick("3");}} style={[styles.choiceButton, {backgroundColor: click === "3" ? "#BBD6B8" : "#D9D9D9"}]}>
-                      <Text>{ problem.PRB_CHOICE3 }</Text>
-                    </TouchableOpacity>
-                  }
-                  {
-                    problem.PRB_CHOICE4 in images.current
-                    ? <TouchableOpacity onPress = {() => {setClick("4");}} style={[styles.choiceImgConainer]}>
-                      <Image
-                        style={[styles.choiceImg, {borderColor: click === "4" ? "#BBD6B8" : "#D9D9D9"}]}
-                        source={{uri: images.current[problem.PRB_CHOICE4].url}} />
-                    </TouchableOpacity>
-                    : <TouchableOpacity onPress = {() => {setClick("4");}} style={[styles.choiceButton, {backgroundColor: click === "4" ? "#BBD6B8" : "#D9D9D9"}]}>
-                      <Text>{ problem.PRB_CHOICE4 }</Text>
-                    </TouchableOpacity>
-                  }
-              </View>
-              : <View>
-                {/* 쓰기 입력 칸 */}
                 {
-                  problem.TAG === '001' || problem.TAG === '002' // 입력창이 두 개 필요함
-                  ? <View>
-                    <Text>㉠</Text>
-                    <TextInput 
-                      onChangeText = {(text) => {setClick(text)}}
-                      placeholder='Enter your answer here'
-                      value={click}
-                      style={styles.inputBox}
-                      multiline={true}
-                    />
-                    <Text>㉡</Text>
-                    <TextInput 
-                      onChangeText = {(text) => {setClick2(text)}}
-                      placeholder='Enter your answer here'
-                      value={click2}
-                      style={styles.inputBox}
-                      multiline={true}
-                    />
-                  </View> 
-                  : <View>
-                    <TextInput 
-                      onChangeText = {(text) => {setClick(text)}}
-                      placeholder='Enter your answer here'
-                      value={click}
-                      style={styles.inputBox}
-                      multiline={true}
-                    />
-                  </View>
+                    problem.PRB_SECT === "LS" || problem.PRB_SECT === "RD"
+                        ? <View>
+                            {
+                                problem.PRB_CHOICE1 in images.current
+                                    ? <TouchableOpacity onPress={() => { setClick("1"); }} style={[styles.choiceImgConainer]}>
+                                        <Image
+                                            style={[styles.choiceImg, { borderColor: click === "1" ? "#BBD6B8" : "#D9D9D9" }]}
+                                            source={{ uri: images.current[problem.PRB_CHOICE1].url }} />
+                                    </TouchableOpacity>
+                                    : <TouchableOpacity onPress={() => { setClick("1"); }} style={[styles.choiceButton, { backgroundColor: click === "1" ? "#BBD6B8" : "#D9D9D9" }]}>
+                                        <Text>{problem.PRB_CHOICE1}</Text>
+                                    </TouchableOpacity>
+                            }
+                            {
+                                problem.PRB_CHOICE2 in images.current
+                                    ? <TouchableOpacity onPress={() => { setClick("2"); }} style={[styles.choiceImgConainer]}>
+                                        <Image
+                                            style={[styles.choiceImg, { borderColor: click === "2" ? "#BBD6B8" : "#D9D9D9" }]}
+                                            source={{ uri: images.current[problem.PRB_CHOICE2].url }} />
+                                    </TouchableOpacity>
+                                    : <TouchableOpacity onPress={() => { setClick("2"); }} style={[styles.choiceButton, { backgroundColor: click === "2" ? "#BBD6B8" : "#D9D9D9" }]}>
+                                        <Text>{problem.PRB_CHOICE2}</Text>
+                                    </TouchableOpacity>
+                            }
+                            {
+                                problem.PRB_CHOICE3 in images.current
+                                    ? <TouchableOpacity onPress={() => { setClick("3"); }} style={[styles.choiceImgConainer]}>
+                                        <Image
+                                            style={[styles.choiceImg, { borderColor: click === "3" ? "#BBD6B8" : "#D9D9D9" }]}
+                                            source={{ uri: images.current[problem.PRB_CHOICE3].url }} />
+                                    </TouchableOpacity>
+                                    : <TouchableOpacity onPress={() => { setClick("3"); }} style={[styles.choiceButton, { backgroundColor: click === "3" ? "#BBD6B8" : "#D9D9D9" }]}>
+                                        <Text>{problem.PRB_CHOICE3}</Text>
+                                    </TouchableOpacity>
+                            }
+                            {
+                                problem.PRB_CHOICE4 in images.current
+                                    ? <TouchableOpacity onPress={() => { setClick("4"); }} style={[styles.choiceImgConainer]}>
+                                        <Image
+                                            style={[styles.choiceImg, { borderColor: click === "4" ? "#BBD6B8" : "#D9D9D9" }]}
+                                            source={{ uri: images.current[problem.PRB_CHOICE4].url }} />
+                                    </TouchableOpacity>
+                                    : <TouchableOpacity onPress={() => { setClick("4"); }} style={[styles.choiceButton, { backgroundColor: click === "4" ? "#BBD6B8" : "#D9D9D9" }]}>
+                                        <Text>{problem.PRB_CHOICE4}</Text>
+                                    </TouchableOpacity>
+                            }
+                        </View>
+                        : <View>
+                            {/* 쓰기 입력 칸 */}
+                            {
+                                problem.TAG === '001' || problem.TAG === '002' // 입력창이 두 개 필요함
+                                    ? <View>
+                                        <Text>㉠</Text>
+                                        <TextInput
+                                            onChangeText={(text) => { setClick(text) }}
+                                            placeholder='Enter your answer here'
+                                            value={click}
+                                            style={styles.inputBox}
+                                            multiline={true}
+                                        />
+                                        <Text>㉡</Text>
+                                        <TextInput
+                                            onChangeText={(text) => { setClick2(text) }}
+                                            placeholder='Enter your answer here'
+                                            value={click2}
+                                            style={styles.inputBox}
+                                            multiline={true}
+                                        />
+                                    </View>
+                                    : <View>
+                                        <TextInput
+                                            onChangeText={(text) => { setClick(text) }}
+                                            placeholder='Enter your answer here'
+                                            value={click}
+                                            style={styles.inputBox}
+                                            multiline={true}
+                                        />
+                                    </View>
+                            }
+                        </View>
                 }
-              </View>
-            }
 
 
 
-            <View style = {[styles.controlButttonContainer]}>
+                <View style={[styles.controlButttonContainer]}>
 
-              {/* 이전 버튼 */}
-              <TouchableOpacity 
-                disabled = {index === 0} 
-                onPress = {() => {
-                  {
-                    audio !== undefined
-                    ? audio.stop() & setPlaying(false)
-                    : null
-                  }
-                  setChoice(click);
-                  setChoice2(click2);
-                  setClick(undefined);
-                  setClick2(undefined); 
-                  setDirection(1); 
-                  setIndex(index - 1); }} 
-                style={[styles.controlButton, {backgroundColor: index == 0 ? '#D9D9D9' : '#94AF9F'}]}>
-                <Text>PREV</Text>
-              </TouchableOpacity>
-
-
-              {/* 다음 버튼 */}
-              <TouchableOpacity 
-                onPress = {() => {
-                  {
-                    audio !== undefined
-                    ? audio.stop() & setPlaying(false)
-                    : null
-                  }
-                  setChoice(click);
-                  setChoice2(click2);
-                  setClick(undefined);
-                  setClick2(undefined);
-                  setDirection(-1); 
-                  setIndex(index + 1); }} 
-                style={[styles.controlButton, {backgroundColor: '#94AF9F'}]}>
-                <Text>
-                {
-                  index === probListLength - 1
-                  ? "SUBMIT"
-                  : "NEXT"
-                }
-                </Text>
-              </TouchableOpacity>
-            </View>
+                    {/* 이전 버튼 */}
+                    <TouchableOpacity
+                        disabled={index === 0}
+                        onPress={() => {
+                            {
+                                audio !== undefined
+                                    ? audio.stop() & setPlaying(false)
+                                    : null
+                            }
+                            setChoice(click);
+                            setChoice2(click2);
+                            setClick(undefined);
+                            setClick2(undefined);
+                            setDirection(1);
+                            setIndex(index - 1);
+                        }}
+                        style={[styles.controlButton, { backgroundColor: index == 0 ? '#D9D9D9' : '#94AF9F' }]}>
+                        <Text>PREV</Text>
+                    </TouchableOpacity>
 
 
-        </ScrollView>
-      </View>
+                    {/* 다음 버튼 */}
+                    <TouchableOpacity
+                        onPress={() => {
+                            {
+                                audio !== undefined
+                                    ? audio.stop() & setPlaying(false)
+                                    : null
+                            }
+                            setChoice(click);
+                            setChoice2(click2);
+                            setClick(undefined);
+                            setClick2(undefined);
+                            setDirection(-1);
+                            setIndex(index + 1);
+                        }}
+                        style={[styles.controlButton, { backgroundColor: '#94AF9F' }]}>
+                        <Text>
+                            {
+                                index === probListLength - 1
+                                    ? "SUBMIT"
+                                    : "NEXT"
+                            }
+                        </Text>
+                    </TouchableOpacity>
+                </View>
+
+
+            </ScrollView>
+        </View>
     )
 }
 
 const styles = StyleSheet.create({
-    
+
     probMainContainer: {
         flexDirection: 'row'
     },
@@ -329,8 +334,8 @@ const styles = StyleSheet.create({
 
     // 지문 이미지
     mainImg: {
-      height: 300,
-      resizeMode: "contain",
+        height: 300,
+        resizeMode: "contain",
     },
 
 
@@ -358,14 +363,14 @@ const styles = StyleSheet.create({
 
     // 쓰기 영역
     inputBox: {
-      padding: 10,
-      borderColor: '#C1C0B9',
-      borderWidth: 2,
-      borderRadius: 10,
-      marginTop: 10,
-      marginBottom: 20,
+        padding: 10,
+        borderColor: '#C1C0B9',
+        borderWidth: 2,
+        borderRadius: 10,
+        marginTop: 10,
+        marginBottom: 20,
 
-      flexShrink: 1,
+        flexShrink: 1,
     },
 
 
@@ -385,6 +390,22 @@ const styles = StyleSheet.create({
         marginHorizontal: 10
     },
 
+
+    btnBox:{
+        backgroundColor: "#D9D9D9", 
+        flexDirection: "row", 
+        justifyContent: "center",
+
+        alignItems: "center",
+
+        paddingVertical: 30
+    }, 
+
+    btnPlay:{
+        backgroundColor: "#94AF9F",
+        padding: 30,
+        borderRadius: 20
+    }
 })
 
 export default MockProb;
