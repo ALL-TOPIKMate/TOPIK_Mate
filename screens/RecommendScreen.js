@@ -1,21 +1,30 @@
-import React, { useEffect, useState, useRef, useContext } from 'react';
+import React, { useState, useContext, useCallback, useEffect } from 'react';
 import { Button, View ,Text, StyleSheet, TouchableOpacity, Alert } from 'react-native'
+import { useIsFocused } from "@react-navigation/native";
 
-import firestore from '@react-native-firebase/firestore';
-import auth from "@react-native-firebase/auth"
+
 import UserContext from "../lib/UserContext"
 // import {subscribeAuth } from "../lib/auth";
 
 
-import AppNameHeader from './component/AppNameHeader'
-
-
 const RecommendScreen = ({route, navigation}) =>{
 
-
-    const User = useContext(UserContext)
+    const USER = useContext(UserContext)
+    
+    
+    // 화면 포커싱 감지하여 재렌더링
+    const isFocused = useIsFocused()
     const [render, reRender] = useState(false)
 
+
+    useEffect(()=>{
+        const unsubscribe = () =>{
+            // console.log("포커싱 감지!! 홈화면")
+            reRender(!render)
+        }
+
+        return () => unsubscribe
+    }, [isFocused])
 
 
     return (
@@ -42,13 +51,13 @@ const RecommendScreen = ({route, navigation}) =>{
                 
                 <View style = {[styles.recommend, {flex: 1.8,}]}>
 
-                    <TouchableOpacity style = {styles.recommendBtn} disabled = {User.uid == undefined} onPress={()=> (User.recIndex == 10) ? (Alert.alert("", "모든 문제를 풀었습니다 다음에 도전하세요.")): (navigation.navigate("RecommendStudy", {recRender: render, recRerender: {func: reRender}})) }>
+                    <TouchableOpacity style = {styles.recommendBtn} onPress={()=> (USER.recIndex == 10) ? (Alert.alert("", "문제가 없습니다 다음에 도전하세요.")): (navigation.navigate("RecommendStudy")) }>
                         <Text style = {{color: "#F6F1F1", fontSize: 24, fontWeight: "bold", paddingVertical: 5}}>
                             추천 문제 풀기
                         </Text>
 
                         <Text style = {{color: "#F6F1F1", fontSize: 20}}>                        
-                            {10 - Number(User.recIndex)} / 10
+                            {10 - Number(USER.recIndex)} / 10
                         </Text>
                     </TouchableOpacity>
                     

@@ -8,10 +8,8 @@ const ResultScreen = ({route, navigation}) =>{
     const PATH = route.params.PATH
 
 
-
     const clickHandler = () =>{
-        navigation.pop(1)
-        // navigation.popToTop()
+        navigation.pop()
     }
 
 

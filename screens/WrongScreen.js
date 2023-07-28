@@ -1,4 +1,4 @@
-import React, {useState, useEffect, useRef} from 'react';
+import React, {useState, useEffect, useRef, useContext} from 'react';
 import {View, Text, Button, StyleSheet, TouchableOpacity, ScrollView, Alert} from 'react-native'
 
 
@@ -7,6 +7,7 @@ import auth from "@react-native-firebase/auth";
 
 
 import Loading from './component/Loading';
+import UserContext from '../lib/UserContext';
 
 
 // 유형 태그 매칭
@@ -107,10 +108,10 @@ const typeName = (userLevel, section, type) =>{
 }
 
 
+
 const WrongScreen = ({navigation}) =>{
     
-    // 유저 uid, 토픽 레벨 setting
-    const [user, setUser] = useState(null)
+    const USER = useContext(UserContext)
 
 
     // tag 선택
@@ -123,7 +124,7 @@ const WrongScreen = ({navigation}) =>{
     const writeList = useRef(false);
 
 
-
+    // 유형 리스트
     const [data, setData] = useState([])
 
     const [render, reRender] = useState(false);
@@ -134,47 +135,20 @@ const WrongScreen = ({navigation}) =>{
   
     useEffect(() => {
         
-        const loadUser = async () => {
-            const user = auth().currentUser
-            const userId = user.uid
-            
-            const USER = { userId: userId }
-            
-
-            // user의 토픽 레벨 field load
-            const getUserLevel = async () => {
-                const data = await firestore().collection("users").doc(userId).get()
-
-                USER.userLevel = data._data.my_level
-            }
-
-
-
-            await getUserLevel()
-
-            setUser(USER)
-        }
-
-        loadUser()
-        
-    }, []);
-
-
-
-    // data load (ALL TAG)
-    useEffect(()=>{
         const loadTypeList = async() =>{
             try{
                 const typeList = []
 
-                const typeList_l = await firestore().collection("users").doc(user.userId).collection(`wrong_lv${user.userLevel}`).doc("LS_TAG").collection("PRB_TAG").get()
-                const typeList_r = await firestore().collection("users").doc(user.userId).collection(`wrong_lv${user.userLevel}`).doc("RD_TAG").collection("PRB_TAG").get()
-                const typeList_w = await firestore().collection("users").doc(user.userId).collection(`wrong_lv${user.userLevel}`).doc("WR_TAG").collection("PRB_TAG").get()
+                const WrongColl = firestore().collection("users").doc(USER.uid).collection(`wrong_lv${USER.level}`)
+
+                const DATA_LS = await WrongColl.doc("LS_TAG").collection("PRB_TAG").where("PRB_LIST_COUNT", ">", 0).get()
+                const DATA_RD = await WrongColl.doc("RD_TAG").collection("PRB_TAG").where("PRB_LIST_COUNT", ">", 0).get()
+                const DATA_WR = await WrongColl.doc("WR_TAG").collection("PRB_TAG").get()
                 
 
-                typeList_l.docs.forEach((doc) => {if(doc.id !== "Wrong"){typeList.push({type: doc.id, section: "LS", choice: false})}})
-                typeList_r.docs.forEach((doc) => {if(doc.id !== "Wrong"){typeList.push({type: doc.id, section: "RD", choice: false})}})
-                typeList_w.docs.forEach((doc) => {if(doc.id !== "Wrong"){typeList.push({type: doc.id, section: "WR", choice: false})}})
+                DATA_LS.docs.forEach((doc) => {typeList.push({type: doc.id, section: "LS", choice: false, prb_list_length: doc._data.PRB_LIST_COUNT})})
+                DATA_RD.docs.forEach((doc) => {typeList.push({type: doc.id, section: "RD", choice: false, prb_list_length: doc._data.PRB_LIST_COUNT})})
+                DATA_WR.docs.forEach((doc) => {typeList.push({type: doc.id, section: "WR", choice: false})})
                 
                 
                 setData(typeList)
@@ -183,24 +157,20 @@ const WrongScreen = ({navigation}) =>{
             }
         }
 
-        if(user !== null){
-            console.log(user)
+        if(USER.uid){
 
             loadTypeList();
+
         }
-    }, [user])
-    
-
-
-    useEffect(()=>{
-
-    }, [data])
+        
+    }, []);
 
 
 
     // 유저가 고른 유형 반환
     const userSelectedTag = () =>{
         var userTag = [];
+
         for(var i=0; i<data.length; i++){
             if(data[i].choice && (listen && data[i].section == "LS")){
                 userTag.push({tagName: data[i].type, section: "LS"});
@@ -237,7 +207,7 @@ const WrongScreen = ({navigation}) =>{
                     return (
                         <TouchableOpacity key = {index} onPress = {() => {data.choice = !(data.choice); reRender(!render);}} style = {[styles.tagList, {backgroundColor: data.choice ? "#BBD6B8" : "#D9D9D9"}]}>
                             <Text style = {{flex: 5}}>
-                                {typeName(user.userLevel, data.section, data.type)} 
+                                {typeName(USER.level, data.section, data.type)} 
                             </Text>
                             <View style = {{flex: 1, flexDirection: "column"}}>
                                 <Text style = {{flex: 1}}/>
@@ -250,7 +220,7 @@ const WrongScreen = ({navigation}) =>{
             }) 
         }else if(randomList.current){
             return (
-                <TouchableOpacity onPress={()=>{navigation.push("WrongStudy", {key: "random", userTag: userAllTag(), order: 0, user: user})}} style = {styles.btnBox}>
+                <TouchableOpacity onPress={()=>{navigation.push("WrongStudy", {key: "random", userTag: userAllTag(), order: 0})}} style = {styles.btnBox}>
                     <Text style = {{fontWeight: "bold", fontSize: 16}}>
                         랜덤 학습
                     </Text>
@@ -260,9 +230,9 @@ const WrongScreen = ({navigation}) =>{
             return (data.map((data, index) => {
                         if(data.section == "WR"){
                             return (
-                                <TouchableOpacity key = {index} onPress = {() => {navigation.push("WriteHistory", {userTag: {tagName: typeName(user.userLevel, "WR", data.type), section: "WR", tag: data.type}, user: user})}} style = {[styles.tagList]}>
+                                <TouchableOpacity key = {index} onPress = {() => {navigation.push("WriteHistory", {userTag: {tagName: typeName(USER.level, "WR", data.type), section: "WR", tag: data.type}})}} style = {[styles.tagList]}>
                                     <Text style = {{flex: 5}}>
-                                        {typeName(user.userLevel, data.section, data.type)} 
+                                        {typeName(USER.level, data.section, data.type)} 
                                     </Text>
                                     <View style = {{flex: 1, flexDirection: "column"}}>
                                         <Text style = {{flex: 1}}/>
@@ -289,7 +259,7 @@ const WrongScreen = ({navigation}) =>{
                     <Text style = {{fontWeight: "bold"}}>랜덤 학습</Text>
                 </TouchableOpacity>
                 <View style = {{flex: 0.1}}/>
-                <TouchableOpacity onPress = {() => {user.userLevel == 1 ? alert("TOPIK1은 쓰기 유형을 제공하지 않습니다.") : reRender(!render); writeList.current = true; if(writeList.current){randomList.current = false; selectList.current = false;} }} style = {[styles.listBox, {backgroundColor: writeList.current ? "#A4BAA1" : "#D9D9D9"}]}>
+                <TouchableOpacity onPress = {() => {USER.level == 1 ? alert("TOPIK1은 쓰기 유형을 제공하지 않습니다.") : reRender(!render); writeList.current = true; if(writeList.current){randomList.current = false; selectList.current = false;} }} style = {[styles.listBox, {backgroundColor: writeList.current ? "#A4BAA1" : "#D9D9D9"}]}>
                     <Text style = {{fontWeight: "bold"}}>쓰기 히스토리</Text>
                 </TouchableOpacity>
                 <View style = {{flex: 0.2}}/>
@@ -337,7 +307,7 @@ const WrongScreen = ({navigation}) =>{
             </View> 
             {
                 selectList.current ? (
-                    <TouchableOpacity onPress={()=>{ (userSelectedTag().length==0 ? Alert.alert("", "Please select a type") : navigation.push("WrongStudy", {key: "select", userTag: userSelectedTag(), order: 0, user: user}))}} style = {styles.btnBox}>
+                    <TouchableOpacity onPress={()=>{ (userSelectedTag().length==0 ? Alert.alert("", "Please select a type") : navigation.push("WrongStudy", {key: "select", userTag: userSelectedTag(), order: 0}))}} style = {styles.btnBox}>
                         <Text style = {{fontWeight: "bold", fontSize: 16}}>
                             선택 학습
                         </Text>

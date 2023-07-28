@@ -73,8 +73,6 @@ const MockListScreen = ({navigation, route}) => {
                     renderItem={renderItem}
                 />
             </View>
-
-            {/* <Button title = "60st topik mock test" onPress={()=>{navigation.push("MockStudy", {order: 60})}}/> */}
         </View>
     );
 

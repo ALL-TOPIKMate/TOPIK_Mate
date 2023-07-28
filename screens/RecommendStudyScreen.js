@@ -4,7 +4,6 @@ import firestore from '@react-native-firebase/firestore';
 import firebase from '@react-native-firebase/app';
 import { getStorage } from '@react-native-firebase/storage'; // include storage module besides Firebase core(firebase/app)
 
-
 import Sound from 'react-native-sound';
 
 Sound.setCategory('Playback');
@@ -97,22 +96,21 @@ const loadMultimedia = async (problemList, audioStorage, imageStorage, setLoaded
                 await imagesURL(problemList[i], imageStorage)
             }
         }
+
+
+        
+        setLoadedProblem(problemList)
     }catch(err){
         console.log(err)
     }
     
-
-
-
-    setLoadedProblem(problemList)
 }
 
 const RecommendStudyScreen = ({route, navigation}) =>{
-    const User = useContext(UserContext)
-    
-    const recRender = route.params.recRender
-    const recRerender = route.params.recRerender.func
 
+    const USER = useContext(UserContext)
+    
+    
 
     // 멀티미디어
     const storage = getStorage(firebase);
@@ -121,7 +119,7 @@ const RecommendStudyScreen = ({route, navigation}) =>{
 
     
     // 콜렉션 불러오기
-    const querySnapshot = firestore().collection("users").doc(User.uid)
+    const querySnapshot = firestore().collection("users").doc(USER.uid)
     const recommendColl = querySnapshot.collection("recommend")
     const wrongColl_lv1 = querySnapshot.collection(`wrong_lv1`) 
     const wrongColl_lv2 = querySnapshot.collection(`wrong_lv2`)
@@ -133,7 +131,7 @@ const RecommendStudyScreen = ({route, navigation}) =>{
     const [loadedProblem, setLoadedProblem] = useState([]); // json
 
     // 다음 문제를 넘길 때 사용
-    const [nextBtn, setNextBtn] = useState(User.recIndex);
+    const [nextBtn, setNextBtn] = useState(USER.recIndex);
     
     // 제출 감지
     const [isSubmit, setIsSubmit] = useState(false)
@@ -163,14 +161,13 @@ const RecommendStudyScreen = ({route, navigation}) =>{
 
 
     // 추천문제 인덱스 및 정답 수 load
-    const userIndex = User.recIndex
-    const userCorrect = User.recCorrect
-
+    const userIndex = USER.recIndex
+    const userCorrect = USER.recCorrect
 
 
     // MOUNT 
     useEffect(()=> {
-        
+         
         // promise 객체를 반환하는 함수
         dataLoading();
         
@@ -183,11 +180,8 @@ const RecommendStudyScreen = ({route, navigation}) =>{
 
 
             // RecommendScreen update
-            User.recIndex = Number(userIndex) + Number(problemCount.current)
-            User.recCorrect = Number(userCorrect) + Number(correctCount.current)
-            
-
-            recRerender(!recRender)
+            USER.recIndex = Number(userIndex) + Number(problemCount.current)
+            USER.recCorrect = Number(userCorrect) + Number(correctCount.current)
         }
 
     }, []);
@@ -202,39 +196,6 @@ const RecommendStudyScreen = ({route, navigation}) =>{
             userCorrect: Number(userCorrect)+Number(correctCount.current)
         })
     }
-
-
-
-    // 뒤로가기 제어
-    useEffect(()=>{
-        let isChanged = false
-
-
-       // 문제 풀이 화면에서 나갈시, 
-        const beforeRemove = navigation.addListener("beforeRemove", (e)=> {
-            
-            // 결과화면으로 대체 (replace)
-            // 결과화면에서 나갈 때 해당 화면도 언마운트처리가 필요함
-            // 화면 정리를 위해 뒤로가기를 막지 않음 
-            // VVV 
-            if(isChanged){
-                return 
-            }
-
-            isChanged = true
- 
-
-            // 뒤로가기 막음
-            e.preventDefault()
-
-            // 해당 화면에서 결과화면으로 대체
-            navigation.replace("Result", {CORRT_CNT: correctCount.current, ALL_CNT: problemCount.current, PATH: "Recommend"})
-        })
-
-        return () => beforeRemove
-
-    }, [navigation])
-
 
 
 
@@ -258,9 +219,7 @@ const RecommendStudyScreen = ({route, navigation}) =>{
             })
 
 
-            // console.log(dataList)
             setLoadedProblem(dataList)
-
         }catch(error){
 
             console.log(error.message);
@@ -279,11 +238,10 @@ const RecommendStudyScreen = ({route, navigation}) =>{
                 
                 // 멀티미디어 로드 완료
                 setReadyProblem(true)
-                // setReadyAudio(true)
+                //setReadyAudio(true)
             })
 
         }
-
     }, [loadedProblem])
     
 
@@ -442,7 +400,15 @@ const RecommendStudyScreen = ({route, navigation}) =>{
     
 
 
+    useEffect(()=>{
+        if(nextBtn === loadedProblem.length){
+            navigation.replace("Result", {CORRT_CNT: correctCount.current + userCorrect, ALL_CNT: 10, PATH: "Home"})
+        }
+    }, [nextBtn])
     
+
+
+
     if(readyProblem === false || readyAudio === false) {
         return (
             <Loading />
@@ -462,12 +428,6 @@ const RecommendStudyScreen = ({route, navigation}) =>{
                 key = {`RECOMMENDSCREEN${nextBtn}`} 
             />
             
-        )
-    }else if(nextBtn == loadedProblem.length){
-        navigation.replace("Result", {CORRT_CNT: correctCount.current, ALL_CNT: problemCount.current, PATH: "Recommend"})
-        
-        return (
-            <></>
         )
     }else{
         return null

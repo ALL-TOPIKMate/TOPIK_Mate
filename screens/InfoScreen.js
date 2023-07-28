@@ -16,12 +16,11 @@ import UserContext from '../lib/UserContext';
 
 // 내정보
 const InfoScreen = ({ navigation }) => {
-    const User = useContext(UserContext)
+    
+    const USER = useContext(UserContext)
+    
+    
     const profileStorage = getStorage(firebase).ref("/profile")
-
-
-    // 유저의 uid, 이메일, 닉네임, 레벨 
-    const [user, setUser] = useState(null)
 
 
     // 이미지
@@ -40,52 +39,22 @@ const InfoScreen = ({ navigation }) => {
 
 
 
-
     useEffect(() => {
-        const loadUser = async () => {
-            const user = auth().currentUser
-            const userId = user.uid
-            const userEmail = user.email
 
-            const USER = {
-                u_uid: userId,
-                email: userEmail
-            }
-
-            // 닉네임과 토픽레벨 
-            const getUserNicknameAndLevel = async () => {
-                const data = await firestore().collection("users").doc(userId).get()
-
-                USER.nickname = data._data.nickname
-                USER.my_level = data._data.my_level
-            }
-
-            await getUserNicknameAndLevel()
-
-            setUser(USER)
+        if (USER) {
+            loadImage()
         }
 
-        loadUser()
     }, []);
 
 
 
-    //이미지 useEffect
-    useEffect(() => {
 
-        if (user) {
-            loadImage()
-        }
-
-    }, [user]);
-
-
-
-
-    //이미지 로드
+    
+    // 프로필 사진 로드
     const loadImage = async () => {
         try {
-            const fileName = `${user.email}.jpg`;
+            const fileName = `${USER.email}.jpg`;
             const storageRef = profileStorage.child(fileName);
             const url = await storageRef.getDownloadURL();
 
@@ -96,7 +65,7 @@ const InfoScreen = ({ navigation }) => {
     };
 
 
-    //이미지 선택
+    // 프로필 사진 변경
     const onSelectImage = async () => {
         launchImageLibrary(
             {
@@ -107,7 +76,7 @@ const InfoScreen = ({ navigation }) => {
             },
             async (res) => {
                 if (res.assets && res.assets.length > 0) {
-                    const fileName = `${user.email}.jpg`;
+                    const fileName = `${USER.email}.jpg`;
                     const storageRef = profileStorage.child(fileName)
 
                     const response = await fetch(res.assets[0].uri);
@@ -126,14 +95,16 @@ const InfoScreen = ({ navigation }) => {
 
 
 
-    // 나의 레벨 파이어베이스 적용하기
+    // 레벨 변경
     const updateUserLevel = async (email, newLevel) => {
         try {
-            const userDoc = firestore().collection('users').doc(user.u_uid)
+            const userDoc = firestore().collection('users').doc(USER.uid)
 
             if (userDoc) {
                 await userDoc.update({ my_level: newLevel });
 
+
+                USER.level = newLevel
                 console.log('my_level 업데이트 완료');
             } else {
                 console.log('사용자를 찾을 수 없음');
@@ -148,7 +119,7 @@ const InfoScreen = ({ navigation }) => {
     const saveLevelToFirebase = (selectedLevel) => {
         // Firebase에 선택한 레벨 저장하는 로직 구현
         console.log('선택한 레벨:', selectedLevel);
-        updateUserLevel(user.email, selectedLevel);
+        updateUserLevel(USER.email, selectedLevel);
     };
 
 
@@ -185,7 +156,7 @@ const InfoScreen = ({ navigation }) => {
                     )}
                 </Pressable>
 
-                <Text> 이메일 : {user ? user.email : null}</Text>
+                <Text> 이메일 : {USER.email} </Text>
             </View>
 
             <Text> 나의 레벨 </Text>
@@ -238,7 +209,7 @@ const InfoScreen = ({ navigation }) => {
                 onPress={() => setIsModalVisible(true)}>
                 <Text style={styles.textStyle}>수정하기</Text>
             </Pressable>
-            <Text> {user ? user.my_level : null}</Text>
+            <Text> {USER.level}</Text>
         </View>
 
 
