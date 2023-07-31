@@ -401,7 +401,7 @@ const RecommendStudyScreen = ({route, navigation}) =>{
 
 
     useEffect(()=>{
-        if(nextBtn === loadedProblem.length){
+        if(nextBtn === loadedProblem.length && nextBtn != 0){
             navigation.replace("Result", {CORRT_CNT: correctCount.current + userCorrect, ALL_CNT: 10, PATH: "Home"})
         }
     }, [nextBtn])
