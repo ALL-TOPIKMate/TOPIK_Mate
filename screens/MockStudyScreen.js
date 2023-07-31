@@ -4,6 +4,8 @@ import firebase from '@react-native-firebase/app';
 import firestore from '@react-native-firebase/firestore';
 import { getStorage } from '@react-native-firebase/storage'; // include storage module besides Firebase core(firebase/app)
 import auth from '@react-native-firebase/auth'; // 사용자 정보 가져오기
+import Sound from 'react-native-sound';
+
 
 import UserContext from '../lib/UserContext';
 
@@ -17,6 +19,7 @@ import MockTimer from './component/MockTimer';
 import { getNow } from '../utils/DateUtil';
 
 
+Sound.setCategory('Playback');
 
 // 틀린 문제 업데이트
 const updateUserWrongColl = async (uid, problems, level) => {
@@ -113,18 +116,27 @@ const MockStudyScreen = ({navigation, route}) =>{
     /** 문제 데이터 로드 */
     const [problems, setProblems] = useState([]); // json
     const prevProblems = useRef([]);
+    const countAudio = useRef();
+
 
     const dataLoading = async () => {
             
         try {
             const data = await problemCollection.get();
-            setProblems(data.docs.map(doc => ({...doc.data()})));
+
+            setProblems(data.docs.map(doc => {
+                return (
+                    doc.data()
+                )
+            }));
         } catch (error) {
             console.log(error.message);
         }
     }
     
 
+
+    
     // 문제 REF 설정
     useEffect(() => {
         prevProblems.current = problems;
@@ -179,16 +191,28 @@ const MockStudyScreen = ({navigation, route}) =>{
     const audiosLoading = async (audioRef) =>  { 
         
         await audioRef.listAll().then(res => {
-            
-            
             const data = {}
+            countAudio.current = res.items.length
             
             res.items.forEach(item => {
                 item.getDownloadURL().then(url => {
                     
                     data[item.name] = {};
-                    data[item.name].url = url;
-                    
+                    data[item.name].url = url
+                    data[item.name].URL = new Sound(url, null, err => {
+                        if(err){
+                            console.log("Failed to load the sound" ,err);
+                            return undefined
+                        }
+
+                        // 객체 생성 성공
+
+                        countAudio.current -= 1
+
+                        if(countAudio.current == 0){
+                            setReadyAudio(true)       
+                         }
+                    })
                 })
             })
 
@@ -206,17 +230,22 @@ const MockStudyScreen = ({navigation, route}) =>{
     
 
     // 데이터 준비 여부
-    const [ready, setReady] = useState(false);
-    
+    const [readyImage, setReadyImage] = useState(false);
+    const [readyAudio, setReadyAudio] = useState(false);
     
     /** 데이터 로딩 처리 */
     useEffect(() => {
 
         // let isComponentMounted = true; // 메모리 누수 방지
         // setReady(false);
+
         
+
+
         dataLoading();
-        imagesLoading(imageRef);
+        imagesLoading(imageRef).then(()=>{
+            setReadyImage(true)
+        })
         audiosLoading(audioRef);
 
         // 데이터 로딩
@@ -227,10 +256,10 @@ const MockStudyScreen = ({navigation, route}) =>{
         // }
 
         // 데이터 준비
-        setTimeout(() => {
-            // console.log(prevAudios.current.length);
-            setReady(true);
-        }, 3000); // 3초간 로딩
+        // setTimeout(() => {
+        //     // console.log(prevAudios.current.length);
+        //     setReady(true);
+        // }, 3000); // 3초간 로딩
 
 
         return () => {
@@ -239,6 +268,20 @@ const MockStudyScreen = ({navigation, route}) =>{
         }
 
     }, []);
+
+    useEffect(()=>{
+
+        if(readyImage && readyAudio){
+            console.log("로드 완료")
+        }else if(readyImage){
+            console.log("오디오 로드 대기중")
+        }else if(readyAudio){
+            console.log("이미지 로드 대기중")
+        }
+
+    }, [readyImage, readyAudio])
+
+
 
 
     
@@ -307,12 +350,12 @@ const MockStudyScreen = ({navigation, route}) =>{
 
 
     /** 출력 화면 */ 
-    if (!ready) {
+    if (!readyImage || !readyAudio) {
         // 로딩 화면
         return (
             <Loading />
         )
-    } else if (ready && !isEnd && index !== prevProblems.current.length) {
+    } else if (!isEnd && index !== prevProblems.current.length) {
         // 문제 풀이 화면
         return (
             <View style={styles.container}>
@@ -336,6 +379,8 @@ const MockStudyScreen = ({navigation, route}) =>{
                     setDirection={setDirection}
                     images={prevImages}
                     audios={prevAudios}
+
+                    key = {`MOCKSCREEN${index}`} // MockProb 컴포넌트 구분 (audio 객체)
                 />
             </View>
         );

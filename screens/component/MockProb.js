@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { View, Text, Image, TextInput, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
 
 
@@ -6,13 +6,28 @@ import ProbMain from './ProbMain';
 import ImgRef from './ImgRef';
 
 
-import Sound from 'react-native-sound';
-
-Sound.setCategory('Playback');
-
-
-
 const AudRef = (audio) =>{
+
+    const finishTime = audio.getDuration()
+    const [currentTime, setCurrenttime] = useState(5)
+    const widthRef = useRef(null)
+    const width = useRef(0)
+
+
+    // useEffect(()=>{
+
+    //     if(widthRef.current){
+    //         console.log(widthRef.current.width)
+    //         width.current = widthRef.current.width
+    //         // console.log(width.current)
+    //         // setTimeout(()=>{
+
+    //         // }, 1000)
+    //     }
+
+    // }, [widthRef])
+
+
 
     const [isRunning, setIsRunning] = useState(false);
 
@@ -46,14 +61,22 @@ const AudRef = (audio) =>{
             <TouchableOpacity onPress={()=>{audioPlay()}} style = {styles.btnPlay}>
                     {
                         isRunning
-                        ? <Text style = {{color: "#F6F1F1", fontSize: 20, textAlign: "center"}}>
+                        ? <Text style = {{color: "#F6F1F1", fontSize: 16}}>
                         Stop
                         </Text>
-                        : <Text style = {{color: "#F6F1F1", fontSize: 20, textAlign: "center"}}>
+                        : <Text style = {{color: "#F6F1F1", fontSize: 16}}>
                         Start
                         </Text>
                     }
             </TouchableOpacity>
+            <TouchableOpacity ref = {widthRef} disabled = {true} style = {styles.playlist} >
+                    <Text style = {{backgroundColor: "black", height: 10, width: 5}}>
+                        ▷
+                    </Text>
+                </TouchableOpacity>
+            <Text>
+                {audio.getDuration()}초
+            </Text>
         </View>  
     )
 }
@@ -76,41 +99,21 @@ const MockProb = ({ problem, choice, setChoice, choice2, setChoice2, index, setI
         setClick2(choice2);
     }, [choice2]);
 
-    // 오디오 파일이 있으면 download URL 가져오기
-    let audioRef = undefined;
+
+    // 오디오 파일이 있으면 audio Object 가져오기
+    let audio = undefined;
     if (problem.AUD_REF in audios.current) {
-        audioRef = audios.current[problem.AUD_REF].url;
+        audio = audios.current[problem.AUD_REF].URL;
     }
 
-    // 로컬적으로 사용될 오디오 state
-    const [audio, setAudio] = useState(undefined);
-
-
-    useEffect(() => {
-        if (audioRef === undefined) {
-            setAudio(undefined);
-        } else {
-            // 오디오 URL이 있으면 새로운 Sound 객체 생성. -> 로컬적으로 사용
-            setAudio(new Sound(audios.current[problem.AUD_REF].url, null, err => {
-
-                if (err) {
-                    console.log('Failed to load the sound', err);
-                    return undefined;
-                }
-
-                // 로드 성공
-                console.log(`오디오 로드 성공. ${problem.AUD_REF}`);
-
-            }));
-        }
-    }, [audioRef]);
 
 
     // 언마운트 시 자원 삭제
     useEffect(() => {
         return () => {
             if (audio !== undefined) {
-                audio.release();
+                console.log("오디오 멈춤")
+                audio.stop() // 오디오 일시정지, release시 오디오 재생 불가능
             }
         };
     }, []);
@@ -121,7 +124,6 @@ const MockProb = ({ problem, choice, setChoice, choice2, setChoice2, index, setI
             <View>
                 <TouchableOpacity
                     onPress={() => {
-                        audio.stop();
                         setIsEnd(true);
                     }}
                     style={styles.exitBtn}>
@@ -259,11 +261,11 @@ const MockProb = ({ problem, choice, setChoice, choice2, setChoice2, index, setI
                     <TouchableOpacity
                         disabled={index === 0}
                         onPress={() => {
-                            {
-                                audio !== undefined
-                                    ? audio.stop() & setPlaying(false)
-                                    : null
-                            }
+                            // {
+                            //     audio !== undefined
+                            //         ? audio.stop() & setPlaying(false)
+                            //         : null
+                            // }
                             setChoice(click);
                             setChoice2(click2);
                             setClick(undefined);
@@ -279,11 +281,11 @@ const MockProb = ({ problem, choice, setChoice, choice2, setChoice2, index, setI
                     {/* 다음 버튼 */}
                     <TouchableOpacity
                         onPress={() => {
-                            {
-                                audio !== undefined
-                                    ? audio.stop() & setPlaying(false)
-                                    : null
-                            }
+                            // {
+                            //     audio !== undefined
+                            //         ? audio.stop() & setPlaying(false)
+                            //         : null
+                            // }
                             setChoice(click);
                             setChoice2(click2);
                             setClick(undefined);
@@ -391,6 +393,7 @@ const styles = StyleSheet.create({
     },
 
 
+    // mp3 재생 컴포넌트
     btnBox:{
         backgroundColor: "#D9D9D9", 
         flexDirection: "row", 
@@ -398,14 +401,33 @@ const styles = StyleSheet.create({
 
         alignItems: "center",
 
-        paddingVertical: 30
+        paddingVertical: 30,
+        paddingHorizontal: 20
     }, 
 
     btnPlay:{
         backgroundColor: "#94AF9F",
-        padding: 30,
-        borderRadius: 20
-    }
+        
+        borderRadius: 20,
+
+        width: 80,
+        height: 80,
+
+        justifyContent: "center",
+
+        alignItems: "center",
+    },
+
+    playlist: {
+        flex: 5,
+        backgroundColor: "white",
+
+        borderRadius: 5,
+
+        height: 10,
+
+        marginLeft: 10
+    },
 })
 
 export default MockProb;

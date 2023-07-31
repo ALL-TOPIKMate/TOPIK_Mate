@@ -1,6 +1,7 @@
-import React, {useState, useEffect, useRef} from 'react';
+import React, {useState, useEffect, useRef, useContext} from 'react';
 import {View, Text, StyleSheet, TouchableOpacity} from 'react-native';
 import Loading from './component/Loading';
+import UserContext from '../lib/UserContext';
 
 import firestore from '@react-native-firebase/firestore';
 import firebase from '@react-native-firebase/app';
@@ -112,7 +113,7 @@ const loadMultimedia = async (problemList, audioStorage, imageStorage) =>{
 const WrongStudyScreen = ({route, navigation}) =>{
 
     // 유저 정보
-    const user = route.params.user
+    const USER = useContext(UserContext)
 
     // 멀티미디어
     const storage = getStorage(firebase);
@@ -174,12 +175,12 @@ const WrongStudyScreen = ({route, navigation}) =>{
     // 유저의 복습하기 콜렉션을 load
     const wrongCollection = route.params.key !== "write" ? 
                             firestore().collection("users")
-                            .doc(user.userId)
-                            .collection(`wrong_lv${user.userLevel}`)
+                            .doc(USER.uid)
+                            .collection(`wrong_lv${USER.level}`)
                             : 
                             firestore().collection("users")
-                            .doc(user.userId)
-                            .collection(`wrong_lv${user.userLevel}`)
+                            .doc(USER.uid)
+                            .collection(`wrong_lv${USER.level}`)
                             .doc("WR_TAG").
                             collection("PRB_TAG")
                             .doc(route.params.userTag.tag)

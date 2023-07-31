@@ -7,7 +7,7 @@ const MockTimer = ({ setIsEnd, level }) => {
     const navigation = useNavigation();
 
     const levelTime = {
-        'LV1': 10, // 10s
+        'LV1': 30, // 10s
         'LV2': 30, // 30s
     }
 
