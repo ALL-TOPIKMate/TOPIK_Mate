@@ -141,15 +141,42 @@ const WrongScreen = ({navigation}) =>{
 
                 const WrongColl = firestore().collection("users").doc(USER.uid).collection(`wrong_lv${USER.level}`)
 
-                const DATA_LS = await WrongColl.doc("LS_TAG").collection("PRB_TAG").where("PRB_LIST_COUNT", ">", 0).get()
-                const DATA_RD = await WrongColl.doc("RD_TAG").collection("PRB_TAG").where("PRB_LIST_COUNT", ">", 0).get()
-                const DATA_WR = await WrongColl.doc("WR_TAG").collection("PRB_TAG").get()
-                
+                const LsColl = WrongColl.doc("LS_TAG").collection("PRB_TAG"); await LsColl.get().then(querySnapshot => {
 
-                DATA_LS.docs.forEach((doc) => {typeList.push({type: doc.id, section: "LS", choice: false, prb_list_length: doc._data.PRB_LIST_COUNT})})
-                DATA_RD.docs.forEach((doc) => {typeList.push({type: doc.id, section: "RD", choice: false, prb_list_length: doc._data.PRB_LIST_COUNT})})
-                DATA_WR.docs.forEach((doc) => {typeList.push({type: doc.id, section: "WR", choice: false})})
-                
+                    querySnapshot.forEach(documentSnapshot =>{
+                        LsColl.doc(documentSnapshot.id).collection("PRB_LIST").limit(1).get().then(doc => {
+                            // PRB_LIST에 문서가 하나 이상 존재할 경우 추가
+                            if(doc.size){
+                                typeList.push({type: documentSnapshot.id, section: "LS", choice: false})
+                            }
+                        })
+                    })
+                })
+
+                const RdColl = WrongColl.doc("RD_TAG").collection("PRB_TAG"); await RdColl.get().then(querySnapshot => {
+
+                    querySnapshot.forEach(documentSnapshot =>{
+                        RdColl.doc(documentSnapshot.id).collection("PRB_LIST").limit(1).get().then(doc => {
+                            // PRB_LIST에 문서가 하나 이상 존재할 경우 추가
+                            if(doc.size){
+                                typeList.push({type: documentSnapshot.id, section: "RD", choice: false})
+                            }
+                        })
+                    })
+                })
+
+                const WrColl = WrongColl.doc("WR_TAG").collection("PRB_TAG"); await WrColl.get().then(querySnapshot => {
+
+                    querySnapshot.forEach(documentSnapshot =>{
+                        WrColl.doc(documentSnapshot.id).collection("PRB_RSC_LIST").limit(1).get().then(doc => {
+                            // PRB_LIST에 문서가 하나 이상 존재할 경우 추가
+                            if(doc.size){
+                                typeList.push({type: documentSnapshot.id, section: "WR", choice: false})
+                            }
+                        })
+                    })
+                })
+
                 
                 setData(typeList)
             }catch(error){
@@ -212,7 +239,7 @@ const WrongScreen = ({navigation}) =>{
                             <View style = {{flex: 1, flexDirection: "column"}}>
                                 <Text style = {{flex: 1}}/>
                                 <Text style = {{fontSize: 10}}>
-                                    문제 수 {data.prb_list_length}
+                                    {/* 문제 수 {data.prb_list_length} */}
                                 </Text>
                             </View>
                         </TouchableOpacity>  
@@ -237,7 +264,7 @@ const WrongScreen = ({navigation}) =>{
                                     <View style = {{flex: 1, flexDirection: "column"}}>
                                         <Text style = {{flex: 1}}/>
                                         <Text style = {{fontSize: 10}}>
-                                         score {data.score}
+                                         {/* score {data.score} */}
                                         </Text>
                                     </View>
                                 </TouchableOpacity>       
