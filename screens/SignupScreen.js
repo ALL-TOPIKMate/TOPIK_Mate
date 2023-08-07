@@ -59,13 +59,24 @@ const SignupScreen = ({ navigation }) =>{
             console.log('닉네임', nickname);
             console.log('나의 레벨', my_level);
             
-            await firestore().collection("users").doc(user.uid).set({ email, nickname, my_level, u_uid});
-            await firestore().collection("users").doc(user.uid).collection("wrong_lv1").doc('LS_TAG').collection("PRB_TAG").doc("Wrong").set({})
-            await firestore().collection("users").doc(user.uid).collection("wrong_lv1").doc('RD_TAG').collection("PRB_TAG").doc("Wrong").set({})
-            await firestore().collection("users").doc(user.uid).collection("wrong_lv2").doc('LS_TAG').collection("PRB_TAG").doc("Wrong").set({})
-            await firestore().collection("users").doc(user.uid).collection("wrong_lv2").doc('RD_TAG').collection("PRB_TAG").doc("Wrong").set({})
-            await firestore().collection("users").doc(user.uid).collection("wrong_lv2").doc('WR_TAG').collection("PRB_TAG").doc("Wrong").set({})
-            await firestore().collection("users").doc(user.uid).collection("recommend").doc('Recommend').set({ userCorrect: 0, userIndex: 10 })
+            // 유저 구조
+            const UserDoc = firestore().collection("users").doc(u_uid)
+            UserDoc.set({ email, nickname, my_level, u_uid})
+            
+
+            // 복습 문제 구조
+            const WrongLv1Coll = UserDoc.collection("wrong_lv1")
+            WrongLv1Coll.doc('LS_TAG').set({}); WrongLv1Coll.doc('LS_TAG').collection("PRB_TAG").doc("Wrong").set({})
+            WrongLv1Coll.doc('RD_TAG').set({}); WrongLv1Coll.doc('RD_TAG').collection("PRB_TAG").doc("Wrong").set({})
+            
+            const WrongLv2Coll = UserDoc.collection("wrong_lv2")
+            WrongLv2Coll.doc('LS_TAG').set({});  WrongLv2Coll.doc('LS_TAG').collection("PRB_TAG").doc("Wrong").set({})
+            WrongLv2Coll.doc('RD_TAG').set({});  WrongLv2Coll.doc('RD_TAG').collection("PRB_TAG").doc("Wrong").set({})
+            WrongLv2Coll.doc('WR_TAG').set({});  WrongLv2Coll.doc('WR_TAG').collection("PRB_TAG").doc("Wrong").set({})
+
+
+            // 추천 문제 구조
+            UserDoc.collection("recommend").doc('Recommend').set({ userCorrect: 0, userIndex: 10 })
 
 
              // initialize uid, email
