@@ -21,81 +21,6 @@ import { getNow } from '../utils/DateUtil';
 
 Sound.setCategory('Playback');
 
-// 틀린 문제 업데이트
-const updateUserWrongColl = async (uid, problems, level) => {
-
-    const userDocRef = firestore().collection("users").doc(uid)
-
-    try {
-        const wrongColl = userDocRef.collection(`wrong_${level}`);
-    
-        problems.map((problem) => {
-
-            /* 풀이 기록 확인 */
-            if (problem.USER_CHOICE !== undefined) {
-
-                // 쓰기 영역 문제 처리
-                if (problem.PRB_SECT === 'WR') {
-                    // const tagDoc = wrongColl
-                    //                 .doc('WR_TAG')
-                    //                 .collection('PRB_TAG')
-                    //                 .doc(problem.TAG);
-                    // tagDoc.set({});
-                    // const prbRscList = tagDoc.collection('PRB_RSC_LIST');
-
-                    // const prbDoc = prbRscList.doc(problem.PRB_ID);
-                    // prbDoc.set({});
-
-                    // // 현재 날짜/시간으로 도큐먼트 ID 지정
-                    // prbDoc.collection('PRB_LIST').doc(getNow()).set(problem);
-                } else {
-
-                    if (problem.USER_CHOICE !== problem.PRB_CORRT_ANSW) {
-                        // 틀린 문제 wrong list에 삽입
-    
-                        // 문제 영역, 태그 별 wrong list에 삽입
-                        const sectTagDoc = wrongColl
-                                        .doc(`${problem.PRB_SECT}_TAG`); sectTagDoc.set({});
-
-                        const tagDoc = sectTagDoc
-                                        .collection('PRB_TAG')
-                                        .doc(problem.TAG); tagDoc.set({});
-
-                        // 틀린 문제 컬렉션 삽입
-                        tagDoc.collection('PRB_LIST').doc(problem.PRB_ID).set(problem);
-
-                    } else {
-                        // 맞은 문제 처리
-                        const tagWrongColl = wrongColl
-                                        .doc(`${problem.PRB_SECT}_TAG`)
-                                        .collection('PRB_TAG')
-                                        .doc(problem.TAG)
-                                        .collection('PRB_LIST');
-                        const probRef = tagWrongColl.doc(problem.PRB_ID);
-
-                        probRef.get()
-                            .then((docSnapshot) => {
-                                if (docSnapshot.exists) {
-                                    // 예전에 틀린 문제 맞힘 -> wrong list에서 제거
-                                    probRef.delete().then(() => {
-                                        console.log(`Doc deleted! - ${problem.PRB_ID} in ${tagWrongColl.path}`);
-                                    })
-                                }
-                            })
-                    }
-                }   
-            }
-
-        })
-
-    } catch (err) {
-        console.log(err)
-    }
-
-
-}
-
-
 
 const MockStudyScreen = ({navigation, route}) =>{
 
@@ -115,8 +40,12 @@ const MockStudyScreen = ({navigation, route}) =>{
 
     /** 문제 데이터 로드 */
     const [problems, setProblems] = useState([]); // json
-    const prevProblems = useRef([]);
+    const prevProblems = useRef([]); // 유저 답안 포함한 문제
+    const rawProblems = useRef([]); // 원본 문제 (손상 X)
+    // 오디오 개수 카운팅
     const countAudio = useRef();
+
+
 
 
     const dataLoading = async () => {
@@ -124,11 +53,16 @@ const MockStudyScreen = ({navigation, route}) =>{
         try {
             const data = await problemCollection.get();
 
-            setProblems(data.docs.map(doc => {
+            let rawData = data.docs.map(doc => {
                 return (
                     doc.data()
                 )
-            }));
+            });
+
+
+            // deep copy
+            rawProblems.current = JSON.parse(JSON.stringify(rawData))
+            setProblems(rawData)
         } catch (error) {
             console.log(error.message);
         }
@@ -248,23 +182,13 @@ const MockStudyScreen = ({navigation, route}) =>{
         })
         audiosLoading(audioRef);
 
-        // 데이터 로딩
-        // loadWholeData();
-
-        // if (prevProblems.current.length && prevImages.current.length && prevAudios.current.length) {
-        //     setReady(true); // 데이터 준비 완료
-        // }
-
-        // 데이터 준비
-        // setTimeout(() => {
-        //     // console.log(prevAudios.current.length);
-        //     setReady(true);
-        // }, 3000); // 3초간 로딩
-
+  
 
         return () => {
             // 사용자 틀린 문제 DB 업데이트
-            updateUserWrongColl(USER.uid, prevProblems.current, route.params.level.toLowerCase());
+            // console.log(rawProblems.current)
+            // console.log(prevProblems.current)
+            USER.updateUserWrongColl(rawProblems.current, prevProblems.current)
         }
 
     }, []);
@@ -302,12 +226,13 @@ const MockStudyScreen = ({navigation, route}) =>{
             if (newArr !== undefined) {
 
                 // 직전 풀이한 문제의 사용자 선택 저장
-                newArr[index + direction]['USER_CHOICE'] = choice;
-                newArr[index + direction]['USER_CHOICE2'] = choice2;
+                newArr[index + direction]['PRB_USER_ANSW'] = choice;
+                newArr[index + direction]['PRB_USER_ANSW2'] = choice2;
                 setProblems(newArr);
                 
+                
                 // console.log(
-                //     `updated ${index + direction}: ${newArr[index + direction].USER_CHOICE}`
+                //     `updated ${index + directAon}: ${newArr[index + direction].PRB_USER_aNSW}`
                 //     );
                         
             }
@@ -368,9 +293,9 @@ const MockStudyScreen = ({navigation, route}) =>{
                 {/* 문제 풀이 영역 */}
                 <MockProb
                     problem={prevProblems.current[index]}
-                    choice={prevProblems.current[index].USER_CHOICE}
+                    choice={prevProblems.current[index].PRB_USER_ANSW}
                     setChoice={setChoice}
-                    choice2={prevProblems.current[index].USER_CHOICE2}
+                    choice2={prevProblems.current[index].PRB_USER_ANSW2}
                     setChoice2={setChoice2}
                     index={index}
                     setIndex={setIndex}
