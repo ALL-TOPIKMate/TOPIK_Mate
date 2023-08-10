@@ -57,9 +57,9 @@ const MockResult = ({ level, listen, write, read, prevImages, prevAudios }) => {
                     return (
                     <TableWrapper key={rowIndex} style={styles.itemRow} >
                         <Cell key={0} data={rowData['PRB_NUM']} textStyle={styles.text} />
-                        <Cell key={1} data={rowData['USER_CHOICE']} textStyle={styles.text} />
+                        <Cell key={1} data={rowData['PRB_USER_ANSW']} textStyle={styles.text} />
                         <Cell key={2} data={rowData['PRB_CORRT_ANSW']} textStyle={styles.text} />
-                        <Cell key={3} data={rowData['USER_CHOICE'] === rowData['PRB_CORRT_ANSW'] ? '정답' : '오답'} textStyle={styles.text} />
+                        <Cell key={3} data={rowData['PRB_USER_ANSW'] === rowData['PRB_CORRT_ANSW'] ? '정답' : '오답'} textStyle={styles.text} />
                         <Cell key={4} data={element('LS', rowIndex)} />
                     </TableWrapper>
                     )
@@ -101,12 +101,12 @@ const MockResult = ({ level, listen, write, read, prevImages, prevAudios }) => {
                                 
                                 ? <View>
                                     <Text>㉠</Text>
-                                    <Text style={styles.inputBox}>{rowData['USER_CHOICE']}</Text>
+                                    <Text style={styles.inputBox}>{rowData['PRB_USER_ANSW']}</Text>
                                     <Text>㉡</Text>
-                                    <Text style={styles.inputBox}>{rowData['USER_CHOICE2']}</Text>
+                                    <Text style={styles.inputBox}>{rowData['PRB_USER_ANSW2']}</Text>
                                 </View>
                                 : <View>
-                                    <Text style={styles.inputBox}>{rowData['USER_CHOICE']}</Text>
+                                    <Text style={styles.inputBox}>{rowData['PRB_USER_ANSW']}</Text>
                                 </View>
                                 }
                             </View>
@@ -130,9 +130,9 @@ const MockResult = ({ level, listen, write, read, prevImages, prevAudios }) => {
                     return (
                     <TableWrapper key={rowIndex} style={styles.itemRow} >
                         <Cell key={0} data={rowData['PRB_NUM']} textStyle={styles.text} />
-                        <Cell key={1} data={rowData['USER_CHOICE']} textStyle={styles.text} />
+                        <Cell key={1} data={rowData['PRB_USER_ANSW']} textStyle={styles.text} />
                         <Cell key={2} data={rowData['PRB_CORRT_ANSW']} textStyle={styles.text} />
-                        <Cell key={3} data={rowData['USER_CHOICE'] === rowData['PRB_CORRT_ANSW'] ? '정답' : '오답'} textStyle={styles.text} />
+                        <Cell key={3} data={rowData['PRB_USER_ANSW'] === rowData['PRB_CORRT_ANSW'] ? '정답' : '오답'} textStyle={styles.text} />
                         <Cell key={4} data={element('RD', rowIndex)} textStyle={styles.text} />
                     </TableWrapper>
                     )

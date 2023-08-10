@@ -1,5 +1,8 @@
 import React from 'react';
 import { StyleSheet, Modal, ScrollView, Image, View, Text, TouchableOpacity } from 'react-native';
+import ProbMain from './ProbMain';
+import ImgRef from './ImgRef';
+import ProbTxt from './ProbTxt';
 
 const MockProbWriteModal = ({ problem, index, setVisible, images }) => {
     
@@ -19,24 +22,19 @@ const MockProbWriteModal = ({ problem, index, setVisible, images }) => {
                 <View>
 
                     {/* ProbMain */}
-                    <View style={styles.probMainContainer}>
-                        <Text style={styles.probMainCnt}>Q{ problem[index].PRB_NUM } { problem[index].PRB_MAIN_CONT}</Text>
-                    </View>
+                    <ProbMain PRB_NUM = {problem[index].PRB_NUM} PRB_MAIN_CONT = {problem[index].PRB_MAIN_CONT}/>
 
                     {/* 이미지 */}
                     {
                     problem[index].IMG_REF in images.current
-                    ? <Image
-                        style={styles.mainImg}
-                        source={{ uri: images.current[problem[index].IMG_REF].url }}
-                    />
+                    ? <ImgRef IMG_REF = {images.current[problem[index].IMG_REF].url}/>
                     : null
                     }
 
                     {/* 문항, 지문 텍스트 */}
                     {
                     problem[index].PRB_TXT !== ''
-                    ? <Text style={{marginVertical: 16}}>{ problem[index].PRB_TXT }</Text>
+                    ? <ProbTxt PRB_TXT = {problem[index].PRB_TXT} />
                     : null
                     }
 
@@ -50,7 +48,7 @@ const MockProbWriteModal = ({ problem, index, setVisible, images }) => {
                         <View>
                             <Text>㉠</Text>
                             <Text>Your answer</Text>
-                            <Text style={styles.inputBox}>{ problem[index].USER_CHOICE }</Text>
+                            <Text style={styles.inputBox}>{ problem[index].PRB_USER_ANSW }</Text>
 
                             <Text>Best answer</Text>
                             <Text style={styles.inputBox}>{ problem[index].PRB_CORRT_ANSW }</Text>
@@ -69,7 +67,7 @@ const MockProbWriteModal = ({ problem, index, setVisible, images }) => {
                         <View>
                             <Text>㉡</Text>
                             <Text>Your answer</Text>
-                            <Text style={styles.inputBox}>{ problem[index].USER_CHOICE2 }</Text>
+                            <Text style={styles.inputBox}>{ problem[index].PRB_USER_ANSW2 }</Text>
 
                             <Text>Best answer</Text>
                             <Text style={styles.inputBox}>{ problem[index].PRB_CORRT_ANSW }</Text>
@@ -87,7 +85,7 @@ const MockProbWriteModal = ({ problem, index, setVisible, images }) => {
                     </View>
                     : <View>
                         <Text>Your answer</Text>
-                        <Text style={styles.inputBox}>{ problem[index].USER_CHOICE }</Text>
+                        <Text style={styles.inputBox}>{ problem[index].PRB_USER_ANSW }</Text>
 
                         <Text>Best answer</Text>
                         <Text style={styles.inputBox}>{ problem[index].PRB_CORRT_ANSW }</Text>
@@ -131,19 +129,6 @@ const styles = StyleSheet.create({
         padding: 20,
     },
 
-    probMainContainer: {
-        flexDirection: 'row'
-    },
-
-    probMainCnt: {
-        fontSize: 17,
-    },
-
-    mainImg: {
-      height: 300,
-      resizeMode: "contain",
-    },
-
     inputBox: {
         padding: 10,
         borderColor: '#C1C0B9',
@@ -153,10 +138,6 @@ const styles = StyleSheet.create({
         marginBottom: 20,
   
         flexShrink: 1,
-    },
-
-    infoText: {
-        fontSize: 20,
     },
 
     infoImg: {

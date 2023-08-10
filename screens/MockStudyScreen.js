@@ -332,14 +332,6 @@ const styles = StyleSheet.create({
         padding: 20,
     },
 
-    button:{
-        flex: 3,
-        borderRadius: 10,
-        padding: 16,
-        backgroundColor: '#BBD6B8',
-    },
-
-    text: { textAlign: 'center' },
 })
 
 
