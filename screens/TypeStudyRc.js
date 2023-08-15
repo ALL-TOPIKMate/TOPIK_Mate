@@ -7,7 +7,7 @@ import storage from '@react-native-firebase/storage'
 
 
 //Reading
-const TypeQuestScreen = ({navigation, route}) =>{
+const TypeStudyRc = ({navigation, route}) =>{
   const { source, paddedIndex, prbSection, userEmail } = route.params;//이전 페이지에서 정보 받아오기
   const [problems, setProblems] = useState([]); //문제 데이터 적재
   const [currentIndex, setCurrentIndex] = useState(0); //현재 문제 번호
@@ -510,4 +510,4 @@ const styles = StyleSheet.create({
       
 });
 
-export default TypeQuestScreen;
+export default TypeStudyRc;

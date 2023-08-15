@@ -5,7 +5,7 @@ import firestore from '@react-native-firebase/firestore';
 import {subscribeAuth } from "../lib/auth";
 
 //Write
-const TypeQuestScreenWr = ({navigation, route}) =>{
+const TypeStudyWr = ({navigation, route}) =>{
   
   const { source, paddedIndex, prbSection } = route.params;//이전 페이지에서 정보 받아오기
   const [data, setData] = useState([]);// 문제 담을 구성
@@ -151,4 +151,4 @@ const styles = StyleSheet.create({
       
 });
 
-export default TypeQuestScreenWr;
+export default TypeStudyWr;

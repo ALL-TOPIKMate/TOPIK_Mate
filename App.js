@@ -25,9 +25,9 @@ import SignupScreen from "./screens/SignupScreen";
 import RecommendStudyScreen from "./screens/RecommendStudyScreen";
 import MockStudyScreen from "./screens/MockStudyScreen";
 import MockListScreen from "./screens/MockListScreen";
-import TypeQuestScreen from "./screens/TypeQuestScreen";
-import TypeQuestScreenLc from "./screens/TypeQuestScreenLc";
-import TypeQuestScreenWr from "./screens/TypeQuestScreenWr";
+import TypeStudyRc from './screens/TypeStudyRc';
+import TypeStudyLc from './screens/TypeStudyLc';
+import TypeStudyWr from './screens/TypeStudyWr';
 import WrongStudyScreen from './screens/WrongStudyScreen';
 import WriteHistoryScreen from "./screens/WriteHistoryScreen";
 import Notice from "./screens/Notice";
@@ -133,9 +133,9 @@ const HomeStackScreen = () => {
             <HomeStack.Screen name = "RecommendStudy" component = {RecommendStudyScreen}/>
             <HomeStack.Screen name="MockStudy" component = {MockStudyScreen}/>
             <HomeStack.Screen name = "MockList" component = {MockListScreen}/>
-            <HomeStack.Screen name="TypeQuest" component = {TypeQuestScreen}/>
-            <HomeStack.Screen name="TypeQuestLc" component = {TypeQuestScreenLc}/>
-            <HomeStack.Screen name="TypeQuestWr" component = {TypeQuestScreenWr}/>
+            <HomeStack.Screen name="TypeStudyRc" component = {TypeStudyRc}/>
+            <HomeStack.Screen name="TypeStudyLc" component = {TypeStudyLc}/>
+            <HomeStack.Screen name="TypeStudyWr" component = {TypeStudyWr}/>
             <HomeStack.Screen name="WrongStudy" component = {WrongStudyScreen}/>
             <HomeStack.Screen name="WriteHistory" component = {WriteHistoryScreen}/>
             <HomeStack.Screen name="Notice" component={Notice}/>

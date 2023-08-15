@@ -10,7 +10,7 @@ import Sound from 'react-native-sound';
 Sound.setCategory('Playback');
 
 //Listening
-const TypeQuestScreenLc = ({navigation, route}) =>{
+const TypeStudyLc = ({navigation, route}) =>{
   const { source, paddedIndex, prbSection,userEmail } = route.params;//이전 페이지에서 정보 받아오기
   const [problems, setProblems] = useState([]); //문제 구성
   const [currentIndex, setCurrentIndex] = useState(0); // 현재 인덱스이고
@@ -610,4 +610,4 @@ const styles = StyleSheet.create({
   
 });
 
-export default TypeQuestScreenLc;
+export default TypeStudyLc;
