@@ -9,8 +9,8 @@ import ImgRef from "./ImgRef"
 import ProbSub from "./ProbSub";
 import ProbTxt from "./ProbTxt"
 import ProbScrpt from './ProbScrpt';
-import ProbChoicePrev from './ProbChoicePrev';
-import ProbChoiceWritePrev from './ProbChoiceWritePrev';
+import WrongProbChoice from './WrongProbChoice';
+import WrongProbChoiceWrite from './WrongProbChoiceWrite';
 
 
 
@@ -90,7 +90,7 @@ const problemStructure = (problem, nextBtn, setNextBtn, choiceRef, section, size
         }
 
 
-        question.push(<ProbChoicePrev problem = {problem} nextBtn = {nextBtn} setNextBtn = {setNextBtn} choiceRef = {choiceRef} />)
+        question.push(<WrongProbChoice problem = {problem} nextBtn = {nextBtn} setNextBtn = {setNextBtn} choiceRef = {choiceRef} />)
 
     }else if(problem.PRB_SECT == "RD"){
 
@@ -115,7 +115,7 @@ const problemStructure = (problem, nextBtn, setNextBtn, choiceRef, section, size
         }
 
 
-        question.push(<ProbChoicePrev problem = {problem} nextBtn = {nextBtn} setNextBtn = {setNextBtn} choiceRef = {choiceRef} />)
+        question.push(<WrongProbChoice problem = {problem} nextBtn = {nextBtn} setNextBtn = {setNextBtn} choiceRef = {choiceRef} />)
 
     }else if(problem.PRB_SECT == "WR"){
 
@@ -133,7 +133,7 @@ const problemStructure = (problem, nextBtn, setNextBtn, choiceRef, section, size
             question.push(<ProbSub PRB_SUB_CONT = {problem.PRB_SUB_CONT}/>)
         }
 
-        question.push(<ProbChoiceWritePrev PRB_CORRT_ANSW = {problem.PRB_CORRT_ANSW} PRB_USER_ANSW = {problem.PRB_USER_ANSW} setNextBtn = {setNextBtn} nextBtn = {nextBtn} size = {size}/>)
+        question.push(<WrongProbChoiceWrite PRB_CORRT_ANSW = {problem.PRB_CORRT_ANSW} PRB_USER_ANSW = {problem.PRB_USER_ANSW} setNextBtn = {setNextBtn} nextBtn = {nextBtn} size = {size}/>)
     }
 
 

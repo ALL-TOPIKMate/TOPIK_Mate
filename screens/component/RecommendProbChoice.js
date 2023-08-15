@@ -3,7 +3,7 @@ import React, {useState} from 'react';
 import {View, Text, StyleSheet, TouchableOpacity, Button, Image} from 'react-native'
 
 
-export default ProbChoice = ({problem, PRB_CHOICE1, PRB_CHOICE2, PRB_CHOICE3, PRB_CHOICE4, imgRef, PRB_CORRT_ANSW, nextBtn, setNextBtn, isSubmit, setIsSubmit}) =>{
+export default RecommendProbChoice = ({problem, PRB_CHOICE1, PRB_CHOICE2, PRB_CHOICE3, PRB_CHOICE4, imgRef, PRB_CORRT_ANSW, nextBtn, setNextBtn, isSubmit, setIsSubmit}) =>{
  
     // 제출 여부를 확인하여 렌더링
     const [subBtn, setSubBtn] = useState(false)

@@ -2,7 +2,7 @@ import React, {useState, useEffect} from 'react';
 
 import {View, Text, StyleSheet, TouchableOpacity, Button, Image} from 'react-native'
 
-export default ProbChoicePrev = ({ problem, nextBtn, setNextBtn, choiceRef}) =>{
+export default WrongProbChoice = ({ problem, nextBtn, setNextBtn, choiceRef}) =>{
 
     // 제출 여부를 확인하여 렌더링
     const [subBtn, setSubBtn] = useState(problem.PRB_USER_ANSW ? true : false);

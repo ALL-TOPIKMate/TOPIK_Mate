@@ -2,7 +2,7 @@ import React, {useState, useEffect, useRef} from 'react';
 
 import {View, Text, StyleSheet, TouchableOpacity, Button} from 'react-native'
 
-export default ProbChoiceWritePrev = (props) =>{
+export default WrongProbChoiceWrite = (props) =>{
     return (
         <View>
             <View>

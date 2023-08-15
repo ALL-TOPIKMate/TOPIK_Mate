@@ -4,12 +4,11 @@ import {View, Text, StyleSheet, ScrollView, TouchableOpacity} from 'react-native
 
 import ProbMain from "./ProbMain";
 import ImgRef from "./ImgRef"
-import ProbChoice from "./ProbChoice";
+import RecommendProbChoice from "./RecommendProbChoice"
 import ProbSub from "./ProbSub";
 import ProbTxt from "./ProbTxt"
 import ProbScrpt from './ProbScrpt';
 import AudRef from './AudRef';
-
 
 
 
@@ -66,7 +65,7 @@ const problemStructure = (problem, imgRef, nextBtn, setNextBtn, isSubmit, setIsS
     }
 
     // PRB_CHOICE1 ~ 4: 4지 선다
-    question.push(<ProbChoice
+    question.push(<RecommendProbChoice
         problem = {problem}
 
         PRB_CHOICE1= {problem.PRB_CHOICE1} 
