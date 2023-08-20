@@ -6,6 +6,10 @@ import {View, Text, StyleSheet, Button, TouchableOpacity} from 'react-native'
 const AudRef = ({ audio }) =>{
 
     const [isRunning, setIsRunning] = useState(false);
+    
+    useEffect(()=>{
+        setIsRunning(false)
+    }, [audio])
 
     function audioPlay(){
         if(audio){
