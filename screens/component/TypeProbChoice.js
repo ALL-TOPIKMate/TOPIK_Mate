@@ -58,8 +58,9 @@ export default TypeProbChoice = ({ problem, imagesRef, audio, PRB_CHOICE1, PRB_C
 
     // 다음 버튼 클릭
     const handleNextProblem = () => {
-
-        audio.stop()
+        if(audio){    
+            audio.stop()
+        }
 
         setSelectedChoice(null);
         setSubmitted(false);
@@ -76,8 +77,10 @@ export default TypeProbChoice = ({ problem, imagesRef, audio, PRB_CHOICE1, PRB_C
     const handlePreviousProblem = () => {
         if (currentIndex > 0) {
 
-            audio.stop()
-
+            if(audio){    
+                audio.stop()
+            }
+            
             setCurrentIndex((prevIndex) => prevIndex - 1);
             setSubmitted(true);
         }
