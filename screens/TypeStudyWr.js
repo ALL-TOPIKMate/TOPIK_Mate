@@ -1,154 +1,264 @@
-import React, { useState, useEffect,useRef } from 'react';
-import { View, Text, Button, StyleSheet,TouchableOpacity,TextInput,Image } from 'react-native';
+import React, { useState, useEffect, useRef, useContext } from 'react';
+import { View, Text, Button, StyleSheet, TouchableOpacity,Image, ScrollView } from 'react-native';
 import AppNameHeader from './component/AppNameHeader';
 import firestore from '@react-native-firebase/firestore';
-import {subscribeAuth } from "../lib/auth";
+import firebase from '@react-native-firebase/app';
+import storage, { getStorage } from '@react-native-firebase/storage'
+import { subscribeAuth } from "../lib/auth";
+import UserContext from '../lib/UserContext';
+import Loading from './component/Loading';
+import ProbMain from './component/ProbMain';
+import ImgRef from './component/ImgRef';
+import ProbTxt from './component/ProbTxt';
+import TypeProbChoiceWrite from './component/TypeProbChoiceWrite';
+
 
 //Write
-const TypeStudyWr = ({navigation, route}) =>{
-  
-  const { source, paddedIndex, prbSection } = route.params;//이전 페이지에서 정보 받아오기
-  const [data, setData] = useState([]);// 문제 담을 구성
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [textInputValue, setTextInputValue] = useState('');
-  const [imageUrls,setImageUrls]=useState(null);
-  useEffect(() => { //이메일 가져와서 레벨 찾아오는 useEffect
-    const handleAuthStateChanged = (user) => {
-      if (user) {
-        console.log('로그인', user.email);
-        // 이메일에 해당하는 레벨 가져오기
-        //getMylevel(user.email);
-      }
-    };
-    
-    const unsubscribe = subscribeAuth(handleAuthStateChanged);
+const TypeStudyWr = ({ navigation, route }) => {
 
-    // 컴포넌트 언마운트 시 구독 해제
-    return () => unsubscribe();
-  }, []);
- 
-  useEffect(() => {
-    // 콜렉션 불러오기
-    const loadPrbList = async () => {
-      try {
-        const prblist = [];
-        const problemCollection = firestore()
-          .collection('problems')
-          .doc(prbSection)//lv2
-          .collection(source)//wrtag
-          .doc(paddedIndex)//001
-          .collection('PRB_LIST')//pbrblist
-        const querySnapshot = await problemCollection.orderBy('__name__').limit(5).get();
-  
-        
-        querySnapshot.forEach((doc) => {
-          const docData = doc.data();
-          const value = {
-            id: doc.id,
-            PRB_MAIN: docData.PRB_MAIN_CONT,
-            
-          };
-          console.log('문제',value);
-          prblist.push(value);
-        });
-        
-        setData(prblist);
-        setCurrentIndex(0);
-      } catch (error) {
-        console.log(error);
-      }
-    };
-  
-    loadPrbList();
-  }, [source, paddedIndex]);
-  
-  useEffect(() => {
-    console.log(data);
-  }, [data]);
-  const handleNextProblem = () => {
-    if (currentIndex < data.length - 1) {
-      setCurrentIndex((prevIndex) => prevIndex + 1);
-    } else {
-      loadProblems();
-      setCurrentIndex(-1);
-    }
-  };
-  const handleEndProblem = () => {
-    navigation.navigate('Type');
-  };
-  const handlePreviousProblem =() =>{
-    if (currentIndex > 0) {
-      setCurrentIndex((prevIndex) => prevIndex - 1);
-      const prevProblem = data[currentIndex - 1];
-    } 
-  }
+    const USER = useContext(UserContext)
+
+
+
+    // 멀티미디어
+    const storage = getStorage(firebase);
+    const imageStorage = storage.ref().child(`/images`);
+
+
+    // 쓰기영역 콜렉션
+    const problemCollection = firestore().collection('problems').doc(`LV${USER.level}`)
+        .collection(route.params.source) // WR_TAG
+        .doc(route.params.paddedIndex) // 001
+        .collection('PRB_LIST')
+
+
+
+    // 문제 데이터 저장
+    const [problems, setProblems] = useState([]);
+    // 이미지 데이터 저장(IMG_REF)
+    const imagesRef = useRef({})
+
+    // 문제 데이터 (손상 X)
+    const rawProblems = useRef([]);
+    // 유저 답안을 포함한 문제 데이터
+    const userProblems = useRef([]);
+
+
+
+    // 문제 인덱스
+    const [currentIndex, setCurrentIndex] = useState(0);
+    // 제출 여부
+    const [submitted, setSubmitted] = useState(false)
+
     
-  
-  return (
-    <View style={[styles.container, styles.containerPos]}>
-      <View style={[styles.container, styles.containerPos]}>
-        <Text> {source} , {paddedIndex} </Text>
-      
-        {data.length > 0 && (
-        <View>
-          <Text>{currentIndex+1}.{data[currentIndex].PRB_MAIN}</Text>
-          <View style ={styles.textfield}>
-            <TextInput
-              editable
-              multiline
-              numberOfLines={4}
-              maxLength={40}
-              onChangeText={text => setTextInputValue(text)}
-              value={textInputValue}
-              style={{padding: 10}}
-              />
-          </View>
-        </View>
-      )}
-      {currentIndex < data.length - 1 ? (
-        <TouchableOpacity style={styles.button} onPress={handleNextProblem}>
-          <Text style={styles.buttonText}>Next</Text>
-        </TouchableOpacity>
-      ) : (
-        <TouchableOpacity style={styles.button} onPress={handleEndProblem}>
-          <Text style={styles.buttonText}>End</Text>
-        </TouchableOpacity>
-      )}
-      </View>
-    </View>
-  );
+
+    // 마지막 문제를 가르킴
+    const lastVisible = useRef(null);
+
+    // 문제풀이화면 준비상태 - 이미지 로드 완료 감지
+    const [isReady, setIsReady] = useState(false);
+    // 문제 풀이 종료 - 페이지 이동
+    const [prbstatus, setprbstatus] = useState(true);
+
+
+
+
+    useEffect(()=>{
+
+        // unmount
+        return () => {
+            USER.updateUserWrongColl(rawProblems.current, userProblems.current)
+        }
+    }, [])
+
+
+
+    useEffect(() => {
+        // 문제를 읽어들였다면 멀티미디어 로드
+        if (problems.length) {
+
+            ImageLoading().then(() => {
+                setIsReady(true)
+            })
+
+        }
+    }, [problems])
+
+
+    useEffect(() => {
+
+        // 모든 문제를 풀었다면 더 가져옴
+        if (currentIndex == problems.length) {
+
+            setIsReady(false)
+            loadProblems()
+
+        }
+
+    }, [currentIndex])
+
+
+
+
+    // 5문제씩 읽어오기
+    const loadProblems = async () => {
+        try {
+            const prblist = [];
+
+            let query = problemCollection.orderBy('__name__').limit(5);
+            if (lastVisible.current) {
+                query = query.startAfter(lastVisible.current);
+            }
+            const temp_snapshot = await query.get();
+
+            temp_snapshot.forEach((doc) => {
+                const data = doc.data();
+                prblist.push(data);
+            });
+            if (temp_snapshot.empty) {
+                setprbstatus(false);
+            }
+
+            if (prblist.length > 0 && prbstatus == true) {
+                const lastDoc = temp_snapshot.docs[temp_snapshot.docs.length - 1];
+                // console.log('문제 끝: ', lastDoc.id);
+                if (lastDoc) {
+                    const lastDocId = lastDoc.id;
+                    lastVisible.current = lastDocId
+                } else {
+                    lastVisible.current = null
+                }
+
+                setProblems([...problems, ...prblist]);
+
+            } else {
+                console.log('No more problems to load.');
+                lastVisible.current = null
+            }
+        } catch (error) {
+            console.log(error);
+        }
+
+    };
+
+
+
+    // IMG_REF 로드
+    const ImageLoading = async () => {
+        try {
+            for (let curr = currentIndex; curr < problems.length; curr++) {
+                if (problems[curr].IMG_REF) {
+
+                    const prbslice = problems[curr].PRB_ID.slice(0, problems[curr].PRB_ID.length - 3)
+
+                    await imageStorage.child(`/${prbslice}/${problems[curr].IMG_REF}`).getDownloadURL().then((url) => {
+                        imagesRef.current[problems[curr].IMG_REF] = url
+                    })
+                }
+            }
+
+        } catch (err) {
+            console.log(err)
+        }
+    }
+
+
+    // 페이지 이동
+    useEffect(()=>{
+        if(!prbstatus){
+
+            navigation.navigate('Type');
+
+        }
+    }, [prbstatus])
+
+
+    // 제출 시 채점
+    useEffect(() => {
+        if(submitted && rawProblems.current.length == currentIndex){
+
+            // 문제 형식 포함한 답안 기록
+            userProblems.current[currentIndex] = {
+                ...problems[currentIndex],
+                ...userProblems.current[currentIndex]
+            }
+
+            rawProblems.current.push(problems[currentIndex])
+
+        }
+    }, [submitted])
+
+
+
+
+    if (!isReady || currentIndex == problems.length) {
+        return <Loading />
+    }
+    else {
+        return (
+            <ScrollView style={styles.container}>
+                <View style={{ flexDirection: 'row' }}>
+                    <TouchableOpacity style={{ marginLeft: 'auto' }} onPress={() => setprbstatus(false)}>
+                        <View>
+                            <Image
+                                source={require('../assets/out-icon.png')}
+                                style={styles.outButton}
+                            />
+                        </View>
+                    </TouchableOpacity>
+                </View>
+
+                <View>
+                    <ProbMain PRB_NUM = {currentIndex + 1} PRB_MAIN_CONT = {problems[currentIndex].PRB_MAIN_CONT} />
+
+                    {
+                        problems[currentIndex].IMG_REF ? 
+                            <ImgRef IMG_REF = {imagesRef.current[problems[currentIndex].IMG_REF]} />: null
+                    }
+
+
+                    {
+                        problems[currentIndex].PRB_TXT ? 
+                            <ProbTxt PRB_TXT = {problems[currentIndex].PRB_TXT} />: null
+                    }
+
+                    <TypeProbChoiceWrite 
+                        problem = {userProblems.current}
+
+                        currentIndex = {currentIndex}
+                        setCurrentIndex = {setCurrentIndex}
+                        submitted = {submitted}
+                        setSubmitted = {setSubmitted}
+
+                        PRB_CORRT_ANSW = {problems[currentIndex].PRB_CORRT_ANSW}
+                        TAG = {problems[currentIndex].TAG}
+                        POINT = {problems[currentIndex].PRB_POINT}
+
+                        PRB_USER_ANSW = {userProblems.current[currentIndex] ? userProblems.current[currentIndex].PRB_USER_ANSW : null}
+                        PRB_USER_ANSW2 = {userProblems.current[currentIndex] ? userProblems.current[currentIndex].PRB_USER_ANSW2 : null}
+                        SCORE = {userProblems.current[currentIndex] ? userProblems.current[currentIndex].SCORE : null}
+                        size = {problems.length}
+
+                        key = {`TYPEPROBWRITE${currentIndex}`} // textinput값 초기화
+                    />
+                </View>
+                <View style = {{ height: 50}}/>
+            </ScrollView>
+        );
+    }
+
 };
 
 const styles = StyleSheet.create({
-    container:{
-      padding: 10,
+    container: {
+        padding: 10,
     },
-    containerPos: {
-      flex:20
+    outButton: {
+        width: 20,
+        height: 20,
+        right: 10,
     },
-    textfield:{
-      backgroundColor: '#FFFFFF',
-      borderColor: '#000000',
-      borderWidth: 1,
-      position: 'absolute',
-      top: 50,
-      left: 0,
-      width: 350,
-      height: 200,
-    },
-    button: {
-      marginTop: 300,
-      alignSelf: 'flex-end',
-      backgroundColor: '#A4BAA1',
-      padding: 10,
-      borderRadius: 5,
-    },
-    buttonText: {
-      color: 'white',
-      fontSize: 16,
-      fontWeight: 'bold',
-    },
-      
+
 });
 
 export default TypeStudyWr;
