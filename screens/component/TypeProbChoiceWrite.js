@@ -42,6 +42,7 @@ export default TypeProbChoiceWrite = ({ problem, currentIndex , setCurrentIndex,
     // 유저 답안2
     const [textInput2, setTextInput2] = useState(PRB_USER_ANSW2);
 
+    const [errorContents, setErrorContents] = useState("")
     
     
     const handleNextProblem = () => {
@@ -81,7 +82,7 @@ export default TypeProbChoiceWrite = ({ problem, currentIndex , setCurrentIndex,
 
         
         problem[currentIndex].SCORE = 0
-
+        setErrorContents("")
 
         setSubmitted(true)
     }
@@ -135,6 +136,12 @@ export default TypeProbChoiceWrite = ({ problem, currentIndex , setCurrentIndex,
                         </View>
                 }
 
+
+
+                <Text style = {styles.text}>감점요인 / 채점기준</Text>
+                <ProblemAnswerView text = {errorContents} />
+                    
+                
 
                 <Text />
                 <Text />        
