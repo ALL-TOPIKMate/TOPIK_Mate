@@ -2,55 +2,73 @@ import React, {useState, useEffect} from 'react';
 
 import {View, Text, StyleSheet, TouchableOpacity, Button, Image} from 'react-native'
 
-export default WrongProbChoice = ({ problem, nextBtn, setNextBtn, choiceRef}) =>{
+export default WrongProbChoice = ({ problemsRef, images, PRB_CHOICE1, PRB_CHOICE2, PRB_CHOICE3, PRB_CHOICE4, PRB_CORRT_ANSW, PRB_USER_ANSW, nextBtn, setNextBtn, isSubmit, setIsSubmit}) =>{
 
-    // 제출 여부를 확인하여 렌더링
-    const [subBtn, setSubBtn] = useState(problem.PRB_USER_ANSW ? true : false);
-
- 
     // 유저가 누르는 버튼 
     const [click, setClick] = useState(0);
 
-
     // 4지선다 이미지 여부
-    const isImage = problem.isImage
+    const isImage = images[PRB_CHOICE1]
 
 
 
 
 
-    function setBtnColor(btn){
-        if(subBtn){ // 4지선다 비활성화 (사용자 정답 결과)
-            if(btn == click){ // 유저가 고른 버튼
-                if(btn == problem.PRB_CORRT_ANSW){ // 정답일경우
+    // 버튼 배경색 활성화
+    function setButtonColor(btn){
+        if(isSubmit){
+            // 유저가 답을 맞췄을 경우
+            if(PRB_CORRT_ANSW == PRB_USER_ANSW){
+                if(btn == PRB_USER_ANSW){
                     return "#BAD7E9"
+                }else{
+                    return "#D9D9D9"
                 }
-                
-                return "#FFACAC" // 정답이 아닐 경우
-            }else{ // 유저가 고른 버튼이 아닌 경우
-                if(btn == problem.PRB_CORRT_ANSW){
-                    return "#BAD7E9" // 정답을 표시
+            }else{ // 답을 틀렸을 경우
+                if(btn == PRB_USER_ANSW){
+                    return "#FFACAC"
+                }else if(btn == PRB_CORRT_ANSW){
+                    return "#BAD7E9"
+                }else{
+                    return "#D9D9D9"
                 }
-
+            }
+        }else{
+            if(btn == click){
+                return "#BBD6B8"
+            }else{
                 return "#D9D9D9"
             }
-            
         }
-        // 4지선다 활성화
-        
-        return (btn == click ? "#BBD6B8" : "#D9D9D9")
-        
     }
 
 
-    // Prev 버튼 클릭시 4시선다 
-    function setBtnColorStop(btn){
-        if(btn == problem.PRB_CORRT_ANSW){
-            return "#BAD7E9"
-        } else if(btn == problem.PRB_USER_ANSW){
-            return "#FFACAC"
+
+
+    // 제출 
+    function submitHandler(){
+        setIsSubmit(true)
+
+        // 유저 답안 생성
+        problemsRef.current.push({
+            PRB_USER_ANSW: click
+        })
+    }
+
+    // 이전
+    function previousHandler(){
+        setNextBtn(nextBtn-1)
+        setIsSubmit(true)
+    }
+
+    // 다음
+    function nextHandler(){
+        setNextBtn(nextBtn+1)
+
+        if( nextBtn+1 == problemsRef.current.length ){
+            setIsSubmit(false)
         }else{
-            return "#D9D9D9"
+            setIsSubmit(true)
         }
     }
 
@@ -59,114 +77,135 @@ export default WrongProbChoice = ({ problem, nextBtn, setNextBtn, choiceRef}) =>
     return (
         <View>
         <Text /><Text />
+
         {
-            isImage ? (   
-                <TouchableOpacity onPress = {() => {setClick(1)}} disabled = {subBtn || problem.PRB_USER_ANSW} style = {[{borderColor: problem.PRB_USER_ANSW ? setBtnColorStop(1) : setBtnColor(1), borderWidth: 5}]}>
-                    <Image
-                    style={{height: 200}}
-                    resizeMode = "stretch"
-                    source={{uri: problem.PRB_CHOICE1}}
-                    />
-                </TouchableOpacity>
-            ): (
-                <TouchableOpacity onPress = {() => {setClick(1)}} disabled = {subBtn || problem.PRB_USER_ANSW} style = {[styles.button, {backgroundColor: problem.PRB_USER_ANSW ? setBtnColorStop(1) : setBtnColor(1)}]}>
-                    <Text>
-                        {problem.PRB_CHOICE1}
-                    </Text>
-                </TouchableOpacity>
+            isImage && (
+                <View>
+                    <TouchableOpacity onPress = {() => {setClick("1")}} disabled = { PRB_USER_ANSW } style = {[styles.imageButton, {borderColor: setButtonColor("1")}]}>
+                        <Image
+                        style={{height: 200}}
+                        resizeMode = "stretch"
+                        source={{uri: images[PRB_CHOICE1]}}
+                        />
+                    </TouchableOpacity>
+                    <Text/>
+                    <TouchableOpacity onPress = {() => {setClick("2")}} disabled = { PRB_USER_ANSW } style = {[styles.imageButton, {borderColor: setButtonColor("2")}]}>
+                        <Image
+                        style={{height: 200}}
+                        resizeMode = "stretch"
+                        source={{uri: images[PRB_CHOICE2]}}
+                        />
+                    </TouchableOpacity>
+                    <Text/>
+                    <TouchableOpacity onPress = {() => {setClick("3")}} disabled = { PRB_USER_ANSW } style = {[styles.imageButton, {borderColor: setButtonColor("3")}]}>
+                        <Image
+                        style={{height: 200}}
+                        resizeMode = "stretch"
+                        source={{uri: images[PRB_CHOICE3]}}
+                        />
+                    </TouchableOpacity>
+                    <Text/>
+                    <TouchableOpacity onPress = {() => {setClick("4")}} disabled = { PRB_USER_ANSW } style = {[styles.imageButton, {borderColor: setButtonColor("4")}]}>
+                        <Image
+                        style={{height: 200}}
+                        resizeMode = "stretch"
+                        source={{uri: images[PRB_CHOICE4]}}
+                        />
+                    </TouchableOpacity>
+                </View>
             )
-
         }
-       <Text/>
+        
         {
-            isImage ? (   
-                <TouchableOpacity onPress = {() => {setClick(2)}} disabled = {subBtn || problem.PRB_USER_ANSW} style = {[{borderColor: problem.PRB_USER_ANSW ? setBtnColorStop(2) :setBtnColor(2), borderWidth: 5}]}>
-                    <Image
-                    style={{height: 200}}
-                    resizeMode = "stretch"
-                    source={{uri: problem.PRB_CHOICE2}}
-                    />
-                </TouchableOpacity>
-            ):(
-                <TouchableOpacity onPress = {() => {setClick(2)}} disabled = {subBtn || problem.PRB_USER_ANSW} style = {[styles.button, {backgroundColor: problem.PRB_USER_ANSW ? setBtnColorStop(2) :setBtnColor(2)}]}>
-                    <Text>
-                        {problem.PRB_CHOICE2}
-                    </Text>
-                </TouchableOpacity>
+            !isImage && (
+                <View>
+                    <TouchableOpacity onPress = {() => {setClick("1")}} disabled = { PRB_USER_ANSW } style = {[styles.button, {backgroundColor: setButtonColor("1")}]}>
+                        <Text>
+                            {PRB_CHOICE1}
+                        </Text>
+                    </TouchableOpacity>
+                    <Text/>
+                    <TouchableOpacity onPress = {() => {setClick("2")}} disabled = { PRB_USER_ANSW } style = {[styles.button, {backgroundColor: setButtonColor("2")}]}>
+                        <Text>
+                            {PRB_CHOICE2}
+                        </Text>
+                    </TouchableOpacity>
+                    <Text/>
+                    <TouchableOpacity onPress = {() => {setClick("3")}} disabled = { PRB_USER_ANSW } style = {[styles.button, {backgroundColor: setButtonColor("3")}]}>
+                        <Text>
+                            {PRB_CHOICE3}
+                        </Text>
+                    </TouchableOpacity>
+                    <Text/>
+                    <TouchableOpacity onPress = {() => {setClick("4")}} disabled = { PRB_USER_ANSW } style = {[styles.button, {backgroundColor: setButtonColor("4")}]}>
+                        <Text>
+                            {PRB_CHOICE4}
+                        </Text>
+                    </TouchableOpacity>
+                </View>
             )
 
         }
-       <Text/>
-       {
-            isImage ? (   
-                <TouchableOpacity onPress = {() => {setClick(3)}} disabled = {subBtn || problem.PRB_USER_ANSW} style = {[{borderColor: problem.PRB_USER_ANSW ? setBtnColorStop(3) :setBtnColor(3), borderWidth: 5}]}>
-                    <Image
-                    style={{height: 200}}
-                    resizeMode = "stretch"
-                    source={{uri: problem.PRB_CHOICE3}}
-                    />
-                </TouchableOpacity>
-            ):(
-                <TouchableOpacity onPress = {() => {setClick(3)}} disabled = {subBtn || problem.PRB_USER_ANSW} style = {[styles.button, {backgroundColor: problem.PRB_USER_ANSW ? setBtnColorStop(3) :setBtnColor(3)}]}>
-                    <Text>
-                        {problem.PRB_CHOICE3}
-                    </Text>
-                </TouchableOpacity>
-            )
-        }
-       <Text/>
-         {
-            isImage ? (   
-                <TouchableOpacity onPress = {() => {setClick(4)}} disabled = {subBtn || problem.PRB_USER_ANSW} style = {[{borderColor: problem.PRB_USER_ANSW ? setBtnColorStop(4) :setBtnColor(4), borderWidth: 5}]}>
-                    <Image
-                    style={{height: 200}}
-                    resizeMode = "stretch"
-                    source={{uri: problem.PRB_CHOICE4}}
-                    />
-                </TouchableOpacity>
-            ):(
-                <TouchableOpacity onPress = {() => {setClick(4)}} disabled = {subBtn || problem.PRB_USER_ANSW} style = {[styles.button, {backgroundColor: problem.PRB_USER_ANSW ? setBtnColorStop(4) :setBtnColor(4)}]}>
-                    <Text>
-                        {problem.PRB_CHOICE4}
-                    </Text>
-                </TouchableOpacity>
-            )
-        }
-        <Text/>
 
+        <Text /><Text />
 
         <View style = {{flexDirection: "row", justifyContent: "center"}}>
-            <TouchableOpacity onPress={()=>{setNextBtn(nextBtn-1)}} disabled = {nextBtn == 0} style = {[styles.button, {backgroundColor: nextBtn == 0 ? "#D9D9D9" : "#94AF9F", width: 100, marginHorizontal: 10}]}>
+            <TouchableOpacity onPress={previousHandler} disabled = {nextBtn == 0} style = {[styles.button, styles.moveButton, nextBtn == 0 ? styles.buttonDisabled : styles.buttonAbled]}>
                 <Text>
                     PREV
                 </Text>
             </TouchableOpacity>
 
             
-            {!subBtn ? 
-            (<TouchableOpacity onPress = {() => {setSubBtn(true)}} disabled = {click==0} style = {[styles.button, {backgroundColor: click == 0 ? "#D9D9D9" : "#94AF9F", width: 100, marginHorizontal: 10}]}>
-                <Text>
-                    SUBMIT
-                </Text>
-            </TouchableOpacity>): 
-            (<TouchableOpacity onPress = {() => {choiceRef.current = click; setNextBtn(nextBtn+1);}}  style = {[styles.button, {backgroundColor: "#94AF9F", width: 100, marginHorizontal: 10}]}>
-                <Text>
-                    NEXT
-                </Text>
-            </TouchableOpacity>)}
+            {
+                !isSubmit ? 
+                    <TouchableOpacity onPress = {submitHandler} disabled = {click==0} style = {[styles.button, styles.moveButton, click == 0 ? styles.buttonDisabled : styles.buttonAbled]}>
+                        <Text>
+                            SUBMIT
+                        </Text>
+                    </TouchableOpacity>: 
+                    <TouchableOpacity onPress = {nextHandler}  style = {[styles.button, styles.moveButton, styles.buttonAbled]}>
+                        <Text>
+                            NEXT
+                        </Text>
+                    </TouchableOpacity>
+            }
         </View>
+
+        <View style = {{height: 80}}/>
+        
     </View>
     );
 }
 
 
 const styles = StyleSheet.create({
-    button:{
+    button: {
         flexDirection: "row",
         justifyContent: "center",
         alignItems: "center",
         borderRadius: 10,
 
         padding: 16
+    },
+
+    imageButton: {
+        borderWidth: 5
+    },
+
+    // 4지선다 제외한 버튼 (제출, 이전, 다음)
+    moveButton: {
+        width: 100, 
+        marginHorizontal: 10
+    },
+
+    // 버튼 활성화
+    buttonAbled: {
+        backgroundColor: "#94AF9F"
+    },
+    // 버튼 비활성화 
+    buttonDisabled: {
+        backgroundColor: "#D9D9D9"
     }
+    
 })
