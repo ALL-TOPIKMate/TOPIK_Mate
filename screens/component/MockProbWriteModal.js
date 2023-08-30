@@ -1,8 +1,21 @@
 import React from 'react';
 import { StyleSheet, Modal, ScrollView, Image, View, Text, TouchableOpacity } from 'react-native';
+
+import { splitProblemAnswer } from '../../lib/utils';
 import ProbMain from './ProbMain';
 import ImgRef from './ImgRef';
 import ProbTxt from './ProbTxt';
+
+
+function ViewBox({text}){
+    return (
+        <View style = {styles.viewBox}>
+            <Text>
+                {text}
+            </Text>
+        </View>
+    )
+}
 
 const MockProbWriteModal = ({ problem, index, setVisible, images }) => {
     
@@ -46,59 +59,56 @@ const MockProbWriteModal = ({ problem, index, setVisible, images }) => {
                     problem[index].TAG === '001' || problem[index].TAG === '002'
                     ? <View>
                         <View>
-                            <Text>㉠</Text>
-                            <Text>Your answer</Text>
-                            <Text style={styles.inputBox}>{ problem[index].PRB_USER_ANSW }</Text>
+                            <Text style = {styles.text}>㉠</Text>
+                            <Text style = {styles.text}>Your answer</Text>
+                            <ViewBox text = {problem[index].PRB_USER_ANSW} />
 
-                            <Text>Best answer</Text>
-                            <Text style={styles.inputBox}>{ problem[index].PRB_CORRT_ANSW }</Text>
+                            <Text style = {styles.text}>Best answer</Text>
+                            <ViewBox text = {splitProblemAnswer(problem[index].PRB_CORRT_ANSW).text1} />
 
-
-                            <Text>Result</Text>
-                            {/* 임시 이미지. 채점 모델 개발 후 채점 결과 불러와서 표현할 예정 */}
-                            <View style={styles.infoSection}>
-                                <Image
-                                    style={styles.infoImg}
-                                    source={require('../../assets/topik-guide.webp')}
-                                />
+                            <View style = {styles.alignRow}>
+                                <Text style = {[styles.textLeft, styles.text]}>Result</Text>
+                                <Text style = {[styles.textRight, styles.text]}>Score: {problem[index].SCORE} / 5</Text>
                             </View>
+                            <ViewBox text = {problem[index].ERROR_CONT} />
+                            
                         </View>
 
+                        <Text />
+
                         <View>
-                            <Text>㉡</Text>
-                            <Text>Your answer</Text>
-                            <Text style={styles.inputBox}>{ problem[index].PRB_USER_ANSW2 }</Text>
-
-                            <Text>Best answer</Text>
-                            <Text style={styles.inputBox}>{ problem[index].PRB_CORRT_ANSW }</Text>
+                            <Text style = {styles.text}>㉡</Text>
+                            <Text style = {styles.text}>Your answer</Text>
+                            <ViewBox text = {problem[index].PRB_USER_ANSW2} />
 
 
-                            <Text>Result</Text>
-                            {/* 임시 이미지. 채점 모델 개발 후 채점 결과 불러와서 표현할 예정 */}
-                            <View style={styles.infoSection}>
-                                <Image
-                                    style={styles.infoImg}
-                                    source={require('../../assets/topik-guide.webp')}
-                                />
+                            <Text style = {styles.text}>Best answer</Text>
+                            <ViewBox text = {splitProblemAnswer(problem[index].PRB_CORRT_ANSW).text2} />
+
+
+                            <View style = {styles.alignRow}>
+                                <Text style = {[styles.textLeft, styles.text]}>Result</Text>
+                                <Text style = {[styles.textRight, styles.text]}>Score: {problem[index].SCORE} / 5</Text>
                             </View>
+                            
+                            <ViewBox text = {problem[index].ERROR_CONT} />
                         </View>
                     </View>
                     : <View>
-                        <Text>Your answer</Text>
-                        <Text style={styles.inputBox}>{ problem[index].PRB_USER_ANSW }</Text>
+                        <Text style = {styles.text}>Your answer</Text>
+                        <ViewBox text = {problem[index].PRB_USER_ANSW} />
 
-                        <Text>Best answer</Text>
-                        <Text style={styles.inputBox}>{ problem[index].PRB_CORRT_ANSW }</Text>
+                        <Text style = {styles.text}>Best answer</Text>
+                        <ViewBox text = {problem[index].PRB_CORRT_ANSW} />
 
 
-                        <Text>Result</Text>
-                        {/* 임시 이미지. 채점 모델 개발 후 채점 결과 불러와서 표현할 예정 */}
-                        <View style={styles.infoSection}>
-                            <Image
-                                style={styles.infoImg}
-                                source={require('../../assets/topik-guide.webp')}
-                            />
+                        <View style = {styles.alignRow}>
+                            <Text style = {[styles.textLeft, styles.text]}>Result</Text>
+                            <Text style = {[styles.textRight, styles.text]}>Score: {problem[index].SCORE} / {problem[index].PRB_POINT}</Text>
                         </View>
+                        
+                        <ViewBox text = {problem[index].ERROR_CONT} />
+
                     </View>
                 }
                 <View>
@@ -129,15 +139,15 @@ const styles = StyleSheet.create({
         padding: 20,
     },
 
-    inputBox: {
+    viewBox: {
+        backgroundColor: "#D9D9D9",
         padding: 10,
-        borderColor: '#C1C0B9',
-        borderWidth: 2,
-        borderRadius: 10,
-        marginTop: 10,
-        marginBottom: 20,
-  
+        minHeight: 128,
+
+        borderWidth: 1,
+        borderColor: "black",
         flexShrink: 1,
+        marginVertical: 14
     },
 
     infoImg: {
@@ -147,7 +157,7 @@ const styles = StyleSheet.create({
     },
 
     controlButttonContainer: {
-        marginTop: 20,
+        marginTop: 50,
         marginBottom: 100,
         justifyContent: 'center',
         flexDirection: 'row',
@@ -160,6 +170,23 @@ const styles = StyleSheet.create({
         height: 50,
         marginHorizontal: 10
     },
+
+     // row정렬
+     alignRow: {
+        flexDirection: "row"
+    },
+    // text정렬
+    textLeft: {
+        flex: 1,
+        textAlign: "left",
+    },
+    textRight: {
+        flex: 1, 
+        textAlign: "right"
+    }, 
+    text: {
+        fontSize: 18
+    }
 });
 
 export default MockProbWriteModal;

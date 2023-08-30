@@ -22,6 +22,18 @@ import { getNow } from '../utils/DateUtil';
 Sound.setCategory('Playback');
 
 
+
+async function getWriteScore(write){
+    let size = write.length
+    
+    for(let i = 0; i < size; i++){
+        write[i].SCORE = 0
+        write[i].ERROR_CONT = "감점요인 입력칸입니다."
+    }
+
+
+}
+
 const MockStudyScreen = ({navigation, route}) =>{
 
     const USER = useContext(UserContext)
@@ -208,7 +220,7 @@ const MockStudyScreen = ({navigation, route}) =>{
 
 
 
-    
+    const [resultscreen, setResultscreen] = useState(false)
     const [isEnd, setIsEnd] = useState(false); // 타임 아웃 여부
     
 
@@ -226,8 +238,14 @@ const MockStudyScreen = ({navigation, route}) =>{
             if (newArr !== undefined) {
 
                 // 직전 풀이한 문제의 사용자 선택 저장
-                newArr[index + direction]['PRB_USER_ANSW'] = choice;
-                newArr[index + direction]['PRB_USER_ANSW2'] = choice2;
+
+                if(problems[index + direction].PRB_SECT == "WR" && problems[index + direction].TAG == "001" || problems[index + direction] == "002"){
+                    newArr[index + direction]['PRB_USER_ANSW'] = choice;
+                    newArr[index + direction]['PRB_USER_ANSW2'] = choice2;
+                }else{
+                    newArr[index + direction]['PRB_USER_ANSW'] = choice;
+                }
+                
                 setProblems(newArr);
                 
                 
@@ -271,6 +289,23 @@ const MockStudyScreen = ({navigation, route}) =>{
             });
         }
     }, [isEnd, index]);
+
+
+    useEffect(() => {
+        // 모든 문제를 다 풀었을 경우 
+        // 쓰기영역 문제가 존재하면 채점 후 결과화면(모달창) 보여주기
+        if(problems.length && (isEnd || index === prevProblems.current.length)){
+            /* 
+                쓰기영역 채점은 여기서
+            */
+            
+
+            getWriteScore(write).then(()=> {
+                setResultscreen(true)
+            })
+            
+        }
+    }, [listen, read, write])
                 
 
 
@@ -293,9 +328,9 @@ const MockStudyScreen = ({navigation, route}) =>{
                 {/* 문제 풀이 영역 */}
                 <MockProb
                     problem={prevProblems.current[index]}
-                    choice={prevProblems.current[index].PRB_USER_ANSW}
+                    choice={prevProblems.current[index].PRB_USER_ANSW || null}
                     setChoice={setChoice}
-                    choice2={prevProblems.current[index].PRB_USER_ANSW2}
+                    choice2={prevProblems.current[index].PRB_USER_ANSW2 || null}
                     setChoice2={setChoice2}
                     index={index}
                     setIndex={setIndex}
@@ -309,8 +344,7 @@ const MockStudyScreen = ({navigation, route}) =>{
                 />
             </View>
         );
-    } else if (isEnd || index === prevProblems.current.length) {
-        // 결과 테이블 화면
+    }else if(resultscreen){
         return (
             <MockResult
                 level={route.params.level}
@@ -320,8 +354,13 @@ const MockStudyScreen = ({navigation, route}) =>{
                 prevImages={prevImages}
                 prevAudios={prevAudios}
             />
+        )
+    }else if (isEnd || index === prevProblems.current.length) {
+        // 결과 테이블 화면 구성을 위한 서술형 채점
+        return (
+            <Loading />
         );
-    }     
+    }
 }
 
 

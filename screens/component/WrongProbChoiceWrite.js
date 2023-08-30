@@ -14,8 +14,7 @@ function ViewBox({text}){
 }
 
 
-export default WrongProbChoiceWrite = ({ PRB_CORRT_ANSW, PRB_USER_ANSW, PRB_USER_ANSW2, SCORE, PRB_POINT, nextBtn, setNextBtn, size, TAG }) => {
-
+export default WrongProbChoiceWrite = ({ PRB_CORRT_ANSW, PRB_USER_ANSW, PRB_USER_ANSW2, SCORE, PRB_POINT, ERROR_CONT , nextBtn, setNextBtn, size, TAG }) => {
     return (
         <View>
             {
@@ -61,6 +60,8 @@ export default WrongProbChoiceWrite = ({ PRB_CORRT_ANSW, PRB_USER_ANSW, PRB_USER
                 </View>
             }
             
+            <Text style={styles.text}>감점 요인</Text>
+            <ViewBox text = {ERROR_CONT} />
 
             <Text />
             <Text />

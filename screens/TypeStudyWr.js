@@ -232,11 +232,13 @@ const TypeStudyWr = ({ navigation, route }) => {
 
                         PRB_CORRT_ANSW = {problems[currentIndex].PRB_CORRT_ANSW}
                         TAG = {problems[currentIndex].TAG}
-                        POINT = {problems[currentIndex].PRB_POINT}
+                        PRB_POINT = {problems[currentIndex].PRB_POINT}
 
                         PRB_USER_ANSW = {userProblems.current[currentIndex] ? userProblems.current[currentIndex].PRB_USER_ANSW : null}
                         PRB_USER_ANSW2 = {userProblems.current[currentIndex] ? userProblems.current[currentIndex].PRB_USER_ANSW2 : null}
-                        SCORE = {userProblems.current[currentIndex] ? userProblems.current[currentIndex].SCORE : null}
+                        SCORE = {userProblems.current[currentIndex] ? userProblems.current[currentIndex].SCORE : -1}
+                        ERROR_CONT = {userProblems.current[currentIndex] ? userProblems.current[currentIndex].ERROR_CONT: null}
+
                         size = {problems.length}
 
                         key = {`TYPEPROBWRITE${currentIndex}`} // textinput값 초기화

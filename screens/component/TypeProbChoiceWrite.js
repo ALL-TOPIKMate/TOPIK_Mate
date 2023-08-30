@@ -35,16 +35,41 @@ const ProblemAnswerView = ({text}) => {
 
 
 
-export default TypeProbChoiceWrite = ({ problem, currentIndex , setCurrentIndex, submitted, setSubmitted, PRB_CORRT_ANSW, PRB_USER_ANSW, PRB_USER_ANSW2, TAG, POINT, SCORE, size}) => {
+export default TypeProbChoiceWrite = ({ problem, currentIndex , setCurrentIndex, submitted, setSubmitted, PRB_CORRT_ANSW, PRB_USER_ANSW, PRB_USER_ANSW2, TAG, PRB_POINT, SCORE, ERROR_CONT, size}) => {
 
     // 유저 답안1
     const [textInput, setTextInput] = useState(PRB_USER_ANSW);
     // 유저 답안2
     const [textInput2, setTextInput2] = useState(PRB_USER_ANSW2);
 
-    const [errorContents, setErrorContents] = useState("")
+    // 감점 요인
+    const [errorContents, setErrorContents] = useState(ERROR_CONT)
+    // 점수
+    const [score, setScore] = useState(SCORE)
     
+
+    useEffect(() => {
+
+        if(submitted && score >= 0){
     
+            problem[currentIndex].SCORE = score
+    
+        }
+
+    }, [score, submitted])
+
+    useEffect(() => {
+
+        if(submitted && errorContents.length){
+            
+            problem[currentIndex].ERROR_CONT = errorContents
+
+        }
+
+    }, [errorContents, submitted])
+
+
+
     const handleNextProblem = () => {
         setCurrentIndex((prevIndex) => prevIndex + 1);
 
@@ -80,9 +105,9 @@ export default TypeProbChoiceWrite = ({ problem, currentIndex , setCurrentIndex,
             서술형 채점은 여기서
         */
 
-        
-        problem[currentIndex].SCORE = 0
-        setErrorContents("")
+
+        setScore(0)
+        setErrorContents("감점요인을 설명한다.")
 
         setSubmitted(true)
     }
@@ -101,7 +126,7 @@ export default TypeProbChoiceWrite = ({ problem, currentIndex , setCurrentIndex,
                                 <Text style = {styles.text}>㉠</Text>
                                 <View style = {styles.alignRow}>
                                     <Text style = {[styles.textLeft, styles.text]}>Your answer</Text>
-                                    <Text style = {[styles.textRight, styles.text]}>Score: {SCORE} / 5</Text>        
+                                    <Text style = {[styles.textRight, styles.text]}>Score: {score} / 5</Text>        
                                 </View>
                                 <ProblemAnswerView text = {PRB_USER_ANSW}/>
                                 
@@ -115,7 +140,7 @@ export default TypeProbChoiceWrite = ({ problem, currentIndex , setCurrentIndex,
                                 <Text style = {styles.text}>㉡</Text>
                                 <View style = {styles.alignRow}>
                                     <Text style = {[styles.textLeft, styles.text]}>Your answer</Text>
-                                    <Text style = {[styles.textRight, styles.text]}>Score: {SCORE} / 5</Text>        
+                                    <Text style = {[styles.textRight, styles.text]}>Score: {score} / 5</Text>        
                                 </View>
                                 <ProblemAnswerView text = {PRB_USER_ANSW2}/>
                                 
@@ -127,7 +152,7 @@ export default TypeProbChoiceWrite = ({ problem, currentIndex , setCurrentIndex,
                         <View style = {styles.questionContainer}>
                             <View style = {styles.alignRow}>
                                     <Text style = {[styles.textLeft, styles.text]}>Your answer</Text>
-                                    <Text style = {[styles.textRight, styles.text]}>Score: {SCORE} / {POINT}</Text>        
+                                    <Text style = {[styles.textRight, styles.text]}>Score: {score} / {PRB_POINT}</Text>        
                             </View>
                             <ProblemAnswerView text = {PRB_USER_ANSW} />
 
@@ -251,6 +276,7 @@ const styles = StyleSheet.create({
         backgroundColor: "#FFFFFF",
         borderWidth: 2,
         borderRadius: 5,
+        minHeight: 128,
 
         flexShrink: 1,
 

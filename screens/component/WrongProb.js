@@ -89,6 +89,7 @@ export default WrongProb = ({ problem, images, audio, nextBtn, setNextBtn, isSub
 
                     SCORE = {problem.SCORE}
                     PRB_POINT = {problem.PRB_POINT}
+                    ERROR_CONT = {problem.ERROR_CONT}
                     TAG = {problem.TAG}
 
                     nextBtn = {nextBtn} 
