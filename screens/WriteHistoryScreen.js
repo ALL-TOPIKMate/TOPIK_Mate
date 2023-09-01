@@ -22,6 +22,10 @@ const WriteHistoryScreen = ({route, navigation}) =>{
                             .doc(route.params.tag).collection("PRB_RSC_LIST")
     
 
+    const PRB_NUM = route.params.tag == "001" ? "51":
+        route.params.tag == "002" ? "52": 
+        route.params.tag == "003" ? "53": "54"
+
     
     useEffect(()=>{
 
@@ -58,6 +62,9 @@ const WriteHistoryScreen = ({route, navigation}) =>{
             </View>
             <View style = {{flex: 1}}>
                 <Text>
+                    {PRB_NUM}번 문제입니다
+                </Text>
+                <Text>
                     문제 회차를 선택하세요
                 </Text>
             </View>
@@ -66,9 +73,8 @@ const WriteHistoryScreen = ({route, navigation}) =>{
                     {
                         data.map((data, index)=>{
                             return (
-                                <TouchableOpacity key = {index} style = {styles.buttonList} onPress = {() => navigation.push("WriteHistoryList", {tag: route.params.tag, PRB_RSC: data.PRB_RSC, PRB_ID: data.PRB_ID})} >
+                                <TouchableOpacity key = {index} style = {styles.buttonList} onPress = {() => navigation.push("WriteHistoryList", {tag: route.params.tag, PRB_RSC: data.PRB_RSC, PRB_ID: data.PRB_ID, PRB_NUM: PRB_NUM})} >
                                     <Text style = {{fontSize: 16}}>{data.PRB_RSC}</Text>
-                                    <Text>{data.PRB_ID}번</Text> 
                                 </TouchableOpacity>
                             )
                         })

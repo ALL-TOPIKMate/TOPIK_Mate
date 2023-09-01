@@ -54,6 +54,21 @@ const WriteHistoryListScreen = ({route, navigation}) => {
     }
 
 
+    function getDay(date){
+        return date.split(" ")[0]
+    }
+
+    function getTime(date){
+        const time = date.split(" ")[1]
+
+        let [hr, min, mill] = time.split(":")
+        // console.log(hr, min, mill)
+        hr = hr.replace("0" , "")
+        min = min.replace("0", "")
+
+        return `${hr.length == 1 ? "오전": "오후"} ${hr}시 ${min}분`
+    }
+
     return (
         <View style = {styles.container}>
             <View style = {{flex: 1}}>
@@ -63,8 +78,7 @@ const WriteHistoryListScreen = ({route, navigation}) => {
             </View>
             <View style = {{flex: 1}}>
                 <Text> 선택한 문제는 </Text>
-                <Text> {route.params.PRB_RSC} </Text>
-                <Text> {route.params.PRB_ID}번 입니다 </Text>
+                <Text> {route.params.PRB_RSC} {route.params.PRB_NUM}번입니다</Text>
             </View> 
 
             <View style = {{flex: 8}}>
@@ -72,19 +86,13 @@ const WriteHistoryListScreen = ({route, navigation}) => {
                     {
                         data.map((data, index)=>{
                             return (
-                                <TouchableOpacity key = {index} style = {styles.tagList} onPress = {()=>{navigation.push("WrongStudy", {key: "write", order: index, userTag: route.params.tag, PRB_ID: route.params.PRB_ID})}}>
-                                    
-                                    <Text style = {{flex: 5}}>
-                                        {data.DATE}
+                                <TouchableOpacity key = {index} style = {styles.buttonList} onPress = {()=>{navigation.push("WrongStudy", {key: "write", order: index, userTag: route.params.tag, PRB_ID: route.params.PRB_ID})}}>
+                                    <Text style = {{fontSize: 16}}>
+                                        {getDay(data.DATE)}
                                     </Text>
-
-                                    <View style = {{flex: 1.5, flexDirection: "column"}}>
-                                        <Text/>
-                                        <Text style = {{fontSize: 10}}>
-                                        score {data.SCORE}/{data.PRB_POINT}
-                                        </Text>
-                                    </View>
-
+                                    <Text style = {{fontSize: 14}}>
+                                        {getTime(data.DATE)}에 작성한 글입니다
+                                    </Text>
                                 </TouchableOpacity>
                             )
                         })
@@ -102,16 +110,11 @@ const styles = StyleSheet.create({
         padding: 20
     },
 
-    tagList:{
-        flex: 1,
-        marginVertical: 2,
+    buttonList: {
+        backgroundColor: "#D9D9D9",
         padding: 32,
-
-        flexDirection: "row",
-        alignItems: "center",
-
-        backgroundColor: "#D9D9D9"
-    },
+        marginVertical: 2,
+    }
 
 })
 
