@@ -25,7 +25,7 @@ const updateUserAnswer = async (recommendColl, index, correct) =>{
 
 
 
-const audioURL = async(problem, audioRef, audioStorage, countAudio, setReadyAudio) =>{
+const audioURL = async(problem, audioRef, audioStorage, countAudio, setReadyAudio, isComponentMounted) =>{
     const PRB_RSC = problem.PRB_ID.substr(0, problem.PRB_ID.length-3)
 
     try{
@@ -41,7 +41,7 @@ const audioURL = async(problem, audioRef, audioStorage, countAudio, setReadyAudi
 
                 countAudio.current -= 1
                 
-                if(countAudio.current == 0){
+                if(countAudio.current == 0 && isComponentMounted.current){
                     setReadyAudio(true)
                 }
             })
@@ -94,7 +94,7 @@ const imagesURL = async (problem, imgRef, imageStorage) =>{
     }
 }
 
-const loadMultimedia = async (problem, audioRef, imgRef, audioStorage, imageStorage, countAudio, setReadyAudio) =>{
+const loadMultimedia = async (problem, audioRef, imgRef, audioStorage, imageStorage, countAudio, setReadyAudio, isComponentMounted) =>{
     try{
         let size = problem.length
 
@@ -102,7 +102,7 @@ const loadMultimedia = async (problem, audioRef, imgRef, audioStorage, imageStor
             const imageIndex = problem[i].PRB_CHOICE1.search(".png")
 
             if(problem[i].AUD_REF){
-                await audioURL(problem[i], audioRef, audioStorage, countAudio, setReadyAudio)
+                await audioURL(problem[i], audioRef, audioStorage, countAudio, setReadyAudio, isComponentMounted)
             }if(problem[i].IMG_REF){
                 await imageURL(problem[i], imgRef, imageStorage)
             }if(imageIndex != -1){
@@ -121,6 +121,9 @@ const loadMultimedia = async (problem, audioRef, imgRef, audioStorage, imageStor
 const RecommendStudyScreen = ({route, navigation}) =>{
 
     const USER = useContext(UserContext)
+
+    // 메모리 누수 방지
+    const isComponentMounted = useRef(true)
     
     
 
@@ -194,6 +197,7 @@ const RecommendStudyScreen = ({route, navigation}) =>{
 
         // UNMOUNT
         return () => {
+            isComponentMounted.current = false
 
             // firebase update
             // recommend field
@@ -231,7 +235,10 @@ const RecommendStudyScreen = ({route, navigation}) =>{
             })
 
 
-            setproblem(dataList)
+            if(isComponentMounted.current){
+                setproblem(dataList)
+            }
+         
         }catch(error){
 
             console.log(error.message);
@@ -250,11 +257,13 @@ const RecommendStudyScreen = ({route, navigation}) =>{
             prevProblem.current = JSON.parse(JSON.stringify(problem))
             userProblem.current = JSON.parse(JSON.stringify(problem))
 
-            loadMultimedia(problem, audioRef, imgRef, audioStorage, imageStorage, countAudio, setReadyAudio).then(()=>{
+            loadMultimedia(problem, audioRef, imgRef, audioStorage, imageStorage, countAudio, setReadyAudio, isComponentMounted).then(()=>{
                 
                 // 멀티미디어 로드 완료
-                setReadyProblem(true)
-                // setReadyAudio(true)
+                if(isComponentMounted.current){
+                    setReadyProblem(true)
+                    // setReadyAudio(true)
+                }
             })
 
         }

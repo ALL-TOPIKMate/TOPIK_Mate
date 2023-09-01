@@ -18,6 +18,8 @@ const TypeStudyWr = ({ navigation, route }) => {
 
     const USER = useContext(UserContext)
 
+    // 메모리 누수 방지
+    const isComponentMounted = useRef(true)
 
 
     // 멀티미디어
@@ -67,6 +69,8 @@ const TypeStudyWr = ({ navigation, route }) => {
 
         // unmount
         return () => {
+            isComponentMounted.current = false
+
             USER.updateUserWrongColl(rawProblems.current, userProblems.current)
         }
     }, [])
@@ -78,7 +82,11 @@ const TypeStudyWr = ({ navigation, route }) => {
         if (problems.length) {
 
             ImageLoading().then(() => {
-                setIsReady(true)
+
+                if(isComponentMounted.current){
+                    setIsReady(true)
+                }
+                
             })
 
         }
@@ -88,7 +96,7 @@ const TypeStudyWr = ({ navigation, route }) => {
     useEffect(() => {
 
         // 모든 문제를 풀었다면 더 가져옴
-        if (currentIndex == problems.length) {
+        if (currentIndex == problems.length && isComponentMounted.current) {
 
             setIsReady(false)
             loadProblems()
@@ -115,7 +123,7 @@ const TypeStudyWr = ({ navigation, route }) => {
                 const data = doc.data();
                 prblist.push(data);
             });
-            if (temp_snapshot.empty) {
+            if (temp_snapshot.empty && isComponentMounted.current) {
                 setprbstatus(false);
             }
 
@@ -129,7 +137,10 @@ const TypeStudyWr = ({ navigation, route }) => {
                     lastVisible.current = null
                 }
 
-                setProblems([...problems, ...prblist]);
+                if(isComponentMounted.current){
+                    setProblems([...problems, ...prblist]);
+                }
+                
 
             } else {
                 console.log('No more problems to load.');

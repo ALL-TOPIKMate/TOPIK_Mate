@@ -19,7 +19,7 @@ import TypeProbChoice from './component/TypeProbChoice';
 Sound.setCategory('Playback');
 
 
-const audioURL = async (problem, audiosRef, audioStorage, audioCount, setIsAudReady) => {
+const audioURL = async (problem, audiosRef, audioStorage, audioCount, setIsAudReady, isComponentMounted) => {
     const PRB_RSC = problem.PRB_ID.substr(0, problem.PRB_ID.length - 3)
 
     try {
@@ -35,7 +35,7 @@ const audioURL = async (problem, audiosRef, audioStorage, audioCount, setIsAudRe
 
                 audioCount.current--
 
-                if (audioCount.current == 0) {
+                if (audioCount.current == 0 && isComponentMounted.current) {
                     setIsAudReady(true)
                 }
             })
@@ -77,14 +77,14 @@ const imagesURL = async (problem, imagesRef, imageStorage) => {
 }
 
 
-async function loadMultimedia(problems, imagesRef, audiosRef, imageStorage, audioStorage, setIsAudReady, currentIndex, audioCount) {
+async function loadMultimedia(problems, imagesRef, audiosRef, imageStorage, audioStorage, setIsAudReady, currentIndex, audioCount, isComponentMounted) {
     try {
         for (let i = currentIndex; i < problems.length; i++) {
 
             const imageIndex = problems[i].PRB_CHOICE1.search(".png")
 
             if (problems[i].AUD_REF) {
-                await audioURL(problems[i], audiosRef, audioStorage, audioCount, setIsAudReady)
+                await audioURL(problems[i], audiosRef, audioStorage, audioCount, setIsAudReady, isComponentMounted)
             } if (imageIndex != -1) {
                 await imagesURL(problems[i], imagesRef, imageStorage)
             }
@@ -100,6 +100,9 @@ const TypeStudyLc = ({ navigation, route }) => {
 
 
     const USER = useContext(UserContext)
+
+    // 메모리 누수 방지
+    const isComponentMounted = useRef(true)
 
 
     // 멀티미디어
@@ -161,6 +164,8 @@ const TypeStudyLc = ({ navigation, route }) => {
 
         // unmount
         return () => {
+            isComponentMounted.current = false
+
             // 모든 오디오 release 해줌
             Object.keys(audiosRef.current).forEach((key) => {
                 audiosRef.current[key].release()
@@ -186,8 +191,11 @@ const TypeStudyLc = ({ navigation, route }) => {
 
 
             // 화면 준비상태
-            setIsImageReady(false)
-            setIsAudReady(false)
+            if(isComponentMounted.current){
+                setIsImageReady(false)
+                setIsAudReady(false)
+            }
+           
         }
 
     }, [currentIndex]);
@@ -200,8 +208,12 @@ const TypeStudyLc = ({ navigation, route }) => {
 
             // console.log(problems)
             // console.log(audioCount.current)
-            loadMultimedia(problems, imagesRef, audiosRef, imageStorage, audioStorage, setIsAudReady, currentIndex, audioCount).then(() => {
-                setIsImageReady(true)
+            loadMultimedia(problems, imagesRef, audiosRef, imageStorage, audioStorage, setIsAudReady, currentIndex, audioCount, isComponentMounted).then(() => {
+                
+                if(isComponentMounted.current){
+                    setIsImageReady(true)
+                }
+                
             })
 
         }
@@ -251,7 +263,7 @@ const TypeStudyLc = ({ navigation, route }) => {
                     audioCount.current++
                 }
             });
-            if (temp_snapshot.empty) {
+            if (temp_snapshot.empty && isComponentMounted.current) {
                 setprbstatus(false);
             }
 
@@ -259,17 +271,29 @@ const TypeStudyLc = ({ navigation, route }) => {
                 const lastDoc = temp_snapshot.docs[temp_snapshot.docs.length - 1];
                 if (lastDoc) {
                     const lastDocId = lastDoc.id;
-                    setLast(lastDocId);
+
+                    if(isComponentMounted.current){
+                        setLast(lastDocId);
+                    }
+                    
                 } else {
-                    setLast(null);
+                    if(isComponentMounted.current){
+                        setLast(null);
+                    }
                 }
 
 
-                setProblems([...problems, ...prblist]);
-
+                if(isComponentMounted.current){
+                    setProblems([...problems, ...prblist]);
+                }
+                
             } else {
                 console.log('No more problems to load.');
-                setLast(null);
+
+                if(isComponentMounted.current){
+                    setLast(null);
+                }
+                
             }
         } catch (error) {
             console.log(error);

@@ -20,7 +20,7 @@ Sound.setCategory('Playback');
 
 
 // 오디오 로드
-const audioURL = async (problem, audiosRef, audioStorage, countAudio, setIsReadyAudio) => {
+const audioURL = async (problem, audiosRef, audioStorage, countAudio, setIsReadyAudio, isComponentMounted) => {
     const PRB_RSC = problem.PRB_ID.substr(0, problem.PRB_ID.length - 3)
 
     try {
@@ -30,7 +30,7 @@ const audioURL = async (problem, audiosRef, audioStorage, countAudio, setIsReady
 
                 countAudio.current--
 
-                if (countAudio.current == 0) {
+                if (countAudio.current == 0 && isComponentMounted.current) {
                     setIsReadyAudio(true)
                 }
             })
@@ -88,7 +88,7 @@ const imagesURL = async (problem, imagesRef, imageStorage) => {
 
 
 // 멀티미디어 로드
-const loadMultimedia = async (problem, audiosRef, imagesRef, audioStorage, imageStorage, countAudio, setIsReadyAudio, nextBtn) => {
+const loadMultimedia = async (problem, audiosRef, imagesRef, audioStorage, imageStorage, countAudio, setIsReadyAudio, nextBtn, isComponentMounted) => {
     try {
         let size = problem.length
 
@@ -96,7 +96,7 @@ const loadMultimedia = async (problem, audiosRef, imagesRef, audioStorage, image
             const imageIndex = problem[i].PRB_CHOICE1.search(".png")
 
             if (problem[i].AUD_REF) {
-                await audioURL(problem[i], audiosRef, audioStorage, countAudio, setIsReadyAudio)
+                await audioURL(problem[i], audiosRef, audioStorage, countAudio, setIsReadyAudio, isComponentMounted)
             } if (problem[i].IMG_REF) {
                 await imageURL(problem[i], imagesRef, imageStorage)
             } if (imageIndex != -1) {
@@ -114,7 +114,7 @@ const loadMultimedia = async (problem, audiosRef, imagesRef, audioStorage, image
 
 
 // 선택 학습/랜덤 학습 문제 불러오기
-async function loadProblem(wrongCollection, problems, setProblems, userTag, lastVisible, typeIndex, setTypeIndex, countAudio) {
+async function loadProblem(wrongCollection, problems, setProblems, userTag, lastVisible, typeIndex, setTypeIndex, countAudio, isComponentMounted) {
     try {
         countAudio.current = 0
 
@@ -143,13 +143,20 @@ async function loadProblem(wrongCollection, problems, setProblems, userTag, last
         if (data.length == 0) {
 
             lastVisible.current = null
-            setTypeIndex(typeIndex + 1)
+
+            if(isComponentMounted.current){
+                setTypeIndex(typeIndex + 1)
+            }
+            
 
         } else {
 
             lastVisible.current = data[data.length - 1].PRB_ID
-            setProblems([...problems, ...data])
 
+            if(isComponentMounted.current){
+                setProblems([...problems, ...data])
+            }
+            
         }
 
     } catch (error) {
@@ -159,16 +166,20 @@ async function loadProblem(wrongCollection, problems, setProblems, userTag, last
 
 // 쓰기히스토리 문제 한번에 불러오기
 // 최대 10개의 문제
-function loadProblemWr(wrongCollection, setProblems){
+function loadProblemWr(wrongCollection, setProblems, isComponentMounted){
     try{
         
         wrongCollection.get().then( querySnapshot => {
-            setProblems(querySnapshot.docs.map(doc => {
-                return {
-                    DATE: doc.id,
-                    ...doc.data()
-                }
-            }))
+            if(isComponentMounted.current){
+
+                setProblems(querySnapshot.docs.map(doc => {
+                    return {
+                        DATE: doc.id,
+                        ...doc.data()
+                    }
+                }))
+
+            }
         })
 
     }catch(err){
@@ -186,6 +197,8 @@ const WrongStudyScreen = ({ route, navigation }) => {
     // 유저 정보
     const USER = useContext(UserContext)
 
+    // 메모리 누수 방지
+    const isComponentMounted = useRef(true)
 
 
     // 멀티미디어
@@ -273,6 +286,8 @@ const WrongStudyScreen = ({ route, navigation }) => {
 
         // unmount
         return () => {
+            isComponentMounted.current = false
+
             // console.log(rawProblems.current)
             // console.log(userProblems.current)
             USER.updateUserWrongColl(rawProblems.current, userProblems.current)
@@ -284,15 +299,15 @@ const WrongStudyScreen = ({ route, navigation }) => {
 
         if (route.params.key === "write") {
 
-            loadProblemWr(wrongCollection, setProblems)
+            loadProblemWr(wrongCollection, setProblems, isComponentMounted)
 
         }
-        else if (nextBtn == problems.length) {
+        else if (nextBtn == problems.length && isComponentMounted.current) { // 선택, 랜덤 학습
 
             setIsReadyImage(false)
             setIsReadyAudio(false)
 
-            loadProblem(wrongCollection, problems, setProblems, route.params.userTag, lastVisible, typeIndex, setTypeIndex, countAudio)
+            loadProblem(wrongCollection, problems, setProblems, route.params.userTag, lastVisible, typeIndex, setTypeIndex, countAudio, isComponentMounted)
         }
 
     }, [nextBtn])
@@ -304,11 +319,11 @@ const WrongStudyScreen = ({ route, navigation }) => {
         if (typeIndex > 0) {
             // console.log(typeIndex)
             // 모든 유형의 문제를 모두 풀었다면
-            if (typeIndex >= route.params.userTag.length) {
+            if (typeIndex >= route.params.userTag.length && isComponentMounted.current) {
                 setResultscreen(true)
             } else {
                 // 아직 문제가 남아있다면
-                loadProblem(wrongCollection, problems, setProblems, route.params.userTag, lastVisible, typeIndex, setTypeIndex, countAudio)
+                loadProblem(wrongCollection, problems, setProblems, route.params.userTag, lastVisible, typeIndex, setTypeIndex, countAudio, isComponentMounted)
             }
         }
 
@@ -322,11 +337,15 @@ const WrongStudyScreen = ({ route, navigation }) => {
         if (problems.length) {
             // console.log(problems)
             // console.log(countAudio.current)
-            loadMultimedia(problems, audiosRef, imagesRef, audioStorage, imageStorage, countAudio, setIsReadyAudio, nextBtn).then(() => {
-                setIsReadyImage(true)
+            loadMultimedia(problems, audiosRef, imagesRef, audioStorage, imageStorage, countAudio, setIsReadyAudio, nextBtn, isComponentMounted).then(() => {
+                
+                if(isComponentMounted.current){
+                    setIsReadyImage(true)
+                }
+                
 
                 // 오디오가 없을 경우
-                if (countAudio.current == 0) {
+                if (countAudio.current == 0 && isComponentMounted.current) {
                     setIsReadyAudio(true)
                 }
             })

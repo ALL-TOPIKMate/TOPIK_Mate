@@ -37,7 +37,10 @@ async function getWriteScore(write){
 const MockStudyScreen = ({navigation, route}) =>{
 
     const USER = useContext(UserContext)
-
+    
+    // 메모리 누수 방지
+    const isComponentMounted = useRef(true)
+        
 
     const storage = getStorage(firebase);
     
@@ -65,16 +68,17 @@ const MockStudyScreen = ({navigation, route}) =>{
         try {
             const data = await problemCollection.get();
 
-            let rawData = data.docs.map(doc => {
-                return (
-                    doc.data()
-                )
-            });
+            let rawData = data.docs.map(doc => doc.data())
 
 
             // deep copy
             rawProblems.current = JSON.parse(JSON.stringify(rawData))
-            setProblems(rawData)
+
+    
+            if(isComponentMounted.current){
+                setProblems(rawData)
+            }
+    
         } catch (error) {
             console.log(error.message);
         }
@@ -113,7 +117,10 @@ const MockStudyScreen = ({navigation, route}) =>{
                     })
                 })
                 
-                setImages(data);
+
+                if(isComponentMounted.current){
+                    setImages(data);
+                }
                 
             });
 
@@ -155,14 +162,17 @@ const MockStudyScreen = ({navigation, route}) =>{
 
                         countAudio.current -= 1
 
-                        if(countAudio.current == 0){
+                        if(countAudio.current == 0 && isComponentMounted.current){
                             setReadyAudio(true)       
                          }
                     })
                 })
             })
 
-            setAudios(data);
+            if(isComponentMounted.current){
+                setAudios(data);
+            }
+            
             
         });
 
@@ -182,21 +192,22 @@ const MockStudyScreen = ({navigation, route}) =>{
     /** 데이터 로딩 처리 */
     useEffect(() => {
 
-        // let isComponentMounted = true; // 메모리 누수 방지
-        // setReady(false);
-
-        
-
-
         dataLoading();
         imagesLoading(imageRef).then(()=>{
-            setReadyImage(true)
+            
+            if(isComponentMounted.current){
+                setReadyImage(true)
+            }
+
         })
         audiosLoading(audioRef);
 
   
 
         return () => {
+            isComponentMounted.current = false
+
+
             // 사용자 틀린 문제 DB 업데이트
             // console.log(rawProblems.current)
             // console.log(prevProblems.current)
@@ -301,7 +312,10 @@ const MockStudyScreen = ({navigation, route}) =>{
             
 
             getWriteScore(write).then(()=> {
-                setResultscreen(true)
+                
+                if(isComponentMounted.current){
+                    setResultscreen(true)
+                }
             })
             
         }

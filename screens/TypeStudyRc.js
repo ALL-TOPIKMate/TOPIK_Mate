@@ -19,6 +19,9 @@ const TypeStudyRc = ({ navigation, route }) => {
 
     const USER = useContext(UserContext)
 
+    // 메모리 누수 방지
+    const isComponentMounted = useRef(true)
+
 
     // 멀티미디어
     const storage = getStorage(firebase);
@@ -66,6 +69,7 @@ const TypeStudyRc = ({ navigation, route }) => {
 
         // unmount
         return () => {
+            isComponentMounted.current = false
             // console.log(rawProblems.current)
             // console.log(prbchoice.current)
 
@@ -81,7 +85,11 @@ const TypeStudyRc = ({ navigation, route }) => {
         if (problems.length) {
             // 이미지 로드
             ImageLoading().then(() => {
-                setIsReady(true)
+                
+                if(isComponentMounted.current){
+                    setIsReady(true)
+                }
+                
             })
         }
     }, [problems]);
@@ -90,7 +98,7 @@ const TypeStudyRc = ({ navigation, route }) => {
     useEffect(() => {
         
         // 문제를 다 읽었을 경우 더 불러옴
-        if(currentIndex == problems.length){
+        if(currentIndex == problems.length && isComponentMounted.current){
 
             loadProblems()
             setIsReady(false)
@@ -116,7 +124,7 @@ const TypeStudyRc = ({ navigation, route }) => {
                 const data = doc.data();
                 prblist.push(data);
             });
-            if (temp_snapshot.empty) {
+            if (temp_snapshot.empty && isComponentMounted.current) {
                 setprbstatus(false);
             }
 
@@ -125,16 +133,29 @@ const TypeStudyRc = ({ navigation, route }) => {
                 // console.log('문제 끝: ', lastDoc.id);
                 if (lastDoc) {
                     const lastDocId = lastDoc.id;
-                    setLast(lastDocId);
+
+                    if(isComponentMounted.current){
+                        setLast(lastDocId);
+                    }
+                    
                 } else {
-                    setLast(null);
+                    if(isComponentMounted.current){
+                        setLast(null);
+                    }
+                    
                 }
 
-                setProblems([...problems, ...prblist]);
+                if(isComponentMounted.current){
+                    setProblems([...problems, ...prblist]);
+                }
+                
 
             } else {
                 console.log('No more problems to load.');
-                setLast(null);
+                if(isComponentMounted.current){
+                    setLast(null);
+                }
+                
             }
         } catch (error) {
             console.log(error);
