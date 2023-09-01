@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useContext } from 'react';
-import { View, Text, Button, StyleSheet, TouchableOpacity, ScrollView, Alert } from 'react-native'
+import { View, Text, Button, StyleSheet, TouchableOpacity, ScrollView, Alert, RefreshControl } from 'react-native'
 
 
 import firestore from '@react-native-firebase/firestore';
@@ -11,9 +11,25 @@ import UserContext from '../lib/UserContext';
 import { typeName } from '../lib/utils';
 
 
+
+// 선택학습 유형 목록 refresh component
+const scrollViewRefresh = (refresh, setRefresh) => {
+    const refreshControl = () => {
+        setRefresh(true)
+    }
+
+    return (
+        <RefreshControl refreshing = {refresh} onRefresh = { refreshControl } />
+    )
+}
+
+
 const WrongScreen = ({ navigation }) => {
 
     const USER = useContext(UserContext)
+
+    // scroll view 새로고침 감지
+    const [refresh, setRefresh] = useState(false)
 
 
     // wrong collection
@@ -41,12 +57,26 @@ const WrongScreen = ({ navigation }) => {
 
     useEffect(() => {
         if (USER.uid) {
-
+            
             loadTypeList();
 
         }
 
     }, []);
+
+
+    useEffect(() => {
+        
+        // pull down시, data refresh
+        if(refresh){
+            loadTypeList().then(() => {
+                setRefresh(false)
+                console.log("success to load")
+                
+            })
+        }
+
+    }, [refresh])
 
 
     // load tag list
@@ -58,7 +88,7 @@ const WrongScreen = ({ navigation }) => {
                 documentSnapshot.forEach(doc => {
                     if (doc.id != "Wrong") {
                         typeList.push({
-                            type: doc.id,
+                            tag: doc.id,
                             section: "LS",
                             choice: false
                         })
@@ -70,7 +100,7 @@ const WrongScreen = ({ navigation }) => {
                 documentSnapshot.forEach(doc => {
                     if (doc.id != "Wrong") {
                         typeList.push({
-                            type: doc.id,
+                            tag: doc.id,
                             section: "RD",
                             choice: false
                         })
@@ -82,7 +112,7 @@ const WrongScreen = ({ navigation }) => {
                 documentSnapshot.forEach(doc => {
                     if (doc.id != "Wrong") {
                         typeList.push({
-                            type: doc.id,
+                            tag: doc.id,
                             section: "WR",
                             choice: false
                         })
@@ -104,9 +134,9 @@ const WrongScreen = ({ navigation }) => {
 
         for (var i = 0; i < data.length; i++) {
             if (data[i].choice && (listen && data[i].section == "LS")) {
-                userTag.push({ tag: data[i].type, section: "LS" });
+                userTag.push({ tag: data[i].tag, section: "LS" });
             } else if (data[i].choice && (read && data[i].section == "RD")) {
-                userTag.push({ tag: data[i].type, section: "RD" });
+                userTag.push({ tag: data[i].tag, section: "RD" });
             }
         }
 
@@ -116,17 +146,27 @@ const WrongScreen = ({ navigation }) => {
 
     // 모든 유형 반환 (랜덤 학습)
     const userAllTag = () => {
-        var list = []
+        var userTag = []
 
-        for (var i = 0; i < data.length; i++) {
-            if (data[i].section == "LS") {
-                list.push({ tag: data[i].type, section: "LS" })
-            } else if (data[i].section == "RD") {
-                list.push({ tag: data[i].type, section: "RD" })
-            }
+
+        // 쓰기 영역을 제외한 유형
+        var list = data.filter(usertag => {
+            return usertag.section != "WR"
+        })
+
+
+        // 유형을 random하게 뽑음
+        let size = list.length
+        while(size--){
+            // min ~ max 사이의 값을 추출
+            // Math.random()*(max - min + 1) + min 
+            const rd = Math.ceil(Math.random()*(size + 1))
+
+            userTag.push(list[rd])
+            list.splice(rd, 1)
         }
 
-        return list;
+        return userTag
     }
 
 
@@ -138,7 +178,7 @@ const WrongScreen = ({ navigation }) => {
                     return (
                         <TouchableOpacity key={index} onPress={() => { data.choice = !(data.choice); reRender(!render); }} style={[styles.tagList, data.choice ? styles.buttonSelected : styles.buttonNotSelected]}>
                             <Text style={{ flex: 5 }}>
-                                {typeName(USER.level, data.section, data.type)}
+                                {typeName(USER.level, data.section, data.tag)}
                             </Text>
                             <View style={{ flex: 1 }} />
                         </TouchableOpacity>
@@ -150,9 +190,9 @@ const WrongScreen = ({ navigation }) => {
                 data.map((data, index) => {
                     if (data.section == "WR") {
                         return (
-                            <TouchableOpacity key={index} onPress={() => { navigation.push("WriteHistory", {section: "WR", tag: data.type}) }} style={styles.tagList}>
+                            <TouchableOpacity key={index} onPress={() => { navigation.push("WriteHistory", {section: "WR", tag: data.tag}) }} style={styles.tagList}>
                                 <Text style={{ flex: 5 }}>
-                                    {typeName(USER.level, data.section, data.type)}
+                                    {typeName(USER.level, data.section, data.tag)}
                                 </Text>
                                 <View style={{ flex: 1 }} />
                             </TouchableOpacity>
@@ -185,7 +225,7 @@ const WrongScreen = ({ navigation }) => {
             <View style={{ padding: 16 }}>
                 {
                     selectList &&
-                    <ScrollView>
+                    <ScrollView refreshControl = {scrollViewRefresh( refresh, setRefresh )}>
                         <Text style={styles.titleText}>선택 학습</Text>
                         <Text />
                         <Text>태그 선택</Text>

@@ -113,7 +113,7 @@ const loadMultimedia = async (problem, audiosRef, imagesRef, audioStorage, image
 
 
 
-// 선택학습 문제 불러오기
+// 선택 학습/랜덤 학습 문제 불러오기
 async function loadProblem(wrongCollection, problems, setProblems, userTag, lastVisible, typeIndex, setTypeIndex, countAudio) {
     try {
         countAudio.current = 0
@@ -256,22 +256,16 @@ const WrongStudyScreen = ({ route, navigation }) => {
     const countAudio = useRef(0)
 
 
-    // 선택 학습
+    // 선택 학습, 랜덤 학습
     // 현재 userTag의 인덱스를 가르킴 ex. [{tag: 001, section: "LS"} ,{tag: 003, section: "LS"}, {tag: 002, section: "RD"}]
     const [typeIndex, setTypeIndex] = useState(0)
 
 
-    // 선택 학습
+    // 선택 학습, 랜덤 학습
     // 로드한 데이터의 마지막 문제를 가르킴
     const lastVisible = useRef(null);
 
-    // 랜덤 학습
-    // 로드한 데이터의 마지막 문제를 가르킴
-    const lastVisibleList = useRef([]);
 
-    // 랜덤 학습
-    // 해당 유형의 문제를 다 읽었는지 판단
-    const isAllProblemSolving = useRef([]);
 
 
 
@@ -307,7 +301,7 @@ const WrongStudyScreen = ({ route, navigation }) => {
     // 현재 풀이하고 있는 유형을 가르킴
     useEffect(() => {
 
-        if (problems.length) {
+        if (typeIndex > 0) {
             // console.log(typeIndex)
             // 모든 유형의 문제를 모두 풀었다면
             if (typeIndex >= route.params.userTag.length) {
