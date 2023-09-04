@@ -63,10 +63,10 @@ const WriteHistoryListScreen = ({route, navigation}) => {
 
         let [hr, min, mill] = time.split(":")
         // console.log(hr, min, mill)
-        hr = hr.replace("0" , "")
-        min = min.replace("0", "")
+        hr = hr[0] == "0" ? hr[1]: hr
+        min = min[0] == "0" ? min[1]: min
 
-        return `${hr.length == 1 ? "오전": "오후"} ${hr}시 ${min}분`
+        return `${parseInt(hr) < 12 ? "오전": "오후"} ${hr}시 ${min}분`
     }
 
     return (
