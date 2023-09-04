@@ -283,7 +283,7 @@ const WrongStudyScreen = ({ route, navigation }) => {
 
 
     useEffect(() => {
-
+        // console.log(route.params.userTag)
         // unmount
         return () => {
             isComponentMounted.current = false
@@ -323,6 +323,9 @@ const WrongStudyScreen = ({ route, navigation }) => {
                 setResultscreen(true)
             } else {
                 // 아직 문제가 남아있다면
+                setIsReadyImage(false)
+                setIsReadyAudio(false)
+
                 loadProblem(wrongCollection, problems, setProblems, route.params.userTag, lastVisible, typeIndex, setTypeIndex, countAudio, isComponentMounted)
             }
         }

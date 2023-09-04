@@ -159,8 +159,8 @@ const WrongScreen = ({ navigation }) => {
         let size = list.length
         while(size--){
             // min ~ max 사이의 값을 추출
-            // Math.random()*(max - min + 1) + min 
-            const rd = Math.ceil(Math.random()*(size + 1))
+            // Math.random()*(max - min) + min 
+            const rd = Math.ceil(Math.random()*size)
 
             userTag.push(list[rd])
             list.splice(rd, 1)
