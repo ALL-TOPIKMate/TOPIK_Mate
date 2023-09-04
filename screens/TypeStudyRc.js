@@ -236,7 +236,12 @@ const TypeStudyRc = ({ navigation, route }) => {
                     </TouchableOpacity>
                 </View>
                 <View>
-                    <ProbMain PRB_MAIN_CONT={problems[currentIndex].PRB_MAIN_CONT} PRB_NUM={currentIndex + 1} />
+                    <ProbMain 
+                        PRB_MAIN_CONT={problems[currentIndex].PRB_MAIN_CONT} 
+                        PRB_NUM={currentIndex + 1} 
+                        PRB_CORRT_ANSW={problems[currentIndex].PRB_CORRT_ANSW}
+                        PRB_USER_ANSW={prbchoice.current[currentIndex] ? prbchoice.current[currentIndex].PRB_USER_ANSW : null}
+                        />
                     {
                         // IMG_REF
                         problems[currentIndex].IMG_REF ?

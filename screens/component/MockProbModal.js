@@ -24,7 +24,12 @@ const MockProbModal = ({ problem, index, setVisible, images, audios }) => {
             <ScrollView style={styles.container}>
 
                 {/* ProbMain */}
-                <ProbMain PRB_MAIN_CONT={problem[index].PRB_MAIN_CONT} PRB_NUM={problem[index].PRB_NUM} />
+                <ProbMain 
+                    PRB_MAIN_CONT={problem[index].PRB_MAIN_CONT} 
+                    PRB_NUM={problem[index].PRB_NUM} 
+                    PRB_CORRT_ANSW={problem[index].PRB_CORRT_ANSW}
+                    PRB_USER_ANSW={problem[index].PRB_USER_ANSW || "0"}
+                    />
 
                 {/* 이미지 */}
                 {

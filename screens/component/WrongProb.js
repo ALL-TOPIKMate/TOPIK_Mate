@@ -33,7 +33,13 @@ export default WrongProb = ({ problem, images, audio, nextBtn, setNextBtn, isSub
 
             {
                 problem.PRB_MAIN_CONT ?
-                <ProbMain PRB_MAIN_CONT = {problem.PRB_MAIN_CONT} PRB_NUM = {problem.PRB_NUM} />: null
+                <ProbMain 
+                    PRB_MAIN_CONT = {problem.PRB_MAIN_CONT} 
+                    PRB_NUM = {problem.PRB_NUM}
+                    PRB_CORRT_ANSW = {problem.PRB_CORRT_ANSW}
+                    PRB_USER_ANSW = {userProblems.current[nextBtn] ? userProblems.current[nextBtn].PRB_USER_ANSW: null}
+
+                    />: null
             }
 
             {
@@ -109,5 +115,4 @@ const styles = StyleSheet.create({
     container:{
         padding: 20,
     },
-
 })

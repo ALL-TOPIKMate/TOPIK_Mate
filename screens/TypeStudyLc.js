@@ -350,7 +350,12 @@ const TypeStudyLc = ({ navigation, route }) => {
                 </View>
 
                 <View>
-                    <ProbMain PRB_NUM={currentIndex + 1} PRB_MAIN_CONT={problems[currentIndex].PRB_MAIN_CONT} />
+                    <ProbMain 
+                        PRB_NUM={currentIndex + 1} 
+                        PRB_MAIN_CONT={problems[currentIndex].PRB_MAIN_CONT} 
+                        PRB_CORRT_ANSW={problems[currentIndex].PRB_CORRT_ANSW}
+                        PRB_USER_ANSW={prbchoice.current[currentIndex] ? prbchoice.current[currentIndex].PRB_USER_ANSW : null}
+                        />
 
                     <AudRef audio={audiosRef.current[problems[currentIndex].AUD_REF]} />
 
