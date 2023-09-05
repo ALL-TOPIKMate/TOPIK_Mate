@@ -61,3 +61,7 @@ buck-out/
 # Ruby / CocoaPods
 /ios/Pods/
 /vendor/bundle/
+
+
+# 구글 클라우드 보안 - key 숨김
+google-services.json
