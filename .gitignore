@@ -64,4 +64,4 @@ buck-out/
 
 
 # 구글 클라우드 보안 - key 숨김
-/android/app/google-services.json
+android/app/google-services.json
