@@ -1,9 +1,13 @@
-import React, {useState, useEffect, useRef } from 'react';
+import React, {useState, useEffect, useRef, useContext } from 'react';
 import { View, StyleSheet } from 'react-native'
 import firebase from '@react-native-firebase/app';
 import firestore from '@react-native-firebase/firestore';
 import { getStorage } from '@react-native-firebase/storage'; // include storage module besides Firebase core(firebase/app)
 import auth from '@react-native-firebase/auth'; // 사용자 정보 가져오기
+import Sound from 'react-native-sound';
+
+
+import UserContext from '../lib/UserContext';
 
 import Loading from './component/Loading';
 import MockProb from './component/MockProb';
@@ -14,111 +18,30 @@ import MockTimer from './component/MockTimer';
 // import 유틸
 import { getNow } from '../utils/DateUtil';
 
-// 현재 로그인한 사용자 정보 가져오기
-const user = auth().currentUser;
-const userEmail = user.email;
+
+Sound.setCategory('Playback');
 
 
-// users 컬렉션으로부터 현재 로그인한 사용자의 도큐먼트 REF GET
-const getUserDocRef = async (email) => {
 
-    try {
-        const querySnapshot = await firestore()
-            .collection('users')
-            .where('email', '==', email)
-            .get();
-
-
-        console.log(`querySnapshot.docs[0].data().u_uid: ${querySnapshot.docs[0].data().u_uid}`);
-        return querySnapshot.docs[0].ref;
-
-    } catch (err) {
-        
-        console.log(err);
-
-        return null;
-    }
-
-}
-
-// 틀린 문제 업데이트
-const updateUserWrongColl = async (email, problems, level) => {
-
-    const userDocRef = await getUserDocRef(email);
-
-    try {
-        const wrongColl = userDocRef.collection(`wrong_${level}`);
+async function getWriteScore(write){
+    let size = write.length
     
-        problems.map((problem) => {
-
-            /* 풀이 기록 확인 */
-            if (problem.USER_CHOICE !== undefined) {
-
-                // 쓰기 영역 문제 처리
-                if (problem.PRB_SECT === 'WR') {
-                    // const tagDoc = wrongColl
-                    //                 .doc('WR_TAG')
-                    //                 .collection('PRB_TAG')
-                    //                 .doc(problem.TAG);
-                    // tagDoc.set({});
-                    // const prbRscList = tagDoc.collection('PRB_RSC_LIST');
-
-                    // const prbDoc = prbRscList.doc(problem.PRB_ID);
-                    // prbDoc.set({});
-
-                    // // 현재 날짜/시간으로 도큐먼트 ID 지정
-                    // prbDoc.collection('PRB_LIST').doc(getNow()).set(problem);
-                } else {
-
-                    if (problem.USER_CHOICE !== problem.PRB_CORRT_ANSW) {
-                        // 틀린 문제 wrong list에 삽입
-    
-                        // 문제 영역, 태그 별 wrong list에 삽입
-                        const sectTagDoc = wrongColl
-                                        .doc(`${problem.PRB_SECT}_TAG`); sectTagDoc.set({});
-
-                        const tagDoc = sectTagDoc
-                                        .collection('PRB_TAG')
-                                        .doc(problem.TAG); tagDoc.set({});
-
-                        // 틀린 문제 컬렉션 삽입
-                        tagDoc.collection('PRB_LIST').doc(problem.PRB_ID).set(problem);
-
-                    } else {
-                        // 맞은 문제 처리
-                        const tagWrongColl = wrongColl
-                                        .doc(`${problem.PRB_SECT}_TAG`)
-                                        .collection('PRB_TAG')
-                                        .doc(problem.TAG)
-                                        .collection('PRB_LIST');
-                        const probRef = tagWrongColl.doc(problem.PRB_ID);
-
-                        probRef.get()
-                            .then((docSnapshot) => {
-                                if (docSnapshot.exists) {
-                                    // 예전에 틀린 문제 맞힘 -> wrong list에서 제거
-                                    probRef.delete().then(() => {
-                                        console.log(`Doc deleted! - ${problem.PRB_ID} in ${tagWrongColl.path}`);
-                                    })
-                                }
-                            })
-                    }
-                }   
-            }
-
-        })
-
-    } catch (err) {
-        console.log(err)
+    for(let i = 0; i < size; i++){
+        write[i].SCORE = 0
+        write[i].ERROR_CONT = "감점요인 입력칸입니다."
     }
 
 
 }
-
-
 
 const MockStudyScreen = ({navigation, route}) =>{
+
+    const USER = useContext(UserContext)
     
+    // 메모리 누수 방지
+    const isComponentMounted = useRef(true)
+        
+
     const storage = getStorage(firebase);
     
     // 콜렉션 불러오기
@@ -132,19 +55,38 @@ const MockStudyScreen = ({navigation, route}) =>{
 
     /** 문제 데이터 로드 */
     const [problems, setProblems] = useState([]); // json
-    const prevProblems = useRef([]);
+    const prevProblems = useRef([]); // 유저 답안 포함한 문제
+    const rawProblems = useRef([]); // 원본 문제 (손상 X)
+    // 오디오 개수 카운팅
+    const countAudio = useRef();
+
+
+
 
     const dataLoading = async () => {
             
         try {
             const data = await problemCollection.get();
-            setProblems(data.docs.map(doc => ({...doc.data()})));
+
+            let rawData = data.docs.map(doc => doc.data())
+
+
+            // deep copy
+            rawProblems.current = JSON.parse(JSON.stringify(rawData))
+
+    
+            if(isComponentMounted.current){
+                setProblems(rawData)
+            }
+    
         } catch (error) {
             console.log(error.message);
         }
     }
     
 
+
+    
     // 문제 REF 설정
     useEffect(() => {
         prevProblems.current = problems;
@@ -175,7 +117,10 @@ const MockStudyScreen = ({navigation, route}) =>{
                     })
                 })
                 
-                setImages(data);
+
+                if(isComponentMounted.current){
+                    setImages(data);
+                }
                 
             });
 
@@ -199,20 +144,35 @@ const MockStudyScreen = ({navigation, route}) =>{
     const audiosLoading = async (audioRef) =>  { 
         
         await audioRef.listAll().then(res => {
-            
-            
             const data = {}
+            countAudio.current = res.items.length
             
             res.items.forEach(item => {
                 item.getDownloadURL().then(url => {
                     
                     data[item.name] = {};
-                    data[item.name].url = url;
-                    
+                    data[item.name].url = url
+                    data[item.name].URL = new Sound(url, null, err => {
+                        if(err){
+                            console.log("Failed to load the sound" ,err);
+                            return undefined
+                        }
+
+                        // 객체 생성 성공
+
+                        countAudio.current -= 1
+
+                        if(countAudio.current == 0 && isComponentMounted.current){
+                            setReadyAudio(true)       
+                         }
+                    })
                 })
             })
 
-            setAudios(data);
+            if(isComponentMounted.current){
+                setAudios(data);
+            }
+            
             
         });
 
@@ -226,42 +186,52 @@ const MockStudyScreen = ({navigation, route}) =>{
     
 
     // 데이터 준비 여부
-    const [ready, setReady] = useState(false);
-    
+    const [readyImage, setReadyImage] = useState(false);
+    const [readyAudio, setReadyAudio] = useState(false);
     
     /** 데이터 로딩 처리 */
     useEffect(() => {
 
-        // let isComponentMounted = true; // 메모리 누수 방지
-        // setReady(false);
-        
         dataLoading();
-        imagesLoading(imageRef);
+        imagesLoading(imageRef).then(()=>{
+            
+            if(isComponentMounted.current){
+                setReadyImage(true)
+            }
+
+        })
         audiosLoading(audioRef);
 
-        // 데이터 로딩
-        // loadWholeData();
-
-        // if (prevProblems.current.length && prevImages.current.length && prevAudios.current.length) {
-        //     setReady(true); // 데이터 준비 완료
-        // }
-
-        // 데이터 준비
-        setTimeout(() => {
-            // console.log(prevAudios.current.length);
-            setReady(true);
-        }, 3000); // 3초간 로딩
-
+  
 
         return () => {
+            isComponentMounted.current = false
+
+
             // 사용자 틀린 문제 DB 업데이트
-            updateUserWrongColl(userEmail, prevProblems.current, route.params.level.toLowerCase());
+            // console.log(rawProblems.current)
+            // console.log(prevProblems.current)
+            USER.updateUserWrongColl(rawProblems.current, prevProblems.current)
         }
 
     }, []);
 
+    useEffect(()=>{
 
-    
+        if(readyImage && readyAudio){
+            console.log("로드 완료")
+        }else if(readyImage){
+            console.log("오디오 로드 대기중")
+        }else if(readyAudio){
+            console.log("이미지 로드 대기중")
+        }
+
+    }, [readyImage, readyAudio])
+
+
+
+
+    const [resultscreen, setResultscreen] = useState(false)
     const [isEnd, setIsEnd] = useState(false); // 타임 아웃 여부
     
 
@@ -279,12 +249,19 @@ const MockStudyScreen = ({navigation, route}) =>{
             if (newArr !== undefined) {
 
                 // 직전 풀이한 문제의 사용자 선택 저장
-                newArr[index + direction]['USER_CHOICE'] = choice;
-                newArr[index + direction]['USER_CHOICE2'] = choice2;
+
+                if(problems[index + direction].PRB_SECT == "WR" && problems[index + direction].TAG == "001" || problems[index + direction] == "002"){
+                    newArr[index + direction]['PRB_USER_ANSW'] = choice;
+                    newArr[index + direction]['PRB_USER_ANSW2'] = choice2;
+                }else{
+                    newArr[index + direction]['PRB_USER_ANSW'] = choice;
+                }
+                
                 setProblems(newArr);
                 
+                
                 // console.log(
-                //     `updated ${index + direction}: ${newArr[index + direction].USER_CHOICE}`
+                //     `updated ${index + directAon}: ${newArr[index + direction].PRB_USER_aNSW}`
                 //     );
                         
             }
@@ -323,16 +300,36 @@ const MockStudyScreen = ({navigation, route}) =>{
             });
         }
     }, [isEnd, index]);
+
+
+    useEffect(() => {
+        // 모든 문제를 다 풀었을 경우 
+        // 쓰기영역 문제가 존재하면 채점 후 결과화면(모달창) 보여주기
+        if(problems.length && (isEnd || index === prevProblems.current.length)){
+            /* 
+                쓰기영역 채점은 여기서
+            */
+            
+
+            getWriteScore(write).then(()=> {
+                
+                if(isComponentMounted.current){
+                    setResultscreen(true)
+                }
+            })
+            
+        }
+    }, [listen, read, write])
                 
 
 
     /** 출력 화면 */ 
-    if (!ready) {
+    if (!readyImage || !readyAudio) {
         // 로딩 화면
         return (
             <Loading />
         )
-    } else if (ready && !isEnd && index !== prevProblems.current.length) {
+    } else if (!isEnd && index !== prevProblems.current.length) {
         // 문제 풀이 화면
         return (
             <View style={styles.container}>
@@ -345,9 +342,9 @@ const MockStudyScreen = ({navigation, route}) =>{
                 {/* 문제 풀이 영역 */}
                 <MockProb
                     problem={prevProblems.current[index]}
-                    choice={prevProblems.current[index].USER_CHOICE}
+                    choice={prevProblems.current[index].PRB_USER_ANSW || null}
                     setChoice={setChoice}
-                    choice2={prevProblems.current[index].USER_CHOICE2}
+                    choice2={prevProblems.current[index].PRB_USER_ANSW2 || null}
                     setChoice2={setChoice2}
                     index={index}
                     setIndex={setIndex}
@@ -356,11 +353,12 @@ const MockStudyScreen = ({navigation, route}) =>{
                     setDirection={setDirection}
                     images={prevImages}
                     audios={prevAudios}
+
+                    key = {`MOCKSCREEN${index}`} // MockProb 컴포넌트 구분 (audio 객체)
                 />
             </View>
         );
-    } else if (isEnd || index === prevProblems.current.length) {
-        // 결과 테이블 화면
+    }else if(resultscreen){
         return (
             <MockResult
                 level={route.params.level}
@@ -370,8 +368,13 @@ const MockStudyScreen = ({navigation, route}) =>{
                 prevImages={prevImages}
                 prevAudios={prevAudios}
             />
+        )
+    }else if (isEnd || index === prevProblems.current.length) {
+        // 결과 테이블 화면 구성을 위한 서술형 채점
+        return (
+            <Loading />
         );
-    }     
+    }
 }
 
 
@@ -382,14 +385,6 @@ const styles = StyleSheet.create({
         padding: 20,
     },
 
-    button:{
-        flex: 3,
-        borderRadius: 10,
-        padding: 16,
-        backgroundColor: '#BBD6B8',
-    },
-
-    text: { textAlign: 'center' },
 })
 
 

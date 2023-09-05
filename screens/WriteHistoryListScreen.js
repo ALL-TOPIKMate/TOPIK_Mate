@@ -1,58 +1,84 @@
-import React, {useState, useEffect} from "react";
+import React, {useState, useEffect, useContext} from "react";
 import {View, Text, ScrollView, TouchableOpacity, StyleSheet} from "react-native";
 import firestore from '@react-native-firebase/firestore';
+import UserContext from "../lib/UserContext";
+import { typeName } from "../lib/utils";
+
 
 
 const WriteHistoryListScreen = ({route, navigation}) => {
     
     // 유저 정보
-    const user = route.params.user
+    const USER = useContext(UserContext)
 
+
+    // 불러온 데이터
     const [data, setData] = useState([])
 
 
+
     // 최대 10문제까지만 저장 
-    // 유저가 고른 회차의 문제 도큐먼트를 불러옴 route.params.userRsc+route.params.userPrbNum
     const wrongCollection = firestore().collection("users")
-                            .doc(user.userId)
+                            .doc(USER.uid)
                             .collection("wrong_lv2")
                             .doc("WR_TAG")
                             .collection("PRB_TAG")
-                            .doc(route.params.userTag.tag)
+                            .doc(route.params.tag)
                             .collection("PRB_RSC_LIST")
                             .doc(route.params.PRB_ID)
                             .collection("PRB_LIST")
    
    
     useEffect(()=>{
-        async function dataLoading(){
-            try{
-                let problemList = []
-                const data = await wrongCollection.get(); // 요청한 데이터가 반환되면 다음 줄 실행
-                
-                data.docs.forEach((doc) => {problemList.push({...doc._data, DATE: doc.id})})
-            
-                // console.log(problemList)
-                setData(problemList)
-            }catch(error){
-                console.log(error.message);
-            }    
-        }
 
         dataLoading();
+
     }, []);
 
+
+    function dataLoading(){
+        try{
+
+            wrongCollection.get().then( querySnapshot => {
+                setData(querySnapshot.docs.map(doc => {
+                    return {
+                        DATE: doc.id,
+                        ...doc.data()
+                    }
+                }))
+            })
+
+        }catch(error){
+            console.log(error.message);
+        }    
+    }
+
+
+    function getDay(date){
+        return date.split(" ")[0]
+    }
+
+    function getTime(date){
+        const time = date.split(" ")[1]
+
+        let [hr, min, mill] = time.split(":")
+        // console.log(hr, min, mill)
+        hr = hr[0] == "0" ? hr[1]: hr
+        min = min[0] == "0" ? min[1]: min
+
+        return `${parseInt(hr) < 12 ? "오전": "오후"} ${hr}시 ${min}분`
+    }
+
     return (
-        <View style = {{flex: 1, padding: 20}}>
+        <View style = {styles.container}>
             <View style = {{flex: 1}}>
                 <Text style = {{fontWeight: "bold", fontSize: 20}}>
-                    {route.params.userTag.tagName}
+                    {typeName(2, "WR", route.params.tag)}
                 </Text>
             </View>
-            <View style = {{flex: 1, paddingVertical: 10}}>
+            <View style = {{flex: 1}}>
                 <Text> 선택한 문제는 </Text>
-                <Text> {route.params.PRB_RSC} </Text>
-                <Text> {route.params.PRB_ID}번 입니다 </Text>
+                <Text> {route.params.PRB_RSC} {route.params.PRB_NUM}번입니다</Text>
             </View> 
 
             <View style = {{flex: 8}}>
@@ -60,17 +86,13 @@ const WriteHistoryListScreen = ({route, navigation}) => {
                     {
                         data.map((data, index)=>{
                             return (
-                                <TouchableOpacity key = {index} style = {styles.tagList} onPress = {()=>{navigation.push("WrongStudy", {key: "write", order: index, userTag: route.params.userTag, PRB_ID: route.params.PRB_ID, user: user})}}>
-                                    <Text style = {{flex: 5}}>
-                                        {data.DATE}
+                                <TouchableOpacity key = {index} style = {styles.buttonList} onPress = {()=>{navigation.push("WrongStudy", {key: "write", order: index, userTag: route.params.tag, PRB_ID: route.params.PRB_ID})}}>
+                                    <Text style = {{fontSize: 16}}>
+                                        {getDay(data.DATE)}
                                     </Text>
-                                    <View style = {{flex: 1.5, flexDirection: "column"}}>
-                                        <Text/>
-                                        <Text style = {{fontSize: 10}}>
-                                        score {data.SCORE}/{data.PRB_POINT}
+                                    <Text style = {{fontSize: 14}}>
+                                        {getTime(data.DATE)}에 작성한 글입니다
                                     </Text>
-                                    </View>
-
                                 </TouchableOpacity>
                             )
                         })
@@ -83,16 +105,16 @@ const WriteHistoryListScreen = ({route, navigation}) => {
 }
 
 const styles = StyleSheet.create({
-    tagList:{
-        flex: 1,
-        marginVertical: 2,
-        padding: 32,
-
-        flexDirection: "row",
-        alignItems: "center",
-
-        backgroundColor: "#D9D9D9"
+    container: {
+        flex: 1, 
+        padding: 20
     },
+
+    buttonList: {
+        backgroundColor: "#D9D9D9",
+        padding: 32,
+        marginVertical: 2,
+    }
 
 })
 

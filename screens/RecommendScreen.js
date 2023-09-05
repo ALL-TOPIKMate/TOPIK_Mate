@@ -1,58 +1,30 @@
-import React, {useEffect, useState, useRef} from 'react';
-import {Button, View ,Text, StyleSheet, TouchableOpacity, Alert} from 'react-native'
+import React, { useState, useContext, useCallback, useEffect } from 'react';
+import { Button, View ,Text, StyleSheet, TouchableOpacity, Alert } from 'react-native'
+import { useIsFocused } from "@react-navigation/native";
 
-import firestore from '@react-native-firebase/firestore';
-import auth from "@react-native-firebase/auth"
 
+import UserContext from "../lib/UserContext"
 // import {subscribeAuth } from "../lib/auth";
-
-
-import AppNameHeader from './component/AppNameHeader'
 
 
 const RecommendScreen = ({route, navigation}) =>{
 
-
-    // 유저의 uid, 토픽레벨, 추천 문제 인덱스, 추천 문제 맞춘 개수 setting 
-    const [user, setUser] = useState(null)
+    const USER = useContext(UserContext)
     
-
-    useEffect(() => {
-        const loadUser = async () => {
-            const user = auth().currentUser
-            const userId = user.uid
-            
-            const USER = { userId: userId }
-            
-
-            // user의 토픽 레벨 field load
-            const getUserLevel = async () => {
-                const data = await firestore().collection("users").doc(userId).get()
-
-                USER.userLevel = data._data.my_level
-            }
-
-            // user의 추천 문제 field load
-            const getUserRecommend = async () => {
-                const data = await firestore().collection("users").doc(userId).collection("recommend").doc("Recommend").get()
+    
+    // 화면 포커싱 감지하여 재렌더링
+    const isFocused = useIsFocused()
+    const [render, reRender] = useState(false)
 
 
-                USER.userIndex = data._data.userIndex
-                USER.userCorrect = data._data.userCorrect
-            }
-
-
-            // await getUserLevel()
-            await getUserRecommend()
-
-            setUser(USER)
+    useEffect(()=>{
+        const unsubscribe = () =>{
+            // console.log("포커싱 감지!! 홈화면")
+            reRender(!render)
         }
 
-        loadUser()
-        
-    }, []);
-
-
+        return () => unsubscribe
+    }, [isFocused])
 
 
     return (
@@ -79,22 +51,14 @@ const RecommendScreen = ({route, navigation}) =>{
                 
                 <View style = {[styles.recommend, {flex: 1.8,}]}>
 
-                    <TouchableOpacity style = {styles.recommendBtn} disabled = {user==null} onPress={()=> (user.userIndex == 10) ? (Alert.alert("", "모든 문제를 풀었습니다 다음에 도전하세요.")): (navigation.navigate("RecommendStudy", {user: user, setUser: setUser})) }>
+                    <TouchableOpacity style = {styles.recommendBtn} onPress={()=> (USER.recIndex == 10) ? (Alert.alert("", "문제가 없습니다 다음에 도전하세요.")): (navigation.navigate("RecommendStudy")) }>
                         <Text style = {{color: "#F6F1F1", fontSize: 24, fontWeight: "bold", paddingVertical: 5}}>
                             추천 문제 풀기
                         </Text>
-                        {
-                            (user != null) ? (
-                                <Text style = {{color: "#F6F1F1", fontSize: 20}}>                        
-                                    {10 - Number(user.userIndex)} / 10
-                                </Text>
-                            ): (
-                                <Text style = {{color: "#F6F1F1", fontSize: 20}}>                        
-                                    ...
-                                </Text>
-                            )
 
-                        }
+                        <Text style = {{color: "#F6F1F1", fontSize: 20}}>                        
+                            {10 - Number(USER.recIndex)} / 10
+                        </Text>
                     </TouchableOpacity>
                     
                 </View>

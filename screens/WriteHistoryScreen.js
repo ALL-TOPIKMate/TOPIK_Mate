@@ -1,44 +1,69 @@
-import React, {useState, useEffect} from "react";
+import React, {useState, useEffect, useContext} from "react";
 import {View, Text, ScrollView, TouchableOpacity, StyleSheet} from "react-native";
 import firestore from '@react-native-firebase/firestore';
+import UserContext from "../lib/UserContext";
+import { typeName } from "../lib/utils";
 
 
+// route.params = {section, tag}
 const WriteHistoryScreen = ({route, navigation}) =>{
 
     // 유저 정보
-    const user = route.params.user
+    const USER = useContext(UserContext)
+
+
+    // 불러온 데이터
     const [data, setData] = useState([]);
 
 
-    const wrongCollection = firestore().collection("users").doc(user.userId).collection("wrong_lv2").doc("WR_TAG").collection("PRB_TAG").doc(route.params.userTag.tag).collection("PRB_RSC_LIST")
+    const wrongCollection = firestore().collection("users")
+                            .doc(USER.uid).collection("wrong_lv2")
+                            .doc("WR_TAG").collection("PRB_TAG")
+                            .doc(route.params.tag).collection("PRB_RSC_LIST")
     
+
+    const PRB_NUM = route.params.tag == "001" ? "51":
+        route.params.tag == "002" ? "52": 
+        route.params.tag == "003" ? "53": "54"
+
     
     useEffect(()=>{
-        async function dataLoading(){
-            try{
-                let problemList = []
-                const data = await wrongCollection.get(); // 요청한 데이터가 반환되면 다음 줄 실행
-                
-                data.docs.forEach((doc) => {if(doc._data.PRB_RSC) problemList.push({PRB_RSC: doc._data.PRB_RSC, PRB_ID: doc.id})})
-            
-                setData(problemList)
-            }catch(error){
-                console.log(error.message);
-            }    
-        }
 
         dataLoading();
+
     }, [])
 
 
+    function dataLoading(){
+        try{
+
+            wrongCollection.get().then((querySnapshot) => {
+                setData(querySnapshot.docs.map(doc => {
+                    return {
+                        PRB_ID: doc.id,
+                        ...doc.data()
+                    }
+                }))
+            })
+
+        }catch(error){
+            console.log(error.message);
+        }    
+    }
+
+
+
     return (
-        <View style = {{flex: 1, padding: 20}}>
+        <View style = {styles.container}>
             <View style = {{flex: 1}}>
                 <Text style = {{fontWeight: "bold", fontSize: 20}}>
-                    {route.params.userTag.tagName}
+                    {typeName(2, "WR", route.params.tag)}
                 </Text>
             </View>
-            <View style = {{flex: 0.5, paddingVertical: 10}}>
+            <View style = {{flex: 1}}>
+                <Text>
+                    {PRB_NUM}번 문제입니다
+                </Text>
                 <Text>
                     문제 회차를 선택하세요
                 </Text>
@@ -48,9 +73,8 @@ const WriteHistoryScreen = ({route, navigation}) =>{
                     {
                         data.map((data, index)=>{
                             return (
-                                <TouchableOpacity key = {index} style = {styles.buttonList} onPress = {() => navigation.push("WriteHistoryList", {userTag: route.params.userTag, PRB_RSC: data.PRB_RSC, PRB_ID: data.PRB_ID, user: user})} >
-                                    <Text>{data.PRB_RSC}</Text>
-                                    <Text>{data.PRB_ID}번</Text> 
+                                <TouchableOpacity key = {index} style = {styles.buttonList} onPress = {() => navigation.push("WriteHistoryList", {tag: route.params.tag, PRB_RSC: data.PRB_RSC, PRB_ID: data.PRB_ID, PRB_NUM: PRB_NUM})} >
+                                    <Text style = {{fontSize: 16}}>{data.PRB_RSC}</Text>
                                 </TouchableOpacity>
                             )
                         })
@@ -62,6 +86,11 @@ const WriteHistoryScreen = ({route, navigation}) =>{
 }
 
 const styles = StyleSheet.create({
+    container: {
+        flex: 1, 
+        padding: 20
+    },
+
     buttonList: {
         backgroundColor: "#D9D9D9",
         padding: 32,

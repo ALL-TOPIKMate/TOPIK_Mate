@@ -2,81 +2,29 @@ import React, {useState, useEffect, useRef} from 'react';
 import {View, Text, StyleSheet, ScrollView, TouchableOpacity} from 'react-native';
 
 
-
-import Sound from 'react-native-sound';
-
-Sound.setCategory('Playback');
-
-
-
 import ProbMain from "./ProbMain";
 import ImgRef from "./ImgRef"
-import ProbChoice from "./ProbChoice";
+import RecommendProbChoice from "./RecommendProbChoice"
 import ProbSub from "./ProbSub";
 import ProbTxt from "./ProbTxt"
 import ProbScrpt from './ProbScrpt';
+import AudRef from './AudRef';
 
 
-
-const AudRef = (audio, key) =>{
-
-    const [isRunning, setIsRunning] = useState(false);
-
-    function audioPlay(){
-        if(audio){
-            
-            if(audio.isPlaying()){
-                audio.pause()
-
-                setIsRunning(false)
-            }else{
-                setIsRunning(true)
-        
-                // audio.play()
-
-                audio.play((success) => {
-                    if (success) {
-                      setIsRunning(false);
-                      console.log('successfully finished playing');
-                    } else {
-                      setIsRunning(false);
-                      console.log('playback failed due to audio decoding errors');
-                    }
-                })
-            }
-        }
-    }
-
-    return (
-        <View style = {styles.btnBox} key = {`RECOMMEND_PROB${key}`}>
-            <TouchableOpacity onPress={()=>{audioPlay()}} style = {styles.btnPlay}>
-                    {
-                        isRunning
-                        ? <Text style = {{color: "#F6F1F1", fontSize: 20, textAlign: "center"}}>
-                        Stop
-                        </Text>
-                        : <Text style = {{color: "#F6F1F1", fontSize: 20, textAlign: "center"}}>
-                        Start
-                        </Text>
-                    }
-            </TouchableOpacity>
-        </View>  
-    )
-}
 
 // component화 하기
-const problemStructure = (problem, nextBtn, setNextBtn, isSubmit, setIsSubmit, audio) =>{
+const problemStructure = (problem, imgRef, nextBtn, setNextBtn, isSubmit, setIsSubmit, audio) =>{
     let question = []
 
     // PRB_MAIN_CONT: 메인 문제
     question.push(<ProbMain PRB_MAIN_CONT = {problem.PRB_MAIN_CONT} PRB_NUM = {problem.PRB_NUM} key = {`RECOMMEND_PROB${nextBtn*10+0}`}/>)
     if(problem.PRB_SECT == "LS"){
-        question.push(AudRef(audio, nextBtn*10+1))
-
+        // question.push(AudRef(audio, nextBtn*10+1))
+        question.push(<AudRef audio = {audio} key = {`RECOMMEND_PROB${nextBtn*10+1}`}/>)
 
         // IMG_REF: 이미지 문제
         if(problem.IMG_REF){
-            question.push(<ImgRef IMG_REF = {problem.IMG_URL} key = {`RECOMMEND_PROB${nextBtn*10+2}`}/>)    
+            question.push(<ImgRef IMG_REF = {imgRef[problem.IMG_REF]} key = {`RECOMMEND_PROB${nextBtn*10+2}`}/>)    
         }
         
 
@@ -92,7 +40,7 @@ const problemStructure = (problem, nextBtn, setNextBtn, isSubmit, setIsSubmit, a
 
         // IMG_REF: 이미지 문제
         if(problem.IMG_REF){
-            question.push(<ImgRef IMG_REF = {problem.IMG_URL} key = {`RECOMMEND_PROB${nextBtn*10+4}`}/>)    
+            question.push(<ImgRef IMG_REF = {imgRef[problem.IMG_REF]} key = {`RECOMMEND_PROB${nextBtn*10+4}`}/>)    
         }
 
 
@@ -117,16 +65,16 @@ const problemStructure = (problem, nextBtn, setNextBtn, isSubmit, setIsSubmit, a
     }
 
     // PRB_CHOICE1 ~ 4: 4지 선다
-    question.push(<ProbChoice
+    question.push(<RecommendProbChoice
+        problem = {problem}
+
         PRB_CHOICE1= {problem.PRB_CHOICE1} 
         PRB_CHOICE2={problem.PRB_CHOICE2} 
         PRB_CHOICE3= {problem.PRB_CHOICE3} 
         PRB_CHOICE4={problem.PRB_CHOICE4} 
 
-        PRB_CHOICE_URL1 = {problem.PRB_CHOICE_URL1}
-        PRB_CHOICE_URL2 = {problem.PRB_CHOICE_URL2}
-        PRB_CHOICE_URL3 = {problem.PRB_CHOICE_URL3}
-        PRB_CHOICE_URL4 = {problem.PRB_CHOICE_URL4}
+        imgRef = {imgRef} // prb_choice가 이미지일경우
+
         PRB_CORRT_ANSW = {problem.PRB_CORRT_ANSW}
 
 
@@ -135,8 +83,6 @@ const problemStructure = (problem, nextBtn, setNextBtn, isSubmit, setIsSubmit, a
 
         isSubmit = {isSubmit}
         setIsSubmit = {setIsSubmit}
-        problem = {problem}
-
         
         key = {`RECOMMEND_PROB${nextBtn*10+8}`}
     />)
@@ -146,9 +92,9 @@ const problemStructure = (problem, nextBtn, setNextBtn, isSubmit, setIsSubmit, a
     return question
 }
 
-export default recommendProb = ({ problem, nextBtn, setNextBtn, isSubmit, setIsSubmit}) =>{
+export default recommendProb = ({ problem, audRef, imgRef, nextBtn, setNextBtn, isSubmit, setIsSubmit}) =>{
 
-    const audio = problem.AUD_URL ? problem.AUD_URL : null
+    const audio = problem.AUD_REF ? audRef[problem.AUD_REF] : null
 
     useEffect(()=>{
 
@@ -163,7 +109,7 @@ export default recommendProb = ({ problem, nextBtn, setNextBtn, isSubmit, setIsS
 
     return (
         <ScrollView style = {styles.container}>
-            { problemStructure(problem, nextBtn, setNextBtn, isSubmit, setIsSubmit, audio) }
+            { problemStructure(problem, imgRef, nextBtn, setNextBtn, isSubmit, setIsSubmit, audio) }
         </ScrollView>
     )
 }

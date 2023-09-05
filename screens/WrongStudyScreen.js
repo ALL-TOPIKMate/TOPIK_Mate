@@ -1,6 +1,8 @@
-import React, {useState, useEffect, useRef} from 'react';
-import {View, Text, StyleSheet, TouchableOpacity} from 'react-native';
+import React, { useState, useEffect, useRef, useContext } from 'react';
+import { View, Text, StyleSheet } from 'react-native';
 import Loading from './component/Loading';
+import UserContext from '../lib/UserContext';
+import WrongProb from './component/WrongProb';
 
 import firestore from '@react-native-firebase/firestore';
 import firebase from '@react-native-firebase/app';
@@ -15,104 +17,189 @@ Sound.setCategory('Playback');
 
 
 
-import WrongProb from './component/WrongProb';
 
 
+// 오디오 로드
+const audioURL = async (problem, audiosRef, audioStorage, countAudio, setIsReadyAudio, isComponentMounted) => {
+    const PRB_RSC = problem.PRB_ID.substr(0, problem.PRB_ID.length - 3)
 
-const audioURL = async(problemList, audioStorage) =>{
-    const PRB_RSC = problemList.PRB_ID.substr(0, problemList.PRB_ID.length-3)
+    try {
 
-    try{
-        await audioStorage.child(`/${PRB_RSC}/${problemList.AUD_REF}`).getDownloadURL().then((url)=>{
-            problemList.AUD_REF = new Sound(url, null, err => {
-            if (err) {
-                console.log('Failed to load the sound', err);
-                return undefined;
-            }
-        
-            // 로드 성공
-            console.log(`오디오 로드 성공. ${url}`);
+        await audioStorage.child(`/${PRB_RSC}/${problem.AUD_REF}`).getDownloadURL().then((url) => {
+            const audio = new Sound(url, null, err => {
+
+                countAudio.current--
+
+                if (countAudio.current == 0 && isComponentMounted.current) {
+                    setIsReadyAudio(true)
+                }
             })
+
+            audiosRef.current[problem.AUD_REF] = audio
         })
-    }catch(err){
+
+    } catch (err) {
         console.log(err)
     }
 }
 
-const imageURL = async (problemList, imageStorage) =>{
-    const PRB_RSC = problemList.PRB_ID.substr(0, problemList.PRB_ID.length-3)
-    
-    try{
-        await imageStorage.child(`/${PRB_RSC}/${problemList.IMG_REF}`).getDownloadURL().then((url)=>{
-            problemList.IMG_REF = url
+// 이미지 문제 (IMG_REF) 로드
+const imageURL = async (problem, imagesRef, imageStorage) => {
+    const PRB_RSC = problem.PRB_ID.substr(0, problem.PRB_ID.length - 3)
+
+    try {
+
+        await imageStorage.child(`/${PRB_RSC}/${problem.IMG_REF}`).getDownloadURL().then((url) => {
+            imagesRef.current[problem.IMG_REF] = url
             // console.log(`콜백함수 안 ${url}`)
         })
-    }catch(err){
+
+    } catch (err) {
         console.log(err)
     }
 }
 
-const imagesURL = async (problemList, imageStorage) =>{
-    const PRB_RSC = problemList.PRB_ID.substr(0, problemList.PRB_ID.length-3)
-    
-    try{
-        problemList.isImage = true
+// 4지선다 이미지 로드
+const imagesURL = async (problem, imagesRef, imageStorage) => {
+    const PRB_RSC = problem.PRB_ID.substr(0, problem.PRB_ID.length - 3)
 
-        await imageStorage.child(`/${PRB_RSC}/${problemList.PRB_CHOICE1}`).getDownloadURL().then((url) => {
-            problemList.PRB_CHOICE1 = url
+    try {
+
+        await imageStorage.child(`/${PRB_RSC}/${problem.PRB_CHOICE1}`).getDownloadURL().then((url) => {
+            imagesRef.current[problem.PRB_CHOICE1] = url
         })
 
-        await imageStorage.child(`/${PRB_RSC}/${problemList.PRB_CHOICE2}`).getDownloadURL().then((url) => {
-            problemList.PRB_CHOICE2 = url
+        await imageStorage.child(`/${PRB_RSC}/${problem.PRB_CHOICE2}`).getDownloadURL().then((url) => {
+            imagesRef.current[problem.PRB_CHOICE2] = url
         })
 
-        await imageStorage.child(`/${PRB_RSC}/${problemList.PRB_CHOICE3}`).getDownloadURL().then((url) => {
-            problemList.PRB_CHOICE3 = url
-        })
-        
-        await imageStorage.child(`/${PRB_RSC}/${problemList.PRB_CHOICE4}`).getDownloadURL().then((url) => {
-            problemList.PRB_CHOICE4 = url
+        await imageStorage.child(`/${PRB_RSC}/${problem.PRB_CHOICE3}`).getDownloadURL().then((url) => {
+            imagesRef.current[problem.PRB_CHOICE3] = url
         })
 
-    }catch(err){
+        await imageStorage.child(`/${PRB_RSC}/${problem.PRB_CHOICE4}`).getDownloadURL().then((url) => {
+            imagesRef.current[problem.PRB_CHOICE4] = url
+        })
+
+    } catch (err) {
         console.log(err)
     }
 }
 
-const loadMultimedia = async (problemList, audioStorage, imageStorage) =>{
-    try{
-        let size = problemList.length
 
-        for(var i=0; i<size; i++){
-            const imageIndex = problemList[i].PRB_CHOICE1.search(".png")
+// 멀티미디어 로드
+const loadMultimedia = async (problem, audiosRef, imagesRef, audioStorage, imageStorage, countAudio, setIsReadyAudio, nextBtn, isComponentMounted) => {
+    try {
+        let size = problem.length
 
-            if(problemList[i].AUD_REF){
-                await audioURL(problemList[i], audioStorage)
-            }if(problemList[i].IMG_REF){
-                await imageURL(problemList[i], imageStorage)
-            }if(imageIndex != -1){
-                await imagesURL(problemList[i], imageStorage)
+        for (var i = nextBtn; i < size; i++) {
+            const imageIndex = problem[i].PRB_CHOICE1.search(".png")
+
+            if (problem[i].AUD_REF) {
+                await audioURL(problem[i], audiosRef, audioStorage, countAudio, setIsReadyAudio, isComponentMounted)
+            } if (problem[i].IMG_REF) {
+                await imageURL(problem[i], imagesRef, imageStorage)
+            } if (imageIndex != -1) {
+                await imagesURL(problem[i], imagesRef, imageStorage)
             }
         }
+
+    } catch (err) {
+        console.log(err)
+    }
+
+}
+
+
+
+
+// 선택 학습/랜덤 학습 문제 불러오기
+async function loadProblem(wrongCollection, problems, setProblems, userTag, lastVisible, typeIndex, setTypeIndex, countAudio, isComponentMounted) {
+    try {
+        countAudio.current = 0
+
+        // 1. startAfter 사용시 orderBy와 함께 사용
+        // 2. where절에서 지정한 column과 orderBy에서 지정한 column은 동일한 column을 가져야 함
+        // 3. where에서는 범위를 지정해야 한다. (== 연산자 사용 불가)
+
+
+        let data = []
+
+        const tagColl = wrongCollection.doc(`${userTag[typeIndex].section}_TAG`)
+            .collection("PRB_TAG").doc(userTag[typeIndex].tag).collection("PRB_LIST")
+
+
+        await tagColl.where("PRB_ID", ">=", "").orderBy("PRB_ID").startAfter(lastVisible.current).limit(5).get().then(documentSnapshot => {
+            documentSnapshot.forEach(doc => {
+                data.push(doc.data())
+
+                if (doc._data.AUD_REF) {
+                    countAudio.current++
+                }
+            })
+        })
+
+
+        if (data.length == 0) {
+
+            lastVisible.current = null
+
+            if(isComponentMounted.current){
+                setTypeIndex(typeIndex + 1)
+            }
+            
+
+        } else {
+
+            lastVisible.current = data[data.length - 1].PRB_ID
+
+            if(isComponentMounted.current){
+                setProblems([...problems, ...data])
+            }
+            
+        }
+
+    } catch (error) {
+        console.log(error.message);
+    }
+}
+
+// 쓰기히스토리 문제 한번에 불러오기
+// 최대 10개의 문제
+function loadProblemWr(wrongCollection, setProblems, isComponentMounted){
+    try{
+        
+        wrongCollection.get().then( querySnapshot => {
+            if(isComponentMounted.current){
+
+                setProblems(querySnapshot.docs.map(doc => {
+                    return {
+                        DATE: doc.id,
+                        ...doc.data()
+                    }
+                }))
+
+            }
+        })
+
     }catch(err){
         console.log(err)
     }
 }
-
-
 
 
 
 // route.params.key = {"select", "random", "write"}
 // route.params.userTag로 유형을 나눔
 
-// write인 경우 userTag, order
-// select, random인 경우 userTag 
-
-const WrongStudyScreen = ({route, navigation}) =>{
+const WrongStudyScreen = ({ route, navigation }) => {
 
     // 유저 정보
-    const user = route.params.user
+    const USER = useContext(UserContext)
+
+    // 메모리 누수 방지
+    const isComponentMounted = useRef(true)
+
 
     // 멀티미디어
     const storage = getStorage(firebase);
@@ -121,393 +208,231 @@ const WrongStudyScreen = ({route, navigation}) =>{
 
 
 
+    // 유저의 복습하기 콜렉션을 load
+    const wrongCollection = route.params.key !== "write" ?
+        firestore().collection("users")
+            .doc(USER.uid)
+            .collection(`wrong_lv${USER.level}`):
+        firestore().collection("users")
+            .doc(USER.uid)
+            .collection(`wrong_lv${USER.level}`)
+            .doc("WR_TAG").collection("PRB_TAG")
+            .doc(route.params.userTag)
+            .collection("PRB_RSC_LIST")
+            .doc(route.params.PRB_ID)
+            .collection("PRB_LIST")
+
+
+
+
+
     // 백엔드에서 불러온 json 문제
-    const [loadedProblem, setLoadedProblem] = useState([]); // json
+    const [problems, setProblems] = useState([]);
+
+    // 틀린문제 및 맞은문제 기록을 위한 문제 저장 
+    // 원본 문제 (손상 X)
+    const rawProblems = useRef([])
+    // 유저 답안 포함한 문제
+    const userProblems = useRef([])
+
+
+    // 멀티미디어 저장
+    const imagesRef = useRef({})
+    const audiosRef = useRef({})
 
 
     // 다음 문제를 넘길 때 사용
     const [nextBtn, setNextBtn] = useState(route.params.order); // WR 영역에 의한 order 값 셋팅
-    
-    
-    // 문제 풀이 후 맞은 문제 렌더링
-    const [correct, setCorrect] = useState(0);
+    // 제출 여부 - 채점
+    const [isSubmit, setIsSubmit] = useState(false);
+
+
+    // 학습 종료 - 문제 풀이 결과화면
+    const [resultscreen, setResultscreen] = useState(false)
+
 
     // 맞은 문제 카운팅
     const correctCount = useRef(0)
     // 푼 문제 카운팅 
     const problemCount = useRef(0)
-    // 맞은 문제 기록
-    const problemCorrectList = useRef([])
 
 
-    // 4지선다 컴포넌트에서 사용자가 고른 답을 저장
-    const choiceRef = useRef(0);
-
-    
 
 
-    // 대기 상태 (로딩화면)
-    const [ready, setReady] = useState(false) 
+    // 멀티미디어 로드 상태
+    // 이미지 준비 상태
+    const [isReadyImage, setIsReadyImage] = useState(false)
+    // 오디오 준비 상태
+    const [isReadyAudio, setIsReadyAudio] = useState(false)
 
-
+    // 오디오 개수 카운팅
+    const countAudio = useRef(0)
 
 
     // 선택 학습, 랜덤 학습
-    // 현재 userTag의 인덱스를 가르킴 ex. [{tagName: 001, section: "LS"} ,{tagName: 003, section: "LS"}, {tagName: 002, section: "RD"}]
-    const typeRef = useRef(0);
+    // 현재 userTag의 인덱스를 가르킴 ex. [{tag: 001, section: "LS"} ,{tag: 003, section: "LS"}, {tag: 002, section: "RD"}]
+    const [typeIndex, setTypeIndex] = useState(0)
 
 
-    // 선택 학습
+    // 선택 학습, 랜덤 학습
     // 로드한 데이터의 마지막 문제를 가르킴
     const lastVisible = useRef(null);
 
-    // 랜덤 학습
-    // 로드한 데이터의 마지막 문제를 가르킴
-    const lastVisibleList = useRef([]);
-
-    // 랜덤 학습
-    // 해당 유형의 문제를 다 읽었는지 판단
-    const isAllProblemSolving = useRef([]);
 
 
-    
-    // 유저의 복습하기 콜렉션을 load
-    const wrongCollection = route.params.key !== "write" ? 
-                            firestore().collection("users")
-                            .doc(user.userId)
-                            .collection(`wrong_lv${user.userLevel}`)
-                            : 
-                            firestore().collection("users")
-                            .doc(user.userId)
-                            .collection(`wrong_lv${user.userLevel}`)
-                            .doc("WR_TAG").
-                            collection("PRB_TAG")
-                            .doc(route.params.userTag.tag)
-                            .collection("PRB_RSC_LIST")
-                            .doc(route.params.PRB_ID)
-                            .collection("PRB_LIST")
-    
 
 
-    // 맞은 문제는 복습하기의 문서를 제거
-    const removeWrongColl = () =>{
-        for(var i=0; i<problemCorrectList.current.length; i++){
-
-            // 답을 맞췄을 경우
-            if(problemCorrectList.current[i].PRB_USER_ANSW == problemCorrectList.current[i].PRB_CORRT_ANSW){
-
-
-                const sectTadDoc = wrongCollection.doc(`${problemCorrectList.current[i].PRB_SECT}_TAG`); sectTadDoc.set({})
-                
-
-                const tagDoc = sectTadDoc.collection("PRB_TAG").doc(problemCorrectList.current[i].TAG); tagDoc.set({})
-        
-            
-                tagDoc.collection("PRB_LIST").doc(problemCorrectList.current[i].PRB_ID).delete().then((err)=>{
-                    if(err){
-                        console.log(err)
-                    }else{
-                        console.log("success to delete data")
-                    }
-        
-                })
-
-            }
-        }
-       
-
-    }
-
-
-    useEffect(()=>{
-        if(route.params.key == "select"){ 
-            loadProblem()
-        }else if(route.params.key == "random"){
-
-            // initialize user tag's length
-            for(var i=0; i<route.params.userTag.length; i++){
-                lastVisibleList.current.push(null)
-                isAllProblemSolving.current.push(false)
-            }
-
-
-            loadRandomProblem()
-        }
-        else if(route.params.key =="write"){
-            allLoadProblem()
-        }
-
+    useEffect(() => {
+        // console.log(route.params.userTag)
+        // unmount
         return () => {
-            console.log("복습하기 화면에서 나감")
+            isComponentMounted.current = false
 
-            removeWrongColl()
+            // console.log(rawProblems.current)
+            // console.log(userProblems.current)
+            USER.updateUserWrongColl(rawProblems.current, userProblems.current)
         }
     }, [])
 
 
-    // 쓰기 히스토리 - 최대 10문제를 한번에 불러옴
-    const allLoadProblem = () =>{
-        
-        async function dataLoading(){
-            try{
+    useEffect(() => {
 
-                let problemList = []
+        if (route.params.key === "write") {
 
-                const data = await wrongCollection.get(); // 요청한 데이터가 반환되면 다음 줄 실행
-                
-
-                data.docs.forEach((doc) => {problemList.push(doc._data)})
-            
-
-                // 멀티미디어 load
-                await loadMultimedia(problemList, audioStorage, imageStorage)
-
-                setLoadedProblem(problemList)
-
-            }catch(error){
-                console.log(error.message);
-            }    
-        }
-
-        dataLoading().then(()=>{
-            setReady(true)
-        })
-    }
-
-
-    // 랜덤 학습 
-    // 모든 유형의 문제를 풀었는지 확인
-    const isAllProblemSolve = () =>{
-        for(var i=0; i<isAllProblemSolving.current.length; i++){
-            if(isAllProblemSolving.current[i]==false){
-                return false
-            }
-        }
-
-        return true
-    }
-
-
-
-
-
-    // 랜덤 학습
-    // 모든 유형중 랜덤한 유형을 1문제씩 총 5문제를 가져옴
-    const loadRandomProblem = () => {
-        async function loadOneProblem(){
-
-            const tag = route.params.userTag
-        
-            const data = (lastVisibleList.current[typeRef.current]) ? (
-
-                // 이미 가져왔던 유형의 문제
-                await wrongCollection.doc(`${tag[typeRef.current].section}_TAG`).collection("PRB_TAG").doc(tag[typeRef.current].tagName).collection("PRB_LIST")
-                    .where("PRB_ID", ">=", "").orderBy("PRB_ID").startAfter(lastVisibleList.current[typeRef.current]).limit(1).get()) : (
-
-                // 처음 가져오는 문제일 때 
-                await wrongCollection.doc(`${tag[typeRef.current].section}_TAG`).collection("PRB_TAG").doc(tag[typeRef.current].tagName).collection("PRB_LIST")
-                    .where("PRB_ID", ">=", "").orderBy("PRB_ID").limit(1).get()
-                )
-                
-
-                let rawData = data.docs.map((doc, index)=> {return {...doc.data()}})
-
-
-                if(rawData.length == 0){ // 해당 유형에 문제가 없을 경우
-
-                    // 방문 표시 
-                    isAllProblemSolving.current[typeRef.current] = true
-
-                    // 다음 유형의 문제를 가져올 수 있도록 +1
-                    typeRef.current = (typeRef.current+1 < tag.length ) ? typeRef.current + 1 : 0
-
-                    return 
-                }
-            
-
-                lastVisibleList.current[typeRef.current] = rawData[0].PRB_ID
-
-                
-
-
-                // 멀티미디어 load
-                await loadMultimedia(rawData, audioStorage, imageStorage)
-
-
-                // 다음 유형의 문제를 가져올 수 있도록 +1
-                typeRef.current = (typeRef.current+1 < tag.length ) ? typeRef.current + 1 : 0
-
-
-                return rawData
+            loadProblemWr(wrongCollection, setProblems, isComponentMounted)
 
         }
+        else if (nextBtn == problems.length && isComponentMounted.current) { // 선택, 랜덤 학습
 
+            setIsReadyImage(false)
+            setIsReadyAudio(false)
 
-        async function dataLoading(){
-            try{
-                let rawData = []
-                while(rawData.length < 5 && !isAllProblemSolve()){
-                    const data = await loadOneProblem() // 배열 형태로 반환
-
-
-
-                    if(data){ // 데이터를 받아온 경우
-                        rawData.push(...data)
-                    }
-                }
-
-
-                setLoadedProblem([...loadedProblem, ...rawData])
-            }catch(error){
-                console.log(error.message);
-            }    
+            loadProblem(wrongCollection, problems, setProblems, route.params.userTag, lastVisible, typeIndex, setTypeIndex, countAudio, isComponentMounted)
         }
-
-        dataLoading().then(()=>{
-            if(isAllProblemSolve() && nextBtn == loadedProblem.length){
-                console.log("모든 유형의 문제를 풀었습니다.")
-                setNextBtn(-1)
-            }
-            setReady(true)
-        })
-    }
-
-
-    // 선택 학습
-    // 한 유형에 대해 5문제씩 이어서 불러옴
-    const loadProblem = () =>{
-        async function dataLoading(){
-            try{
-                
-                // 1. startAfter 사용시 orderBy와 함께 사용
-                // 2. where절에서 지정한 column과 orderBy에서 지정한 column은 동일한 column을 가져야 함
-                // 3. where에서는 범위를 지정해야 한다. (== 연산자 사용 불가)
-                
-                const data = (lastVisible.current) ? (
-                    await wrongCollection.doc(`${route.params.userTag[typeRef.current].section}_TAG`).collection("PRB_TAG").doc(route.params.userTag[typeRef.current].tagName).collection("PRB_LIST")
-                        .where("PRB_ID", ">=", "").orderBy("PRB_ID").startAfter(lastVisible.current).limit(5).get()) : (
-                    await wrongCollection.doc(`${route.params.userTag[typeRef.current].section}_TAG`).collection("PRB_TAG").doc(route.params.userTag[typeRef.current].tagName).collection("PRB_LIST")
-                        .where("PRB_ID", ">=", "").orderBy("PRB_ID").limit(5).get())
-                    
-
-
-                let rawData = data.docs.map((doc, index)=> {return {...doc.data()}})
-                
-                if(rawData.length == 0){ 
-                    typeRef.current++ // 다른 유형의 문제를 load
-
-                    if(typeRef.current>=route.params.userTag.length){  // 유저가 선택한 모든 유형의 문제를 푼 경우
-                        setNextBtn(-1)
-                        console.log("모든 문제를 풀었습니다.")
-
-                        return 
-                    }
-                
-                    const data = await wrongCollection.doc(`${route.params.userTag[typeRef.current].section}_TAG`).collection("PRB_TAG").doc(route.params.userTag[typeRef.current].tagName).collection("PRB_LIST")
-                        .where("PRB_ID", ">=", "").orderBy("PRB_ID").limit(5).get()
-
-                    rawData = data.docs.map((doc, index)=> {return {...doc.data()}})
-                }
-
-                
-                lastVisible.current = rawData[rawData.length-1].PRB_ID
-
-
-                // 멀티미디어 load
-                await loadMultimedia(rawData, audioStorage, imageStorage)
-
-                // data setting
-                setLoadedProblem([...loadedProblem, ...rawData])
-            }catch(error){
-                console.log(error.message);
-            }    
-        }
-
-        dataLoading().then(()=>{
-            setReady(true)
-        })
-    }
-
-
-    useEffect(()=>{
-
-        if(route.params.key === "write"){
-            return 
-        }
-         
-        else if(nextBtn === -1){ // 모든 문제를 풀었을 경우
-        
-            setCorrect(correctCount.current)
-
-            return
-        }
-
-        if(nextBtn == loadedProblem.length && nextBtn > 0){ // 문제를 다 풀었을 경우, 더 가져옴
-            setReady(false)
-            if(route.params.key == "select"){
-                loadProblem()
-            }else if(route.params.key == "random"){
-
-                // console.log(isAllProblemSolving.current)
-
-
-                loadRandomProblem()
-            }
-        }
-
-
-        if(nextBtn > 0 && loadedProblem[nextBtn-1].PRB_USER_ANSW===undefined){ // 다음 문제를 풀기 전, 유저 답안을 기록
-
-            loadedProblem[nextBtn-1].PRB_USER_ANSW = choiceRef.current
-
-
-            // 문제를 맞았을 경우
-            if(loadedProblem[nextBtn - 1].PRB_USER_ANSW == loadedProblem[nextBtn - 1].PRB_CORRT_ANSW){
-
-
-                problemCorrectList.current.push(loadedProblem[nextBtn-1])
-
-                correctCount.current++
-                
-            }
-
-        problemCount.current++
-    }
-        
-
-        if(nextBtn >= 0 && loadedProblem.length){
-            // console.log(loadedProblem[nextBtn])
-        }
-        
-        choiceRef.current = 0;
-
 
     }, [nextBtn])
 
-    return (
-        <View style = {{flex: 1}}>
-            {   
-                (nextBtn == -1) ? (
-                    navigation.navigate("Result", {CORRT_CNT: correct, ALL_CNT: problemCount.cnrrent, PATH : "Wrong"})
-                ): 
-                    ((loadedProblem.length && nextBtn < loadedProblem.length && ready) ? 
-                        <WrongProb 
-                            problem = {loadedProblem[nextBtn]}
-                            nextBtn = {nextBtn}
-                            setNextBtn = {setNextBtn}
-    
-                            choiceRef = {choiceRef}
-                            
-                            section = {route.params.key}
-                            size = {loadedProblem.length} // WR 영역일경우
 
-                            key = {nextBtn}
-                        />
-                    : <Loading />) 
+    // 현재 풀이하고 있는 유형을 가르킴
+    useEffect(() => {
+
+        if (typeIndex > 0) {
+            // console.log(typeIndex)
+            // 모든 유형의 문제를 모두 풀었다면
+            if (typeIndex >= route.params.userTag.length && isComponentMounted.current) {
+                setResultscreen(true)
+            } else {
+                // 아직 문제가 남아있다면
+                setIsReadyImage(false)
+                setIsReadyAudio(false)
+
+                loadProblem(wrongCollection, problems, setProblems, route.params.userTag, lastVisible, typeIndex, setTypeIndex, countAudio, isComponentMounted)
             }
-            
-        </View>
-    );
+        }
+
+    }, [typeIndex])
+
+
+
+    useEffect(() => {
+
+        // 문제 데이터셋에 변화가 생김 -> 멀티미디어 다운받기
+        if (problems.length) {
+            // console.log(problems)
+            // console.log(countAudio.current)
+            loadMultimedia(problems, audiosRef, imagesRef, audioStorage, imageStorage, countAudio, setIsReadyAudio, nextBtn, isComponentMounted).then(() => {
+                
+                if(isComponentMounted.current){
+                    setIsReadyImage(true)
+                }
+                
+
+                // 오디오가 없을 경우
+                if (countAudio.current == 0 && isComponentMounted.current) {
+                    setIsReadyAudio(true)
+                }
+            })
+
+        }
+
+    }, [problems])
+
+
+
+    useEffect(() => {
+
+        if (isSubmit && rawProblems.current.length == nextBtn) {
+
+            // 유저 답안 기록
+            userProblems.current[nextBtn] = {
+                ...problems[nextBtn],
+                PRB_USER_ANSW: userProblems.current[nextBtn].PRB_USER_ANSW
+            }
+
+            rawProblems.current.push(problems[nextBtn])
+            // console.log(userProblems.current[nextBtn])
+
+
+            if (userProblems.current[nextBtn].PRB_USER_ANSW == problems[nextBtn].PRB_CORRT_ANSW) {
+                correctCount.current++
+            }
+
+            problemCount.current++
+        }
+
+    }, [isSubmit])
+
+
+
+    useEffect(() => {
+        if (resultscreen) {
+            navigation.replace("Result", { CORRT_CNT: correctCount.current, ALL_CNT: problemCount.current, PATH: "Wrong" })
+        }
+    }, [resultscreen])
+
+
+    useEffect(() => {
+        console.log(isReadyAudio, isReadyImage)
+        if (isReadyAudio && isReadyImage) {
+            console.log("멀티미디어 로드 완료")
+        } else if (isReadyAudio) {
+            console.log("사진 로드중")
+        } else if (isReadyImage) {
+            console.log("오디오 객체 생성중")
+        } else {
+            console.log("멀티미디어 로드중")
+        }
+    }, [isReadyAudio, isReadyImage])
+
+
+
+    if (!isReadyImage || !isReadyAudio || nextBtn >= problems.length) {
+        return (
+            <Loading />
+        )
+    } else {
+        return (
+            <WrongProb
+                problem={problems[nextBtn]}
+                images={imagesRef.current}
+                audio={audiosRef.current[problems[nextBtn].AUD_REF]} // 오디오 제어
+
+                nextBtn={nextBtn}
+                setNextBtn={setNextBtn}
+
+                isSubmit={isSubmit}
+                setIsSubmit={setIsSubmit}
+
+                userProblems={userProblems} // 제출버튼 후 유저 답안 기록
+
+                size={problems.length} // WR 영역일경우
+                key={`WRONGPROB${nextBtn}`}
+            />
+        );
+    }
+
+
+
 }
 
 

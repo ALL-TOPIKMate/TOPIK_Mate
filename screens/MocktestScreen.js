@@ -30,8 +30,6 @@ const MocktestScreen = ({navigation: {navigate}}) =>{
                     <Text>for intermediate-advanced</Text>
                 </Pressable>
             </View>
-            {/* {navigation}으로만 했을 때 아래 코드를 통해 화면 이동 시 route 사용이 안 됐음.  */}
-            {/* <Button title = "TOPIK 1" onPress={() => {navigation.push("MockList"), {level: 1}}}/> */}
         </View>
     );
 }

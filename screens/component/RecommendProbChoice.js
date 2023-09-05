@@ -1,10 +1,10 @@
-import React, {useState, useEffect, useRef} from 'react';
+import React, {useState} from 'react';
 
 import {View, Text, StyleSheet, TouchableOpacity, Button, Image} from 'react-native'
 
 
-export default ProbChoice = (props) =>{
-
+export default RecommendProbChoice = ({problem, PRB_CHOICE1, PRB_CHOICE2, PRB_CHOICE3, PRB_CHOICE4, imgRef, PRB_CORRT_ANSW, nextBtn, setNextBtn, isSubmit, setIsSubmit}) =>{
+ 
     // 제출 여부를 확인하여 렌더링
     const [subBtn, setSubBtn] = useState(false)
 
@@ -14,7 +14,7 @@ export default ProbChoice = (props) =>{
 
 
     // 4지선다 이미지 여부
-    const isImage = (props.PRB_CHOICE_URL1) ? true: false
+    const isImage = (imgRef[PRB_CHOICE1]) ? true: false
 
     
 
@@ -23,14 +23,14 @@ export default ProbChoice = (props) =>{
 
             if(btn == click){ // 유저가 고른 버튼
 
-                if(btn == props.PRB_CORRT_ANSW){ // 정답일경우
+                if(btn == PRB_CORRT_ANSW){ // 정답일경우
                     return "#BAD7E9"
                 }
                 
                 return "#FFACAC" // 정답이 아닐 경우
             }else{ // 유저가 고른 버튼이 아닌 경우
 
-                if(btn == props.PRB_CORRT_ANSW){
+                if(btn == PRB_CORRT_ANSW){
                     return "#BAD7E9" // 정답을 표시
                 }
 
@@ -52,13 +52,13 @@ export default ProbChoice = (props) =>{
                     <Image
                     style={{height: 200}}
                     resizeMode = "stretch"
-                    source={{uri: props.PRB_CHOICE_URL1}}
+                    source={{uri: imgRef[PRB_CHOICE1]}}
                     />
                 </TouchableOpacity>
             ):(
                 <TouchableOpacity onPress = {() => {setClick(1)}} disabled = {subBtn} style = {[styles.button, {backgroundColor: setBtnColor(1)}]}>
                     <Text>
-                        {props.PRB_CHOICE1}
+                        {PRB_CHOICE1}
                     </Text>
                 </TouchableOpacity>
             )
@@ -70,13 +70,13 @@ export default ProbChoice = (props) =>{
                     <Image
                     style={{height: 200}}
                     resizeMode = "stretch"
-                    source={{uri: props.PRB_CHOICE_URL2}}
+                    source={{uri: imgRef[PRB_CHOICE2]}}
                     />
                 </TouchableOpacity>
             ):(
                 <TouchableOpacity onPress = {() => {setClick(2)}} disabled = {subBtn} style = {[styles.button, {backgroundColor: setBtnColor(2)}]}>
                     <Text>
-                        {props.PRB_CHOICE2}
+                        {PRB_CHOICE2}
                     </Text>
                 </TouchableOpacity>
             )
@@ -88,13 +88,13 @@ export default ProbChoice = (props) =>{
                     <Image
                     style={{height: 200}}
                     resizeMode = "stretch"
-                    source={{uri: props.PRB_CHOICE_URL3}}
+                    source={{uri: imgRef[PRB_CHOICE3]}}
                     />
                 </TouchableOpacity>
             ):(
                 <TouchableOpacity onPress = {() => {setClick(3)}} disabled = {subBtn} style = {[styles.button, {backgroundColor: setBtnColor(3)}]}>
                     <Text>
-                        {props.PRB_CHOICE3}
+                        {PRB_CHOICE3}
                     </Text>
                 </TouchableOpacity>
             )
@@ -106,13 +106,13 @@ export default ProbChoice = (props) =>{
                     <Image
                     style={{height: 200}}
                     resizeMode = "stretch"
-                    source={{uri: props.PRB_CHOICE_URL4}}
+                    source={{uri: imgRef[PRB_CHOICE4]}}
                     />
                 </TouchableOpacity>
             ):(
                 <TouchableOpacity onPress = {() => {setClick(4)}} disabled = {subBtn} style = {[styles.button, {backgroundColor: setBtnColor(4)}]}>
                     <Text>
-                        {props.PRB_CHOICE4}
+                        {PRB_CHOICE4}
                     </Text>
                 </TouchableOpacity>
             )
@@ -120,12 +120,12 @@ export default ProbChoice = (props) =>{
 
         <Text/>
         {!subBtn ? 
-            (<TouchableOpacity onPress = {() => {props.problem.PRB_USER_ANSW = click; props.setIsSubmit(!props.isSubmit); setSubBtn(true)}} disabled = {click==0} style = {[styles.button, {backgroundColor: click == 0 ? "#D9D9D9" : "#94AF9F"}]}>
+            (<TouchableOpacity onPress = {() => {problem.PRB_USER_ANSW = click; setIsSubmit(!isSubmit); setSubBtn(true)}} disabled = {click==0} style = {[styles.button, {backgroundColor: click == 0 ? "#D9D9D9" : "#94AF9F"}]}>
                 <Text>
                     SUBMIT
                 </Text>
             </TouchableOpacity>): 
-            (<TouchableOpacity onPress = {() => {props.setNextBtn(props.nextBtn+1)}} style = {[styles.button, {backgroundColor: "#94AF9F"}]}>
+            (<TouchableOpacity onPress = {() => {setNextBtn(nextBtn+1)}} style = {[styles.button, {backgroundColor: "#94AF9F"}]}>
                 <Text>
                     NEXT
                 </Text>

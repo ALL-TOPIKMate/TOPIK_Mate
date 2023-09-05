@@ -2,75 +2,55 @@ import React, { useRef, useState, useEffect } from 'react';
 import {View, Text, StyleSheet, Button, TouchableOpacity} from 'react-native'
 
 
-// import TrackPlayer from 'react-native-track-player';
-import Sound from 'react-native-sound';
 
-Sound.setCategory('Playback');
+const AudRef = ({ audio }) =>{
 
-// await TrackPlayer.setupPlayer()
-
-const AudRef = ({ source }) =>{
     const [isRunning, setIsRunning] = useState(false);
-
-
-    const [audio, setAudio] = useState(undefined)
-
-
+    
     useEffect(()=>{
-
-        // 오디오 객체 생성
-        setAudio(new Sound(source, null, err => {
-            if (err) {
-                console.log('Failed to load the sound', err);
-                return undefined;
-              }
-              
-              // 로드 성공
-              console.log(`오디오 로드 성공. ${source}`);
-        }))
-
-        return () => {
-            if(audio){
-                console.log("오디오 멈춤")
-                audio.release()
-            }
-        }
-    }, [])
-
+        setIsRunning(false)
+    }, [audio])
 
     function audioPlay(){
         if(audio){
-            if(audio.isRunning()){
+            
+            if(audio.isPlaying()){
                 audio.pause()
+
                 setIsRunning(false)
             }else{
-                audio.play()
                 setIsRunning(true)
+        
+                // audio.play()
+
+                audio.play((success) => {
+                    if (success) {
+                      setIsRunning(false);
+                      console.log('successfully finished playing');
+                    } else {
+                      setIsRunning(false);
+                      console.log('playback failed due to audio decoding errors');
+                    }
+                })
             }
         }
     }
 
-
-    return (    
-        <View>
-            <View style = {styles.btnBox}>
-                <TouchableOpacity onPress={()=>{audioPlay()}} style = {styles.btnPlay}>
-                        {
-                            isRunning
-                            ? <Text style = {{color: "#F6F1F1", fontSize: 20, textAlign: "center"}}>
-                            Stop
-                            </Text>
-                            : <Text style = {{color: "#F6F1F1", fontSize: 20, textAlign: "center"}}>
-                            Start
-                            </Text>
-                        }
-                </TouchableOpacity>
-            </View>   
-
-            <Text/>
-            <Text/>
-        </View>
-    );
+    return (
+        <View style = {styles.btnBox}>
+            <TouchableOpacity onPress={()=>{audioPlay()}} style = {styles.btnPlay}>
+                    {
+                        isRunning
+                        ? <Text style = {{color: "#F6F1F1", fontSize: 20, textAlign: "center"}}>
+                        Stop
+                        </Text>
+                        : <Text style = {{color: "#F6F1F1", fontSize: 20, textAlign: "center"}}>
+                        Start
+                        </Text>
+                    }
+            </TouchableOpacity>
+        </View>  
+    )
 }
 
 const styles = StyleSheet.create({
