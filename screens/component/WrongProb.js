@@ -11,7 +11,7 @@ import ProbScrpt from './ProbScrpt';
 import WrongProbChoice from './WrongProbChoice';
 import WrongProbChoiceWrite from './WrongProbChoiceWrite';
 import AudRef from './AudRef';
-
+import MarkUserAnswer from "./MarkUserAnswer"
 
 
 export default WrongProb = ({ problem, images, audio, nextBtn, setNextBtn, isSubmit, setIsSubmit, userProblems, size }) =>{
@@ -29,17 +29,20 @@ export default WrongProb = ({ problem, images, audio, nextBtn, setNextBtn, isSub
 
     return (
       <View>
-        <ScrollView style = {styles.container}>    
+        <ScrollView>    
+            {
+                // 유저가 문제를 풀었다면 정답 표시
+                userProblems.current[nextBtn] &&
+                    <MarkUserAnswer 
+                        PRB_CORRT_ANSW = {problem.PRB_CORRT_ANSW}
+                        PRB_USER_ANSW = {userProblems.current[nextBtn].PRB_USER_ANSW}
+                    />
+            }
 
+            <View style = {styles.container}>
             {
                 problem.PRB_MAIN_CONT ?
-                <ProbMain 
-                    PRB_MAIN_CONT = {problem.PRB_MAIN_CONT} 
-                    PRB_NUM = {problem.PRB_NUM}
-                    PRB_CORRT_ANSW = {problem.PRB_CORRT_ANSW}
-                    PRB_USER_ANSW = {userProblems.current[nextBtn] ? userProblems.current[nextBtn].PRB_USER_ANSW: null}
-
-                    />: null
+                <ProbMain PRB_MAIN_CONT = {problem.PRB_MAIN_CONT} PRB_NUM = {problem.PRB_NUM} />: null
             }
 
             {
@@ -104,7 +107,7 @@ export default WrongProb = ({ problem, images, audio, nextBtn, setNextBtn, isSub
                     size = {size}
                 />
             }
-
+            </View>
         </ScrollView>
       </View>  
     );

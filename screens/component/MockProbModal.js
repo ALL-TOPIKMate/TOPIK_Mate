@@ -7,6 +7,7 @@ import ProbTxt from './ProbTxt';
 import ProbSub from './ProbSub';
 import ProbScrpt from './ProbScrpt';
 import MockProbChoice from './MockProbChoice';
+import MarkUserAnswer from "./MarkUserAnswer"
 
 
 const MockProbModal = ({ problem, index, setVisible, images, audios }) => {
@@ -21,15 +22,20 @@ const MockProbModal = ({ problem, index, setVisible, images, audios }) => {
                 console.log("modal appearance")
             }
             }>
-            <ScrollView style={styles.container}>
+            <ScrollView>
+                {/* MarkUserAnswer */}
+                <MarkUserAnswer 
+                    PRB_CORRT_ANSW={problem[index].PRB_CORRT_ANSW}
+                    PRB_USER_ANSW={problem[index].PRB_USER_ANSW || "0"} // 문제를 풀지 않은경우 0
+                />
 
+                <View style={styles.container}>
+                    
                 {/* ProbMain */}
                 <ProbMain 
                     PRB_MAIN_CONT={problem[index].PRB_MAIN_CONT} 
                     PRB_NUM={problem[index].PRB_NUM} 
-                    PRB_CORRT_ANSW={problem[index].PRB_CORRT_ANSW}
-                    PRB_USER_ANSW={problem[index].PRB_USER_ANSW || "0"}
-                    />
+                />
 
                 {/* 이미지 */}
                 {
@@ -71,6 +77,8 @@ const MockProbModal = ({ problem, index, setVisible, images, audios }) => {
 
                         : null
                 }
+
+                </View>
             </ScrollView>
         </Modal>
     );

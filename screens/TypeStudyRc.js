@@ -13,6 +13,8 @@ import ImgRef from "./component/ImgRef"
 import ProbSub from './component/ProbSub';
 import ProbScrpt from './component/ProbScrpt';
 import TypeProbChoice from './component/TypeProbChoice';
+import MarkUserAnswer from './component/MarkUserAnswer';
+
 
 //Reading
 const TypeStudyRc = ({ navigation, route }) => {
@@ -224,7 +226,7 @@ const TypeStudyRc = ({ navigation, route }) => {
         )
     } else {
         return (
-            <ScrollView style={styles.container}>
+            <ScrollView>
                 <View style={{ flexDirection: 'row' }}>
                     <TouchableOpacity style={{ marginLeft: 'auto' }} onPress={() => setprbstatus(false)}>
                         <View>
@@ -235,13 +237,21 @@ const TypeStudyRc = ({ navigation, route }) => {
                         </View>
                     </TouchableOpacity>
                 </View>
-                <View>
+
+                {
+                    prbchoice.current[currentIndex] && 
+                        <MarkUserAnswer 
+                            PRB_CORRT_ANSW={problems[currentIndex].PRB_CORRT_ANSW}
+                            PRB_USER_ANSW={prbchoice.current[currentIndex].PRB_USER_ANSW}
+                        />
+                }
+
+                <View style={styles.container}>
                     <ProbMain 
                         PRB_MAIN_CONT={problems[currentIndex].PRB_MAIN_CONT} 
                         PRB_NUM={currentIndex + 1} 
-                        PRB_CORRT_ANSW={problems[currentIndex].PRB_CORRT_ANSW}
-                        PRB_USER_ANSW={prbchoice.current[currentIndex] ? prbchoice.current[currentIndex].PRB_USER_ANSW : null}
-                        />
+                    />
+
                     {
                         // IMG_REF
                         problems[currentIndex].IMG_REF ?
@@ -300,7 +310,7 @@ const TypeStudyRc = ({ navigation, route }) => {
 
 const styles = StyleSheet.create({
     container: {
-        padding: 10,
+        padding: 20,
     },
     outButton: {
         width: 20,

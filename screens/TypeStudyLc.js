@@ -14,6 +14,7 @@ import AudRef from './component/AudRef';
 import ProbMain from './component/ProbMain';
 import ProbSub from './component/ProbSub';
 import TypeProbChoice from './component/TypeProbChoice';
+import MarkUserAnswer from "./component/MarkUserAnswer"
 
 
 Sound.setCategory('Playback');
@@ -336,7 +337,7 @@ const TypeStudyLc = ({ navigation, route }) => {
     }
     else {
         return (
-            <ScrollView style={styles.container}>
+            <ScrollView>
 
                 <View style={{ flexDirection: 'row' }}>
                     <TouchableOpacity style={{ marginLeft: 'auto' }} onPress={() => setprbstatus(false)}>
@@ -349,13 +350,22 @@ const TypeStudyLc = ({ navigation, route }) => {
                     </TouchableOpacity>
                 </View>
 
-                <View>
+
+                {
+                    prbchoice.current[currentIndex] && 
+                        <MarkUserAnswer 
+                            PRB_CORRT_ANSW={problems[currentIndex].PRB_CORRT_ANSW}
+                            PRB_USER_ANSW={prbchoice.current[currentIndex].PRB_USER_ANSW}
+                        />
+                }
+
+                <View style={styles.container}>
+
+
                     <ProbMain 
                         PRB_NUM={currentIndex + 1} 
                         PRB_MAIN_CONT={problems[currentIndex].PRB_MAIN_CONT} 
-                        PRB_CORRT_ANSW={problems[currentIndex].PRB_CORRT_ANSW}
-                        PRB_USER_ANSW={prbchoice.current[currentIndex] ? prbchoice.current[currentIndex].PRB_USER_ANSW : null}
-                        />
+                    />
 
                     <AudRef audio={audiosRef.current[problems[currentIndex].AUD_REF]} />
 
