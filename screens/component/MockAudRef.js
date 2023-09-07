@@ -5,29 +5,64 @@ import { StyleSheet, View, Text, TouchableOpacity } from 'react-native';
 
 const MockAudRef = ({ audio }) => {
 
-    
-    const finishTime = audio.getDuration()
-    const [currentTime, setCurrenttime] = useState(5)
-    const widthRef = useRef(null)
-    const width = useRef(0)
+    // const isComponentMounted = useRef(true)
+    const intervalId = useRef(null)
 
+    // init timer 
+    const finishTime = parseInt(audio.getDuration())
+    const [width, setWidth] = useState(0)
 
-    // useEffect(()=>{
-
-    //     if(widthRef.current){
-    //         console.log(widthRef.current.width)
-    //         width.current = widthRef.current.width
-    //         // console.log(width.current)
-    //         // setTimeout(()=>{
-
-    //         // }, 1000)
-    //     }
-
-    // }, [widthRef])
-
-
+    // count timer
+    const [currentTime, setCurrenttime] = useState(0)
+    const [currentWidth, setCurrentWidth] = useState(0)
 
     const [isRunning, setIsRunning] = useState(false);
+
+
+    useEffect(() => {
+
+        return () => {
+            // isComponentMounted.current = false
+
+            clearInterval(intervalId.current)
+        }
+
+    }, [])
+
+    useEffect(() => {
+
+        console.log(currentWidth, currentTime)
+        setCurrentWidth(width / finishTime * currentTime)
+
+    }, [currentTime])
+
+    useEffect(() => {
+
+        if (isRunning) {
+
+            intervalId.current = setInterval(() => {
+
+                setCurrenttime(prevTime =>
+                    prevTime < finishTime ?
+                        prevTime + 1 :
+                        prevTime
+                )
+
+            }, 1000)
+
+        } else {
+
+            clearInterval(intervalId.current)
+            intervalId.current = null
+
+            if(currentTime == finishTime){
+                setCurrenttime(0)
+                setCurrentWidth(0)
+            }
+
+        }
+    }, [isRunning])
+
 
     function audioPlay() {
         if (audio) {
@@ -67,14 +102,18 @@ const MockAudRef = ({ audio }) => {
                         </Text>
                 }
             </TouchableOpacity>
-            <TouchableOpacity ref={widthRef} disabled={true} style={styles.playlist} >
-                <Text style={{ backgroundColor: "black", height: 10, width: 5 }}>
-                    ▷
+            <View style = {{flex: 5, marginLeft: 10}}>
+                <Text />
+                <TouchableOpacity onLayout={(e) => { setWidth(e.nativeEvent.layout.width) }} disabled={true} style={styles.playlist} >
+                    <Text style={{ backgroundColor: "black", height: 10, width: currentWidth }}>
+                        ▷
+                    </Text>
+                </TouchableOpacity>
+                <Text>
+                    {currentTime} / {finishTime}초
                 </Text>
-            </TouchableOpacity>
-            <Text>
-                {audio.getDuration()}초
-            </Text>
+            </View>
+            
         </View>
     )
 }
@@ -106,14 +145,11 @@ const styles = StyleSheet.create({
     },
 
     playlist: {
-        flex: 5,
         backgroundColor: "white",
 
         borderRadius: 5,
 
         height: 10,
-
-        marginLeft: 10
     },
 })
 
