@@ -75,6 +75,9 @@ export default WrongProbChoiceWrite = ({ PRB_CORRT_ANSW, PRB_USER_ANSW, PRB_USER
                     <Text style={{ color: "black", textAlign: "center" }}>NEXT TO</Text>
                 </TouchableOpacity>
             </View>
+
+            <Text />
+            <Text />
         </View>
     )
 }
