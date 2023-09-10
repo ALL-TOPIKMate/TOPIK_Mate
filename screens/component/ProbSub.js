@@ -1,14 +1,31 @@
 import React from "react";
-import { Text, View, StyleSheet } from "react-native";
+import { Text, View, StyleSheet, useWindowDimensions } from "react-native";
+import RenderHTML from "react-native-render-html";
 
+export default ProbSub = ({PRB_SUB_CONT}) =>{
 
-export default ProbSub = (props) =>{
+    const {width} = useWindowDimensions() // window's width
+
+    // html code
+    const source = {
+        html: `
+            <p style = "
+                padding: 0px;
+                margin: 0px;
+                color: #000000;
+            ">
+            ${PRB_SUB_CONT}
+            </p>
+        `
+    }
+
     return (
         <View>
-            <View style = {styles.ContentBox}>
-                <Text style = {{color: "#000000"}}>
-                    {props.PRB_SUB_CONT}
-                </Text>
+            <View style = {styles.contentBox}>
+                <RenderHTML
+                    source={source}
+                    contentWidth={width}
+                />
             </View>
             
             <Text/>
@@ -18,7 +35,8 @@ export default ProbSub = (props) =>{
 }
 
 const styles = StyleSheet.create({
-    ContentBox: {
+    contentBox: {
         padding: 5,
+        marginVertical: 10
     }
 })

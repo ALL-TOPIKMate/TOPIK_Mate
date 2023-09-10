@@ -1,14 +1,33 @@
 import React from "react";
-import { Text, View, StyleSheet } from "react-native";
+import { Text, View, StyleSheet, useWindowDimensions } from "react-native";
+import RenderHTML from "react-native-render-html";
+import { splitProblemToNewline } from "../../lib/utils";
 
+export default ProbTxt = ({PRB_TXT}) =>{
 
-export default ProbTxt = (props) =>{
+    const {width} = useWindowDimensions() // window's width
+
+    // html code
+    const source = {
+        html: `
+            <p style = "
+                padding: 0px;
+                margin: 0px;
+                font-size: 15px;
+                // color: #000000;
+            ">
+            ${splitProblemToNewline(PRB_TXT)} 
+            </p>
+        `
+    }// 가 나 다 라 개행처리
+
     return (
         <View>
             <View style = {styles.textBox}>
-                <Text>
-                  {props.PRB_TXT}
-              </Text>
+                <RenderHTML
+                    source={source}
+                    contentWidth={width}
+                />
             </View>
 
             <Text />
