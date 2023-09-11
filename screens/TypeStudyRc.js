@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useContext } from 'react';
-import { View, Text, Button, StyleSheet, TouchableOpacity, Image, Modal, ScrollView } from 'react-native';
+import { View, Text, Button, StyleSheet, TouchableOpacity, Image, Modal, ScrollView, Alert } from 'react-native';
 import firestore from '@react-native-firebase/firestore';
 import firebase from '@react-native-firebase/app';
 import storage, { getStorage } from '@react-native-firebase/storage'
@@ -227,26 +227,33 @@ const TypeStudyRc = ({ navigation, route }) => {
     } else {
         return (
             <ScrollView>
-                <View style={{ flexDirection: 'row' }}>
-                    <TouchableOpacity style={{ marginLeft: 'auto' }} onPress={() => setprbstatus(false)}>
-                        <View>
-                            <Image
-                                source={require('../assets/out-icon.png')}
-                                style={styles.outButton}
-                            />
-                        </View>
-                    </TouchableOpacity>
-                </View>
-
                 {
                     prbchoice.current[currentIndex] && 
+                    <View style = {{top: 10}}>
                         <MarkUserAnswer 
                             PRB_CORRT_ANSW={problems[currentIndex].PRB_CORRT_ANSW}
                             PRB_USER_ANSW={prbchoice.current[currentIndex].PRB_USER_ANSW}
                         />
+                    </View>
                 }
 
                 <View style={styles.container}>
+                    <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
+                        <Text>
+                            {route.params.tag}
+                        </Text>
+
+                        <TouchableOpacity onPress={() => {
+                            Alert.alert("학습 종료", "학습을 종료하시겠습니까?", [
+                                { text: "yes", onPress: () =>  setprbstatus(false) },
+                                { text: "no" }
+                            ])
+                        }}>
+                            <Text>exit</Text>
+                        </TouchableOpacity>
+                    </View>
+
+
                     <ProbMain 
                         PRB_MAIN_CONT={problems[currentIndex].PRB_MAIN_CONT} 
                         PRB_NUM={currentIndex + 1} 

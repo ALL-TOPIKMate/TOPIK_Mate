@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useContext } from 'react';
-import { View, Text, Button, StyleSheet, TouchableOpacity,Image, ScrollView } from 'react-native';
+import { View, Text, Button, StyleSheet, TouchableOpacity, Image, ScrollView, Alert } from 'react-native';
 import AppNameHeader from './component/AppNameHeader';
 import firestore from '@react-native-firebase/firestore';
 import firebase from '@react-native-firebase/app';
@@ -208,18 +208,22 @@ const TypeStudyWr = ({ navigation, route }) => {
     else {
         return (
             <ScrollView style={styles.container}>
-                <View style={{ flexDirection: 'row' }}>
-                    <TouchableOpacity style={{ marginLeft: 'auto' }} onPress={() => setprbstatus(false)}>
-                        <View>
-                            <Image
-                                source={require('../assets/out-icon.png')}
-                                style={styles.outButton}
-                            />
-                        </View>
-                    </TouchableOpacity>
-                </View>
-
                 <View>
+                    <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
+                        <Text>
+                            {route.params.tag}
+                        </Text>
+
+                        <TouchableOpacity onPress={() => {
+                            Alert.alert("학습 종료", "학습을 종료하시겠습니까?", [
+                                { text: "yes", onPress: () =>  setprbstatus(false) },
+                                { text: "no" }
+                            ])
+                        }}>
+                            <Text>exit</Text>
+                        </TouchableOpacity>
+                    </View>
+                    
                     <ProbMain PRB_NUM = {currentIndex + 1} PRB_MAIN_CONT = {problems[currentIndex].PRB_MAIN_CONT} />
 
                     {

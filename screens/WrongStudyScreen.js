@@ -423,6 +423,11 @@ const WrongStudyScreen = ({ route, navigation }) => {
                 isSubmit={isSubmit}
                 setIsSubmit={setIsSubmit}
 
+                level = {USER.level}
+                tag = {problems[nextBtn].TAG}
+                section = {problems[nextBtn].PRB_SECT.slice(0,2)}
+                setResultscreen = {setResultscreen} // 나가기 버튼시 결과화면
+
                 userProblems={userProblems} // 제출버튼 후 유저 답안 기록
 
                 size={problems.length} // WR 영역일경우

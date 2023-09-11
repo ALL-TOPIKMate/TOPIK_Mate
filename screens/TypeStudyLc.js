@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useContext } from 'react';
-import { View, Text, Button, StyleSheet, TouchableOpacity, Image, Modal, ScrollView } from 'react-native';
+import { View, Text, Button, StyleSheet, TouchableOpacity, Image, Modal, ScrollView, Alert } from 'react-native';
 import firestore from '@react-native-firebase/firestore';
 import { subscribeAuth } from "../lib/auth";
 import firebase from '@react-native-firebase/app';
@@ -192,11 +192,11 @@ const TypeStudyLc = ({ navigation, route }) => {
 
 
             // 화면 준비상태
-            if(isComponentMounted.current){
+            if (isComponentMounted.current) {
                 setIsImageReady(false)
                 setIsAudReady(false)
             }
-           
+
         }
 
     }, [currentIndex]);
@@ -210,11 +210,11 @@ const TypeStudyLc = ({ navigation, route }) => {
             // console.log(problems)
             // console.log(audioCount.current)
             loadMultimedia(problems, imagesRef, audiosRef, imageStorage, audioStorage, setIsAudReady, currentIndex, audioCount, isComponentMounted).then(() => {
-                
-                if(isComponentMounted.current){
+
+                if (isComponentMounted.current) {
                     setIsImageReady(true)
                 }
-                
+
             })
 
         }
@@ -273,28 +273,28 @@ const TypeStudyLc = ({ navigation, route }) => {
                 if (lastDoc) {
                     const lastDocId = lastDoc.id;
 
-                    if(isComponentMounted.current){
+                    if (isComponentMounted.current) {
                         setLast(lastDocId);
                     }
-                    
+
                 } else {
-                    if(isComponentMounted.current){
+                    if (isComponentMounted.current) {
                         setLast(null);
                     }
                 }
 
 
-                if(isComponentMounted.current){
+                if (isComponentMounted.current) {
                     setProblems([...problems, ...prblist]);
                 }
-                
+
             } else {
                 console.log('No more problems to load.');
 
-                if(isComponentMounted.current){
+                if (isComponentMounted.current) {
                     setLast(null);
                 }
-                
+
             }
         } catch (error) {
             console.log(error);
@@ -338,33 +338,36 @@ const TypeStudyLc = ({ navigation, route }) => {
     else {
         return (
             <ScrollView>
-
-                <View style={{ flexDirection: 'row' }}>
-                    <TouchableOpacity style={{ marginLeft: 'auto' }} onPress={() => setprbstatus(false)}>
-                        <View>
-                            <Image
-                                source={require('../assets/out-icon.png')}
-                                style={styles.outButton}
-                            />
-                        </View>
-                    </TouchableOpacity>
-                </View>
-
-
                 {
-                    prbchoice.current[currentIndex] && 
-                        <MarkUserAnswer 
+                    prbchoice.current[currentIndex] &&
+                    <View style = {{top: 10}}>
+                        <MarkUserAnswer
                             PRB_CORRT_ANSW={problems[currentIndex].PRB_CORRT_ANSW}
                             PRB_USER_ANSW={prbchoice.current[currentIndex].PRB_USER_ANSW}
                         />
+                    </View>
                 }
 
                 <View style={styles.container}>
 
+                    <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
+                        <Text>
+                            {route.params.tag}
+                        </Text>
 
-                    <ProbMain 
-                        PRB_NUM={currentIndex + 1} 
-                        PRB_MAIN_CONT={problems[currentIndex].PRB_MAIN_CONT} 
+                        <TouchableOpacity onPress={() => {
+                            Alert.alert("학습 종료", "학습을 종료하시겠습니까?", [
+                                { text: "yes", onPress: () =>  setprbstatus(false) },
+                                { text: "no" }
+                            ])
+                        }}>
+                            <Text>exit</Text>
+                        </TouchableOpacity>
+                    </View>
+
+                    <ProbMain
+                        PRB_NUM={currentIndex + 1}
+                        PRB_MAIN_CONT={problems[currentIndex].PRB_MAIN_CONT}
                     />
 
                     <AudRef audio={audiosRef.current[problems[currentIndex].AUD_REF]} />
@@ -395,7 +398,7 @@ const TypeStudyLc = ({ navigation, route }) => {
                         size={problems.length}
                     />
                 </View>
-                <View style = {{ height: 50}}/>
+                <View style={{ height: 50 }} />
             </ScrollView>
 
         );

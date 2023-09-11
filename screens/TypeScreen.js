@@ -146,7 +146,7 @@ const TypeScreen = ({ navigation }) => {
                             key={index}
                             style={[styles.button, styles.buttonMargin]}
                             onPress={() => {
-                                navigation.navigate('TypeStudyLc', { source: 'LS_TAG', paddedIndex: button.id });
+                                navigation.navigate('TypeStudyLc', { source: 'LS_TAG', paddedIndex: button.id, tag: button.tag });
                             }}
                         >
                             <Text style={styles.columnbutton}> {button.tag} </Text>
@@ -161,7 +161,7 @@ const TypeScreen = ({ navigation }) => {
                             key={index}
                             style={[styles.button, styles.buttonMargin]}
                             onPress={() => {
-                                navigation.navigate('TypeStudyRc', { source: 'RD_TAG', paddedIndex: button.id });
+                                navigation.navigate('TypeStudyRc', { source: 'RD_TAG', paddedIndex: button.id, tag: button.tag });
                             }}
                         >
                             <Text style={styles.columnbutton}>{button.tag} </Text>
@@ -176,7 +176,7 @@ const TypeScreen = ({ navigation }) => {
                             key={index}
                             style={[styles.button, styles.buttonMargin]}
                             onPress={() => {
-                                navigation.navigate('TypeStudyWr', { source: 'WR_TAG', paddedIndex: button.id });
+                                navigation.navigate('TypeStudyWr', { source: 'WR_TAG', paddedIndex: button.id, tag: button.tag });
                             }}
                         >
                             <Text style={styles.columnbutton}>{button.tag} </Text>
