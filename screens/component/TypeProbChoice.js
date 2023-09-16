@@ -91,6 +91,7 @@ export default TypeProbChoice = ({ problem, imagesRef, audio, PRB_CHOICE1, PRB_C
 
     return (
         <View>
+            <Text /><Text />
             {
                 (isImage) ? (
                     <View style={styles.ImageRow}>

@@ -7,8 +7,8 @@ const MockTimer = ({ setIsEnd, level }) => {
     const navigation = useNavigation();
 
     const levelTime = {
-        'LV1': 30, // 10s
-        'LV2': 30, // 30s
+        'LV1': 300, // 10s
+        'LV2': 300, // 30s
     }
 
     const [time, setTime] = useState(levelTime[level])
