@@ -166,6 +166,8 @@ const RecommendStudyScreen = ({route, navigation}) =>{
     const correctCount = useRef(0)
     // 푼 문제 개수 
     const problemCount = useRef(0)
+    // 문제풀이시간 타이머
+    const startTime = useRef(0)
 
 
 
@@ -205,6 +207,9 @@ const RecommendStudyScreen = ({route, navigation}) =>{
 
             // wrong
             USER.updateUserWrongColl(prevProblem.current.slice(userIndex, userIndex+problemCount.current), userProblem.current.slice(userIndex, userIndex+problemCount.current))
+            // history
+            // USER.updateHistoryColl(userProblem.current.slice(userIndex, userIndex+problemCount.current))
+
 
             // RecommendScreen update
             USER.recIndex = userIndex + Number(problemCount.current)
@@ -275,6 +280,9 @@ const RecommendStudyScreen = ({route, navigation}) =>{
     useEffect(()=>{
 
         if(readyProblem && readyAudio){
+            // 문제풀이시작시 시간 카운팅
+            startTime.current = Date.now()
+
             console.log("문제 로드 및 객체 생성 완료")
         }else if(readyProblem){
             console.log("오디오 객체 생성중")
@@ -291,6 +299,9 @@ const RecommendStudyScreen = ({route, navigation}) =>{
 
         // 제출 버튼 클릭
        if(problem.length && userProblem.current[nextBtn].PRB_USER_ANSW){
+
+            // 문제 풀이시간 기록
+            userProblem.current[nextBtn].ELAPSED_TIME = Date.now() - startTime.current
 
             // 유저가 답안을 맞췄을 경우
             if(problem[nextBtn].PRB_CORRT_ANSW == userProblem.current[nextBtn].PRB_USER_ANSW){ 
@@ -310,6 +321,9 @@ const RecommendStudyScreen = ({route, navigation}) =>{
         if(nextBtn === problem.length && nextBtn != 0){
             navigation.replace("Result", {CORRT_CNT: correctCount.current + userCorrect, ALL_CNT: 10, PATH: "Home"})
         }
+
+        // 문제풀이시작시 시간 카운팅
+        startTime.current = Date.now()
     }, [nextBtn])
     
 
