@@ -14,7 +14,7 @@ const SplashScreen = ({ navigation }) => {
 
 
     const readUser = async() => {
-        await USER.initUserInfo()
+        await USER.getUserInfo()
     }
     
 
@@ -25,6 +25,7 @@ const SplashScreen = ({ navigation }) => {
             USER.initUser(user)
             readUser().then(()=>{
                 console.log(USER)
+                
                 navigation.replace("HomeStack")
             })
         }else{

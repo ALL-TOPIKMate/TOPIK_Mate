@@ -1,4 +1,4 @@
-import React, { useState, useContext } from 'react';
+import React, { useState, useContext, useEffect } from 'react';
 
 import { signUp } from "../lib/auth";
 import firestore from '@react-native-firebase/firestore';
@@ -13,46 +13,99 @@ import AppNameHeader from './component/AppNameHeader'
 
 const resultMessages = {
     "auth/email-already-in-use": "이미 가입된 이메일입니다.",
-    "auth/wrong-password": "잘못된 비밀번호입니다.",
-    "auth/user-not-found": "존재하지 않는 계정입니다.",
-    "auth/invalid-email": "유효하지 않은 이메일 주소입니다."
+    "auth/invalid-email": "유효하지 않은 이메일 주소입니다.",
+    "auth/weak-password": "패스워드가 약합니다. 공백을 제외하여 숫자 포함 영문자를 입력해주세요.",
+}
+
+// 랜덤 난수 생성 (닉네임 자동생성)
+const initNickname = (length = 8) => {
+    return `USER${Math.random().toString(16).substring(2, length)}`
+};
+
+
+const ErrorText = ({text}) => {
+    return (
+        <Text style = {{color: "#DE0000"}}>
+            {text}
+        </Text>
+    )
+}
+
+const checkNickname = (nickname) => {
+    // 글자 수 제한: 1자 ~ 32자 
+    // 공백 제한
+
+    return nickname.length >=1 && nickname.length<=32 && !nickname.includes(" ")
+}
+
+const checkEmail = (email) => {
+    // 글자 수 제한: 1자 ~
+
+    return email.length > 0
+}
+
+const checkPassword = (password) => {
+    // 글자 수 제한: 1자 ~
+
+    return password.length > 0
 }
 
 
-const SignupScreen = ({ navigation }) =>{
+const SignupScreen = ({ navigation, route }) =>{
     
     const USER = useContext(UserContext)
 
     const [form, setForm] = useState({
+        nickname: initNickname(),
         email: "",
         password: "",
-        
     });
     
 
     
-    const readUser = async() => {
-        await USER.initUserInfo()
-    }
+    // 인풋 텍스트 에러
+    const [nicknameError, setNicknameError] = useState("")
+    const [emailError, setEmailError] = useState("")
+    const [passwordError, setPasswordError] = useState("")
 
 
-    // 랜덤 난수 생성
-    const random = (length = 8) => {
-        return Math.random().toString(16).substring(2, length);
-    };
+    const problems = route.params.problem
 
+    useEffect(() => {
+        console.log(problems)
+    }, [])
+
+ 
 
     // 회원가입 함수
     const signUpSubmit = async () => { 
-        
-        const {email, password} = form;
-        const info = {email, password};
 
-        const nickname=(random(10));
-        const my_level = 1;
+        const {email, password, nickname} = form;
+        const info = {email, password};        
+        const my_level = USER.level
+
+
+        if(!(checkNickname(nickname) && checkEmail(email) && checkPassword(password))){
+            if(!checkNickname(nickname)){
+                setNicknameError("공백을 제외한 문자 1자 이상 32자이하로 입력하세요")
+            }else{
+                setNicknameError("")
+            }
+            if(!checkEmail(email)){
+                setEmailError("문자를 입력하세요")
+            }else{
+                setEmailError("")
+            }
+            if(!checkPassword(password)){
+                setPasswordError("문자를 입력하세요")
+            }else{
+                setPasswordError("")
+            }
+            return 
+        }
 
         try {
-            const {user} = await signUp(info);
+            const {user} = await signUp(info)
             const u_uid = user.uid
 
             console.log(user);
@@ -80,52 +133,78 @@ const SignupScreen = ({ navigation }) =>{
 
 
              // initialize uid, email
-             USER.initUser(user)
-             readUser().then(()=>{
-                 navigation.dispatch(
-                     CommonActions.reset({
-                       index: 0,
-                       routes: [{ name: 'HomeStack' }]
-                     })
-                   );
- 
-             })
+            USER.initUser(user)
+            // initialize level, nickname, recIndex, recCorrect
+            USER.setUserInfo(my_level, nickname)
+
+
+            // user history update 
+            // 추천문제 생산을 위한 대기(동기)
+            // await USER.updateHistoryColl(problems)
+
+            /*
+                문제 생산이 끝나면 라우팅 
+            */
+            navigation.dispatch(
+                CommonActions.reset({
+                  index: 0,
+                  routes: [{ name: 'HomeStack' }]
+                })
+            );
             
             return user;
         } catch (e) {
+
             const alertMessage = resultMessages[e.code] ? 
-            resultMessages[e.code] : "알 수 없는 이유로 회원가입에 실패하였습니다.";
+            resultMessages[e.code] : Alert.alert("알 수 없는 이유로 회원가입에 실패하였습니다.");
 
-            Alert.alert("회원가입 실패", alertMessage);
+            setEmailError(e.code == "auth/email-already-in-use" || e.code == "auth/invalid-email"? alertMessage: "")
+            setPasswordError(e.code == "auth/weak-password"? alertMessage: "")
+            setNicknameError("")
         }
-
     }
 
     
     return (
         <View style={styles.container}>
-            <AppNameHeader/>
-            <View>
+            <View style = {{height: 400}}>
+            <View style = {styles.inputContainer}>
+                <Text style = {styles.titleText}>nickname</Text>
                 <TextInput
                     style={styles.input}
-                    onChangeText={(value)=>setForm({displayName: form.displayName, email: value, password: form.password})}
-                    value={form.email}
-                    placeholder="이메일"
+                    onChangeText={(value)=>setForm({ nickname: value, email: form.email, password: form.password})}
+                    value={form.nickname}
+                    placeholder="닉네임을 입력하세요"
                 />
-                
+                <ErrorText text = {nicknameError} />
+            </View>
+            <View style = {styles.inputContainer}>
+                <Text style = {styles.titleText}>email</Text>
                 <TextInput
                     style={styles.input}
-                    onChangeText={(value)=>setForm({displayName: form.displayName, email: form.email, password: value})}
+                    onChangeText={(value)=>setForm({ nickname: form.nickname, email: value, password: form.password})}
+                    value={form.email}
+                    placeholder="이메일을 입력하세요"
+                />
+                <ErrorText text = {emailError} />
+            </View>
+            <View style = {styles.inputContainer}>
+                <Text style = {styles.titleText}>password</Text>
+                <TextInput
+                    style={styles.input}
+                    onChangeText={(value)=>setForm({ nickname: form.nickname, email: form.email, password: value})}
                     value={form.password}
-                    placeholder="비밀번호"
+                    placeholder="비밀번호를 입력하세요(8자 이상)"
                     secureTextEntry={true}
                 />
-                
-                <TouchableOpacity style={styles.button} onPress={()=> signUpSubmit()}>
-                    <Text style={styles.buttonText}>회원가입</Text>
-                </TouchableOpacity>
-                
+                <ErrorText text = {passwordError} />
             </View>
+            </View>
+            
+            <TouchableOpacity style={styles.button} onPress={()=> signUpSubmit()}>
+                <Text style={styles.buttonText}>회원가입</Text>
+            </TouchableOpacity>
+            
         </View>
     );
 }
@@ -135,26 +214,37 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: '#BBD6B8', // 원하는 배경색으로 변경
+        paddingHorizontal: 16,
+        paddingVertical: 40,
+
+        justifyContent: "space-between"
     },
+
+    inputContainer: {
+        marginBottom: 16
+    },
+
     input: {
-      height: 40,
-      margin: 12,
+      height: 50,
       borderWidth: 1,
       padding: 10,
-      backgroundColor: 'white',
+      backgroundColor: '#FFFFFF',
     },
     button: {
         backgroundColor: "#FFFFFF",
-        borderRadius: 8,
-        padding: 10,
-        margin: 10,
-        width: 250,
-        alignSelf: 'center'
+        padding: 14,
     },
     buttonText:{
-        color: 'black',
+        color: "#000000",
         textAlign: 'center',
     },
+
+    titleText: {
+        color: "#000000",
+        fontSize: 16,
+
+        paddingBottom: 4
+    }
   });
 
 

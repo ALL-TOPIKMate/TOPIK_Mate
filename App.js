@@ -37,6 +37,8 @@ import InfoApp from './screens/InfoApp';
 import WriteHistoryListScreen from './screens/WriteHistoryListScreen';
 import ResultScreen from './screens/ResultScreen';
 import SplashScreen from './screens/SplashScreen';
+import LevelScreen from './screens/LevelScreen';
+import LevelTestScreen from './screens/LevelTestScreen';
 
 
 
@@ -154,6 +156,8 @@ const AuthStackScreen =  () => {
         <Stack.Navigator initialRouteName = 'Signin'>
             <AuthStack.Screen name = "Signin" component = {SigninScreen}/>
             <AuthStack.Screen name = "Signup" component = {SignupScreen}/>
+            <AuthStack.Screen name = "Level" component = {LevelScreen} />
+            <AuthStack.Screen name = "LevelTest" component = {LevelTestScreen} />
         </Stack.Navigator>
     )
 }

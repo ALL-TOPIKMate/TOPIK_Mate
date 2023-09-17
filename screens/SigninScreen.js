@@ -29,7 +29,7 @@ const SigninScreen = ({navigation}) =>{
 
 
     const readUser = async() => {
-        await USER.initUserInfo()
+        await USER.getUserInfo()
     }
 
 
@@ -106,7 +106,7 @@ const SigninScreen = ({navigation}) =>{
                     <Text style={styles.signupText}>No account?</Text>
                     <View style={styles.dash} />
                 </View>
-                <TouchableOpacity style={styles.button2} onPress={()=> navigation.push("Signup")}>
+                <TouchableOpacity style={styles.button2} onPress={()=> navigation.push("Level")}>
                     <Text style={styles.buttonText2}>Create new one</Text>
                 </TouchableOpacity>
             </View>
