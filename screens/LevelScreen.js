@@ -20,7 +20,7 @@ const LevelScreen = ({navigation, route}) => {
 
         
         // push path (stack)
-        navigation.navigate("LevelTest")
+        navigation.navigate("Signup")
     }
 
     return (

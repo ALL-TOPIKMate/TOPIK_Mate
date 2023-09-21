@@ -16,8 +16,8 @@ import Loading from './component/Loading';
 
 
 // recommend collection firebase update
-const updateUserAnswer = async (recommendColl, index, correct) =>{
-    await recommendColl.doc("Recommend").update({
+const updateUserAnswer = (recommendColl, index, correct) =>{
+    recommendColl.doc("Recommend").update({
         userIndex: index,
         userCorrect: correct
     })
@@ -208,7 +208,7 @@ const RecommendStudyScreen = ({route, navigation}) =>{
             // wrong
             USER.updateUserWrongColl(prevProblem.current.slice(userIndex, userIndex+problemCount.current), userProblem.current.slice(userIndex, userIndex+problemCount.current))
             // history
-            // USER.updateHistoryColl(userProblem.current.slice(userIndex, userIndex+problemCount.current))
+            USER.updateHistoryColl(userProblem.current.slice(userIndex, userIndex+problemCount.current))
 
 
             // RecommendScreen update

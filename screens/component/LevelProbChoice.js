@@ -12,9 +12,7 @@ export default LevelProbChoice = ({ PRB_CHOICE1, PRB_CHOICE2, PRB_CHOICE3, PRB_C
 
     function nextButtonHandler(){
         // 유저 답안 기록
-        userData.push({
-            PRB_USER_ANSW: click
-        })
+        userData.PRB_USER_ANSW = click
 
         setIndex(currentIndex => currentIndex+1)
     }

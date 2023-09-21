@@ -11,7 +11,7 @@ import ProbScrpt from './ProbScrpt';
 import LevelProbChoice from './LevelProbChoice';
 
 
-export default LevelProb = ({ problem, userData, audios, images, setIndex, size, index }) => {
+export default LevelProb = ({ problem, userData, audios, images, setIndex, setResultscreen, size, index }) => {
 
     const audio = audios[problem.AUD_REF]
 
@@ -34,7 +34,7 @@ export default LevelProb = ({ problem, userData, audios, images, setIndex, size,
                 <Text>{size - index}문제 남았습니다</Text>
                 <TouchableOpacity onPress={() => {
                     Alert.alert("레벨테스트 종료", "중단하시겠습니까?", [
-                        { text: "yes", onPress: () => setIndex(size + 1) },
+                        { text: "yes", onPress: () => setResultscreen(true) },
                         { text: "no" }
                     ])
                 }}>

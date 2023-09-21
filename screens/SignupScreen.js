@@ -69,12 +69,6 @@ const SignupScreen = ({ navigation, route }) =>{
     const [passwordError, setPasswordError] = useState("")
 
 
-    const problems = route.params.problem
-
-    useEffect(() => {
-        console.log(problems)
-    }, [])
-
  
 
     // 회원가입 함수
@@ -107,6 +101,7 @@ const SignupScreen = ({ navigation, route }) =>{
         try {
             const {user} = await signUp(info)
             const u_uid = user.uid
+            const level_idx = 0
 
             console.log(user);
             console.log('닉네임', nickname);
@@ -114,7 +109,7 @@ const SignupScreen = ({ navigation, route }) =>{
             
             // 유저 구조
             const UserDoc = firestore().collection("users").doc(u_uid)
-            UserDoc.set({ email, nickname, my_level, u_uid})
+            UserDoc.set({ email, nickname, my_level, u_uid, level_idx})
             
 
             // 복습 문제 구조
@@ -134,17 +129,10 @@ const SignupScreen = ({ navigation, route }) =>{
 
              // initialize uid, email
             USER.initUser(user)
-            // initialize level, nickname, recIndex, recCorrect
+            // initialize level, nickname, levelIdx, recIndex, recCorrect
             USER.setUserInfo(my_level, nickname)
 
 
-            // user history update 
-            // 추천문제 생산을 위한 대기(동기)
-            // await USER.updateHistoryColl(problems)
-
-            /*
-                문제 생산이 끝나면 라우팅 
-            */
             navigation.dispatch(
                 CommonActions.reset({
                   index: 0,

@@ -38,7 +38,7 @@ import WriteHistoryListScreen from './screens/WriteHistoryListScreen';
 import ResultScreen from './screens/ResultScreen';
 import SplashScreen from './screens/SplashScreen';
 import LevelScreen from './screens/LevelScreen';
-import LevelTestScreen from './screens/LevelTestScreen';
+import LevelStudyScreen from './screens/LevelStudyScreen';
 
 
 
@@ -131,6 +131,7 @@ const HomeStackScreen = () => {
     return (
         <Stack.Navigator initialRouteName = 'Home'>
             <HomeStack.Screen name = "Home" component = {Home} options = {({route})=>({headerBackVisible: false, title: "TOPIK MATE", })}/>
+            <HomeStack.Screen name = "LevelStudy" component = {LevelStudyScreen} />
             <HomeStack.Screen name="InfoSetting" component = {InfoSetting}/>
             <HomeStack.Screen name = "RecommendStudy" component = {RecommendStudyScreen}/>
             <HomeStack.Screen name="MockStudy" component = {MockStudyScreen}/>
@@ -157,7 +158,6 @@ const AuthStackScreen =  () => {
             <AuthStack.Screen name = "Signin" component = {SigninScreen}/>
             <AuthStack.Screen name = "Signup" component = {SignupScreen}/>
             <AuthStack.Screen name = "Level" component = {LevelScreen} />
-            <AuthStack.Screen name = "LevelTest" component = {LevelTestScreen} />
         </Stack.Navigator>
     )
 }

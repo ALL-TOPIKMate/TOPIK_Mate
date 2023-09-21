@@ -51,15 +51,30 @@ const RecommendScreen = ({route, navigation}) =>{
                 
                 <View style = {[styles.recommend, {flex: 1.8,}]}>
 
-                    <TouchableOpacity style = {styles.recommendBtn} onPress={()=> (USER.recIndex == 10) ? (Alert.alert("", "문제가 없습니다 다음에 도전하세요.")): (navigation.navigate("RecommendStudy")) }>
+                    {
+                        // 레벨테스트 문제를 다 풀지 않았을 경우 (진단 고사)
+                        (USER.level == 1 && USER.levelIdx < 10) || (USER.level == 2 && USER.levelIdx < 10)?
+                        <TouchableOpacity style = {styles.recommendBtn} onPress={()=> navigation.navigate("LevelStudy") }>
+                            <Text style = {{color: "#F6F1F1", fontSize: 24, fontWeight: "bold", paddingVertical: 5}}>
+                                진단고사 풀기
+                            </Text>
+
+                            <Text style = {{color: "#F6F1F1", fontSize: 20}}>                        
+                                {10 - Number(USER.levelIdx)} / 10
+                            </Text>
+                        </TouchableOpacity>:
+
+                        // 다 풀었을 경우 (추천 문제)
+                        <TouchableOpacity style = {styles.recommendBtn} onPress={()=> (USER.recIndex == 10) ? (Alert.alert("", "문제가 없습니다 다음에 도전하세요.")): (navigation.navigate("RecommendStudy")) }>
                         <Text style = {{color: "#F6F1F1", fontSize: 24, fontWeight: "bold", paddingVertical: 5}}>
-                            추천 문제 풀기
+                            추천문제 풀기
                         </Text>
 
                         <Text style = {{color: "#F6F1F1", fontSize: 20}}>                        
                             {10 - Number(USER.recIndex)} / 10
                         </Text>
-                    </TouchableOpacity>
+                        </TouchableOpacity>
+                    }
                     
                 </View>
 

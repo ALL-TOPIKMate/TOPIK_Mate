@@ -13,6 +13,14 @@ import LevelProb from './component/LevelProb';
 Sound.setCategory('Playback');
 
 
+const updateUserField = (userDoc, levelIdx) => {
+
+    userDoc.update({
+        level_idx: levelIdx
+    })
+
+}
+
 
 
 const audioURL = async (problem, audioRef, audioStorage, setReadyAudio, countAudio, isComponentMounted) => {
@@ -101,7 +109,7 @@ async function loadMultimedia(data, imageData, audioData, imageStorage, audioSto
 }
 
 
-const LevelTestScreen = ({ navigation }) => {
+const LevelStudyScreen = ({ navigation }) => {
 
     const USER = useContext(UserContext)
 
@@ -117,11 +125,18 @@ const LevelTestScreen = ({ navigation }) => {
     // 문제 콜렉션
     const problemColl = firestore().collection("problems")
         .doc("LV2").collection("PQ")
-        .doc("0052").collection("PRB_LIST")
+        .doc("0041").collection("PRB_LIST")
+
+    // 유저 도큐먼트
+    const userDoc = firestore().collection("users")
+        .doc(USER.uid)
+
+
 
 
     // 문제 데이터셋
     const [data, setData] = useState([])
+    const prevProblem = useRef([])
     const userData = useRef([])
 
     // 멀티미디어 저장
@@ -133,21 +148,29 @@ const LevelTestScreen = ({ navigation }) => {
     const [isAudioReady, setIsAudioReady] = useState(false)
     const [isImageReady, setIsImageReady] = useState(false)
 
+    // 문제 그만풀기
+    const [resultscreen, setResultscreen] = useState(false)
+
+
     // 문제 번호
-    const [index, setIndex] = useState(0)
+    const [index, setIndex] = useState(USER.levelIdx)
 
     // 오디오 카운팅
     const audioCount = useRef(0)
+    // 문제풀이개수 카운팅
+    const problemCount = useRef(0)
 
     // 문제풀이시간 타이머
     const startTime = useRef(0)
 
 
+    const userIndex = USER.levelIdx
+
 
     useEffect(() => {
 
         // 문제 불러오기
-        problemColl.limit(5).get().then(querySnapshot => {
+        problemColl.limit(10).get().then(querySnapshot => {
 
             let DATA = querySnapshot.docs.map(doc => {
                 if (doc._data.AUD_REF) {
@@ -164,6 +187,20 @@ const LevelTestScreen = ({ navigation }) => {
 
         return () => {
             isComponentMounted.current = false
+
+            // firebase update
+            // user field
+            updateUserField(userDoc, Number(userIndex) + Number(problemCount.current))
+
+
+            // wrong
+            USER.updateUserWrongColl(prevProblem.current.slice(userIndex, userIndex + problemCount.current), userData.current.slice(userIndex, userIndex + problemCount.current))
+            // history
+            USER.updateHistoryColl(userData.current.slice(userIndex, userIndex+problemCount.current))
+
+
+            // RecommendScreen update
+            USER.levelIdx = Number(userIndex) + Number(problemCount.current) 
         }
 
     }, [])
@@ -171,7 +208,10 @@ const LevelTestScreen = ({ navigation }) => {
 
     useEffect(() => {
         if (data.length) {
-            // console.log(data)
+           
+            // deep copy
+            prevProblem.current = JSON.parse(JSON.stringify(data))
+            userData.current = JSON.parse(JSON.stringify(data))
 
             if(audioCount.current == 0 && isComponentMounted.current){
                 setIsAudioReady(true)
@@ -189,25 +229,23 @@ const LevelTestScreen = ({ navigation }) => {
 
     useEffect(() => {
 
-        if(index > 0 && index - 1 < data.length){
+        if(isAudioReady && isImageReady){
+            // 문제풀이시간 기록
+            userData.current[index - 1].ELAPSED_TIME = Date.now() - startTime.current
 
-            // 유저 답안 포함한 문제 기록
-            // 유저 아이디는 회원가입 후 기록
-            userData.current[index - 1] = {
-                PRB_ID: data[index - 1].PRB_ID,
-                PRB_CORRT_ANSW: data[index - 1].PRB_CORRT_ANSW,
-                TAG: data[index - 1].TAG,
-
-                PRB_USER_ANSW: userData.current[index - 1].PRB_USER_ANSW,
-                ELAPSED_TIME: Date.now() - startTime.current
-            }
 
             // console.log(userData.current[index - 1].ELAPSED_TIME)
             startTime.current = Date.now()
-        }
-        if(index > 0 && index >= data.length){
 
-            navigation.replace("Signup", {problem: userData.current})
+
+            // 문제풀이개수 카운팅
+            problemCount.current++
+        
+            if(index >= data.length){
+
+                setResultscreen(true)
+    
+            }
         }
         
     }, [index])
@@ -228,18 +266,35 @@ const LevelTestScreen = ({ navigation }) => {
     }, [isAudioReady, isImageReady])
 
 
+    useEffect(() => {
+        if(resultscreen){
 
-    if(!isImageReady || !isAudioReady || index >= data.length){
+            if(index == data.length){
+                Alert.alert("진단고사 완료", "수고하셨습니다 5-10분 뒤에 추천문제를 풀어보세요! ", [
+                    { text: "ok", onPress: () => navigation.pop() },
+                ])
+            }else{
+                navigation.pop()
+            }
+
+        }
+    }, [resultscreen])
+
+
+
+
+    if(!isImageReady || !isAudioReady){
         return <Loading />
-    }else{
+    }else if(index < data.length){
         return (
             <LevelProb
                 problem = {data[index]}
-                userData = {userData.current}
+                userData = {userData.current[index]}
                 audios = {audioData.current}
                 images = {imageData.current}
 
                 setIndex = {setIndex}
+                setResultscreen = {setResultscreen}
 
                 index = {index}
                 size = {data.length}
@@ -247,8 +302,10 @@ const LevelTestScreen = ({ navigation }) => {
                 key = {`LEVELPROB${index}`}
             />
         )
-        
+    }else{
+        return null
     }
+
 }
 
-export default LevelTestScreen
+export default LevelStudyScreen
