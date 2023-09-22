@@ -79,21 +79,18 @@ const SignupScreen = ({ navigation, route }) =>{
         const my_level = USER.level
 
 
+        setNicknameError("")
+        setEmailError("")
+        setPasswordError("")
         if(!(checkNickname(nickname) && checkEmail(email) && checkPassword(password))){
             if(!checkNickname(nickname)){
                 setNicknameError("공백을 제외한 문자 1자 이상 32자이하로 입력하세요")
-            }else{
-                setNicknameError("")
             }
             if(!checkEmail(email)){
-                setEmailError("문자를 입력하세요")
-            }else{
-                setEmailError("")
+                setEmailError("이메일을 입력하세요")
             }
             if(!checkPassword(password)){
-                setPasswordError("문자를 입력하세요")
-            }else{
-                setPasswordError("")
+                setPasswordError("패스워드를 입력하세요")
             }
             return 
         }
@@ -148,7 +145,6 @@ const SignupScreen = ({ navigation, route }) =>{
 
             setEmailError(e.code == "auth/email-already-in-use" || e.code == "auth/invalid-email"? alertMessage: "")
             setPasswordError(e.code == "auth/weak-password"? alertMessage: "")
-            setNicknameError("")
         }
     }
 

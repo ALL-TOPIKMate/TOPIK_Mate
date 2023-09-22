@@ -11,14 +11,36 @@ import { signIn, checkUserSession } from "../lib/auth";
 
 
 const resultMessages = {
-    "auth/email-already-in-use": "이미 가입된 이메일입니다.",
     "auth/wrong-password": "잘못된 비밀번호입니다.",
     "auth/user-not-found": "존재하지 않는 계정입니다.",
     "auth/invalid-email": "유효하지 않은 이메일 주소입니다."
 }
 
 
+const checkEmail = (email) => {
+    // 글자 수 제한: 1자 ~
+
+    return email.length > 0
+}
+
+const checkPassword = (password) => {
+    // 글자 수 제한: 1자 ~
+
+    return password.length > 0
+}
+
+
+const ErrorText = ({text}) => {
+    return (
+        <Text style = {{color: "#DE0000", marginHorizontal: 12}}>
+            {text}
+        </Text>
+    )
+}
+
+
 const SigninScreen = ({navigation}) =>{
+    
     const USER = useContext(UserContext)
 
     const [form, setForm] = useState({
@@ -26,6 +48,12 @@ const SigninScreen = ({navigation}) =>{
         password: "",
         
     });
+
+
+    // 인풋 텍스트 에러
+    const [emailError, setEmailError] = useState("")
+    const [passwordError, setPasswordError] = useState("")
+
 
 
     const readUser = async() => {
@@ -39,6 +67,20 @@ const SigninScreen = ({navigation}) =>{
 
         const {email, password} = form;
         const info = {email, password};
+
+        setEmailError("")
+        setPasswordError("")
+        if(!checkEmail(email) || !checkPassword(password)){
+            if(!checkEmail(email)){
+                setEmailError("이메일을 입력하세요")
+            }
+            if(!checkPassword(password)){
+                setPasswordError("패스워드를 입력하세요")
+            }
+
+            return 
+        }
+
 
         try {  
             const {user} = await signIn(info); 
@@ -64,10 +106,10 @@ const SigninScreen = ({navigation}) =>{
             
         } catch (e) {
             const alertMessage = resultMessages[e.code] ? 
-            resultMessages[e.code] : "알 수 없는 이유로 로그인에 실패하였습니다.";
+            resultMessages[e.code] : Alert.alert("알 수 없는 이유로 로그인에 실패하였습니다.");
 
-            console.log(e)
-            Alert.alert("로그인 실패", alertMessage);
+            setEmailError(e.code == "auth/invalid-email" || e.code == "auth/user-not-found"? alertMessage: "")
+            setPasswordError(e.code == "auth/wrong-password"? alertMessage: "")
         }
 
     }
@@ -97,7 +139,9 @@ const SigninScreen = ({navigation}) =>{
                     secureTextEntry={true}
                 />
                 
-                
+                {emailError.length > 0 && <ErrorText text = {emailError} /> }
+                {passwordError.length > 0 && <ErrorText text = {passwordError} />}
+
                 <TouchableOpacity style={styles.button} onPress={signInSubmit}>
                     <Text style={styles.buttonText}>로그인</Text>
                 </TouchableOpacity>
