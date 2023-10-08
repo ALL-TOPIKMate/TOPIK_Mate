@@ -316,19 +316,17 @@ const WrongStudyScreen = ({ route, navigation }) => {
     // 현재 풀이하고 있는 유형을 가르킴
     useEffect(() => {
 
-        if (typeIndex > 0) {
-            // console.log(typeIndex)
-            // 모든 유형의 문제를 모두 풀었다면
-            if (typeIndex >= route.params.userTag.length && isComponentMounted.current) {
-                setResultscreen(true)
-            } else {
-                // 아직 문제가 남아있다면
-                setIsReadyImage(false)
-                setIsReadyAudio(false)
+         // 모든 유형의 문제를 모두 풀었다면
+        if (typeIndex >= route.params.userTag.length && isComponentMounted.current) {
+            setResultscreen(true)
+        } else {
+            // 아직 문제가 남아있다면
+            setIsReadyImage(false)
+            setIsReadyAudio(false)
 
-                loadProblem(wrongCollection, problems, setProblems, route.params.userTag, lastVisible, typeIndex, setTypeIndex, countAudio, isComponentMounted)
-            }
+            loadProblem(wrongCollection, problems, setProblems, route.params.userTag, lastVisible, typeIndex, setTypeIndex, countAudio, isComponentMounted)
         }
+    
 
     }, [typeIndex])
 
