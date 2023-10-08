@@ -57,13 +57,15 @@ const TypeStudyRc = ({ navigation, route }) => {
     const [totalProblem, setTotalProblem] = useState(0);
     // 맞은 문제 개수
     const [CorrectProb, setCorrectProb] = useState(0);
-
+    // 문제풀이시간 카운팅
+    const startTime = useRef(0)
 
     // 문제 끝
     const [prbstatus, setprbstatus] = useState(true);
 
     // 화면 준비상태 (이미지 로드 완료시 true)
     const [isReady, setIsReady] = useState(false)
+    
 
 
 
@@ -72,11 +74,13 @@ const TypeStudyRc = ({ navigation, route }) => {
         // unmount
         return () => {
             isComponentMounted.current = false
-            // console.log(rawProblems.current)
-            // console.log(prbchoice.current)
+            
 
-            // 유저 오답 반영
+            // wrong
             USER.updateUserWrongColl(rawProblems.current, prbchoice.current)
+            // history
+            USER.updateHistoryColl(prbchoice.current)
+
         }
 
     }, [])
@@ -106,6 +110,8 @@ const TypeStudyRc = ({ navigation, route }) => {
             setIsReady(false)
 
         }
+
+        startTime.current = Date.now()
 
     }, [currentIndex])
 
@@ -192,10 +198,11 @@ const TypeStudyRc = ({ navigation, route }) => {
 
             prbchoice.current[currentIndex] = {
                 ...problems[currentIndex],
-                PRB_USER_ANSW: prbchoice.current[currentIndex].PRB_USER_ANSW
+                PRB_USER_ANSW: prbchoice.current[currentIndex].PRB_USER_ANSW,
+                ELAPSED_TIME: Date.now() - startTime.current
             }
 
-
+            console.log(prbchoice.current[currentIndex].ELAPSED_TIME)
             // 원본 문제 복사
             rawProblems.current.push(problems[currentIndex])
 
@@ -205,10 +212,18 @@ const TypeStudyRc = ({ navigation, route }) => {
 
             setTotalProblem(prevTotalProblem => prevTotalProblem + 1); // 전체 문제 갯수 저장
 
-
         }
+
     }, [submitted])
 
+
+    useEffect(() => {
+        
+        if(isReady){
+            startTime.current = Date.now()
+        }
+
+    }, [isReady])
 
     // 문제풀이 결과화면으로 이동
     useEffect(() => {

@@ -158,6 +158,8 @@ const TypeStudyLc = ({ navigation, route }) => {
     const [CorrectProb, setCorrectProb] = useState(0);
     // 오디오 카운팅
     const audioCount = useRef(0)
+    // 문제풀이시간 카운팅
+    const startTime = useRef(0)
 
 
 
@@ -173,10 +175,11 @@ const TypeStudyLc = ({ navigation, route }) => {
             })
 
 
-            // 복습 업로드 연결
-            // console.log(rawProblems.current)
-            // console.log(prbchoice.current)
+            // wrong
             USER.updateUserWrongColl(rawProblems.current, prbchoice.current)
+            // history
+            USER.updateHistoryColl(prbchoice.current)
+            
         }
 
     }, [])
@@ -185,19 +188,19 @@ const TypeStudyLc = ({ navigation, route }) => {
     useEffect(() => {
 
         // 문제가 없을 경우 더 가져옴
-        if (problems.length === currentIndex) {
+        if (problems.length === currentIndex && isComponentMounted.current) {
             audioCount.current = 0
 
             loadProblems()
 
 
             // 화면 준비상태
-            if (isComponentMounted.current) {
-                setIsImageReady(false)
-                setIsAudReady(false)
-            }
+            setIsImageReady(false)
+            setIsAudReady(false)
 
         }
+
+        startTime.current = Date.now()
 
     }, [currentIndex]);
 
@@ -224,6 +227,7 @@ const TypeStudyLc = ({ navigation, route }) => {
 
     useEffect(() => {
         if (isImageReady && isAudReady) {
+            startTime.current = Date.now()
             console.log("멀티미디어 로드 완료")
         } else if (isImageReady) {
             console.log("오디오 로드중")
@@ -310,7 +314,8 @@ const TypeStudyLc = ({ navigation, route }) => {
 
             prbchoice.current[currentIndex] = {
                 ...problems[currentIndex],
-                PRB_USER_ANSW: prbchoice.current[currentIndex].PRB_USER_ANSW
+                PRB_USER_ANSW: prbchoice.current[currentIndex].PRB_USER_ANSW,
+                ELAPSED_TIME: Date.now() - startTime.current
             }
 
 
@@ -322,7 +327,6 @@ const TypeStudyLc = ({ navigation, route }) => {
             }
 
             setTotalProblem(prevTotalProblem => prevTotalProblem + 1); // 전체 문제 갯수 저장
-
 
         }
     }, [submitted])
