@@ -8,11 +8,9 @@ import storage from '@react-native-firebase/storage';
 import UserContext from '../lib/UserContext';
 
 
-
 const Myaccount = ({ navigation }) => {
 
 	const USER = useContext(UserContext);
-
 
 
 	// 패스워드
@@ -81,27 +79,6 @@ const Myaccount = ({ navigation }) => {
 	};
 
 
-
-	// 회원 탈퇴 - 하위 문서 삭제
-	const deleteUser = async (email) => {
-		try {
-			const userRef = firestore().collection('users');
-			const storageRef = storage().ref().child('profile');
-			const querySnapshot = await userRef.where('email', '==', email).get();
-
-			querySnapshot.forEach(async (documentSnapshot) => {
-				const u_uid = documentSnapshot.data().u_uid;
-				await userRef.doc(u_uid).delete();
-				const imageRef = storageRef.child(`${email}.jpg`);
-				await imageRef.delete();
-			});
-
-			console.log('하위 문서 삭제 완료');
-		} catch (error) {
-			console.error('문서 삭제 오류:', error);
-		}
-	};
-
 	// 회원 탈퇴
 	const handleDeleteAccount = () => {
 		Alert.alert(
@@ -111,13 +88,19 @@ const Myaccount = ({ navigation }) => {
 				{ text: '취소', style: 'cancel' },
 				{
 					text: '삭제',
-					onPress: () => {
-						const email = USER.email;
+					onPress: async () => {
+
+						// 계정 탈퇴
 						deleteAccount()
 							.then(() => {
 								console.log('계정 삭제 성공');
+
+								/* 
+									asyncStorage로 uid 유저 문서 정리
+								*/
 								
-								deleteUser(email);
+								USER.deleteUser()
+
 
 								navigation.dispatch(
 									CommonActions.reset({
@@ -128,8 +111,15 @@ const Myaccount = ({ navigation }) => {
 							})
 							.catch((error) => {
 								console.log('계정 삭제 실패', error);
-								Alert.alert('에러:', error.message);
+								
+								if(error.code == "auth/requires-recent-login"){
+									Alert.alert("사용자 재인증", "최근 로그인 기록이 없습니다! 탈퇴를 원한다면 다시 로그인하세요.")
+									handleLogout()
+								}else{
+									Alert.alert('에러:', error.message);
+								}
 							});
+					
 					},
 				},
 			],
