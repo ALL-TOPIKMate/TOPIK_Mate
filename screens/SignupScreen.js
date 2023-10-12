@@ -14,7 +14,7 @@ import AppNameHeader from './component/AppNameHeader'
 const resultMessages = {
     "auth/email-already-in-use": "이미 가입된 이메일입니다.",
     "auth/invalid-email": "유효하지 않은 이메일 주소입니다.",
-    "auth/weak-password": "패스워드가 약합니다. 공백을 제외하여 숫자 포함 영문자를 입력해주세요.",
+    "auth/weak-password": "패스워드가 약합니다. 공백을 제외하여 6문자 이상 입력해주세요.",
 }
 
 // 랜덤 난수 생성 (닉네임 자동생성)
@@ -47,7 +47,7 @@ const checkEmail = (email) => {
 const checkPassword = (password) => {
     // 글자 수 제한: 1자 ~
 
-    return password.length > 0
+    return password.length > 5 && !password.includes(" ")
 }
 
 
@@ -90,7 +90,7 @@ const SignupScreen = ({ navigation, route }) =>{
                 setEmailError("이메일을 입력하세요")
             }
             if(!checkPassword(password)){
-                setPasswordError("패스워드를 입력하세요")
+                setPasswordError("공백을 제외하여 6문자 이상 입력하세요")
             }
             return 
         }
@@ -141,7 +141,9 @@ const SignupScreen = ({ navigation, route }) =>{
         } catch (e) {
 
             const alertMessage = resultMessages[e.code] ? 
-            resultMessages[e.code] : Alert.alert("알 수 없는 이유로 회원가입에 실패하였습니다.");
+            resultMessages[e.code] : Alert.alert("알 수 없는 이유로 회원가입에 실패하였습니다.")
+
+            console.log(e)
 
             setEmailError(e.code == "auth/email-already-in-use" || e.code == "auth/invalid-email"? alertMessage: "")
             setPasswordError(e.code == "auth/weak-password"? alertMessage: "")

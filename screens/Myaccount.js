@@ -7,6 +7,27 @@ import storage from '@react-native-firebase/storage';
 
 import UserContext from '../lib/UserContext';
 
+// error list 
+const resultMessages = {
+	"auth/invalid-email": "존재하지 않는 계정입니다",
+	"auth/wrong-password": "패스워드가 일치하지 않습니다",
+	"auth/weak-password": "패스워드가 약합니다. 6문자 이상 입력하세요"
+}
+
+
+const checkNickname = (nickname) => {
+    // 글자 수 제한: 1자 ~ 32자 
+    // 공백 제한
+
+    return nickname.length >=1 && nickname.length<=32 && !nickname.includes(" ")
+}
+
+
+const checkPassword = (password) => {
+    // 글자 수 제한: 1자 ~
+
+    return password.length > 5 && !password.includes(" ")
+}
 
 const Myaccount = ({ navigation }) => {
 
@@ -17,18 +38,32 @@ const Myaccount = ({ navigation }) => {
 	const [currentPassword, setCurrentPassword] = useState('');
 	const [newPassword, setNewPassword] = useState('');
 
+	// 탈퇴 - 사용자인증
+	const [email, setEmail] = useState(USER.email)
+	const [password, setPassword] = useState('')
+
 	// 닉네임
 	const [currentNickname, setCurrentNickname] = useState(USER.nickname); 
 	const [newNickname, setNewNickname] = useState('');
 	
 
-	const [error, setError] = useState(null);
-	
-	const [isModalVisible, setIsModalVisible] = useState(false); //모달창
-	
+	// 모달창
+	const [isPasswordModalVisible, setIsPasswordModalVisible] = useState(false);
+	const [isResignModalVisible, setIsResignModalVisible] = useState(false);
 	const [isNicknameModalVisible, setIsNicknameModalVisible] = useState(false);
 
 
+
+	useEffect(() => {
+		if(!isPasswordModalVisible){
+			setCurrentPassword("")
+			setNewPassword("")
+		}if(!isResignModalVisible){
+			setPassword("")
+		}if(!isNicknameModalVisible){
+			setNewNickname("")
+		}
+	}, [isPasswordModalVisible, isResignModalVisible, isNicknameModalVisible])
 
 
 	// 로그아웃 
@@ -55,9 +90,13 @@ const Myaccount = ({ navigation }) => {
 	// 패스워드 변경
 	const handlePasswordChange = (currentPassword, newPassword) => {
 
-		if (currentPassword === newPassword) {
+		if(!checkPassword(currentPassword) || !checkPassword(newPassword)){
+			Alert.alert('에러','6문자 이상 입력하세요')
+			return;
+		}
+		else if (currentPassword === newPassword) {
 			//setError("새로운 비밀번호는 기존 비밀번호와 다르게 입력해야 합니다.");
-			Alert.alert('에러: 새로운 비밀번호는 기존 비밀번호와 다르게 입력해야 합니다.')
+			Alert.alert('에러','새로운 비밀번호는 기존 비밀번호와 다르게 입력해야 합니다.')
 			return;
 		}
 		updateUserPassword(currentPassword, newPassword)
@@ -65,66 +104,47 @@ const Myaccount = ({ navigation }) => {
 				console.log('비밀번호 변경 성공');
 				Alert.alert('비밀번호 변경 성공');
 
-				setIsModalVisible(false);
-				setCurrentPassword('');
-				setNewPassword('');
-				
-				// 비밀번호 변경 후 필요한 동작 수행
+				setIsPasswordModalVisible(false);
 			})
 			.catch((error) => {
 				console.log('비밀번호 변경 실패', error);
 				//setError(error.message);
-				Alert.alert('에러:', error.message)
+				Alert.alert('에러:', resultMessages[error.code])
 			});
 	};
 
 
 	// 회원 탈퇴
 	const handleDeleteAccount = () => {
-		Alert.alert(
-			'계정 삭제',
-			'정말로 계정을 삭제하시겠습니까?',
-			[
-				{ text: '취소', style: 'cancel' },
-				{
-					text: '삭제',
-					onPress: async () => {
+		if(!checkPassword(password)){
+			Alert.alert('에러','패스워드 6문자 이상 입력하세요');
+			return 
+		}
+		
+		// 계정 탈퇴
+		deleteAccount(email, password)
+		.then(() => {
+			console.log('계정 삭제 성공');
 
-						// 계정 탈퇴
-						deleteAccount()
-							.then(() => {
-								console.log('계정 삭제 성공');
-
-								/* 
-									asyncStorage로 uid 유저 문서 정리
-								*/
-								
-								USER.deleteUser()
+			/* 
+				asyncStorage로 uid 유저 하위문서 정리
+			*/
+			
+			USER.deleteUser()
 
 
-								navigation.dispatch(
-									CommonActions.reset({
-										index: 0,
-										routes: [{ name: 'AuthStack' }],
-									})
-								);
-							})
-							.catch((error) => {
-								console.log('계정 삭제 실패', error);
-								
-								if(error.code == "auth/requires-recent-login"){
-									Alert.alert("사용자 재인증", "최근 로그인 기록이 없습니다! 탈퇴를 원한다면 다시 로그인하세요.")
-									handleLogout()
-								}else{
-									Alert.alert('에러:', error.message);
-								}
-							});
-					
-					},
-				},
-			],
-			{ cancelable: false }
-		);
+			navigation.dispatch(
+				CommonActions.reset({
+					index: 0,
+					routes: [{ name: 'AuthStack' }],
+				})
+			);
+		})
+		.catch((error) => {
+			console.log('계정 삭제 실패', error.message);
+			
+			Alert.alert('에러:', resultMessages[error.code]);
+		});
 	};
 
 
@@ -133,7 +153,6 @@ const Myaccount = ({ navigation }) => {
 	const handleUpdateNickname = async () => {
 		const userEmail = USER.email
 		await updateNicknameByEmail(userEmail, newNickname);
-		setIsNicknameModalVisible(false);
 	};
 
 
@@ -142,6 +161,10 @@ const Myaccount = ({ navigation }) => {
 	// 닉네임 적용
 	const updateNicknameByEmail = async (email, nickname) => {
 		try {
+			if(!checkNickname(nickname)){
+				Alert.alert('에러','공백을 제외한 문자를 입력하세요');
+				return 
+			}
 			const userRef = firestore().collection('users');
 			const querySnapshot = await userRef.where('email', '==', email).get();
 
@@ -151,10 +174,8 @@ const Myaccount = ({ navigation }) => {
 			});
 
 			console.log('닉네임 변경 완료');
-
+			setIsNicknameModalVisible(false);
 			setCurrentNickname(newNickname);
-			setNewNickname('');
-
 
 			USER.nickname = newNickname
 		} catch (error) {
@@ -164,28 +185,34 @@ const Myaccount = ({ navigation }) => {
 
 	return (
 		<View style={styles.container}>
+
 			<Text>계정 내용</Text>
 			<Text> 이메일 : {USER.email}</Text>
+			
 			<View style={styles.buttonContainer}>
+
+				{/* logout */}
 				<TouchableOpacity
 					style={styles.button}
 					onPress={handleLogout}
 				>
 					<Text style={styles.buttonText}>로그아웃</Text>
 				</TouchableOpacity>
+
+
+				{/* change password */}
 				<Modal
 					animationType="slide"
 					transparent={true}
-					visible={isModalVisible}
+					visible={isPasswordModalVisible}
 					onRequestClose={() => {
-						Alert.alert('Modal has been closed.');
-						setIsModalVisible(!isModalVisible);
+						// Alert.alert('Modal has been closed.');
+						setIsPasswordModalVisible(!isPasswordModalVisible);
 					}}
 				>
-
 					<View style={styles.modalView}>
 						<Text style={styles.modalText}>비밀번호 변경하기 </Text>
-						<View style={styles.passwordContainer}>
+						<View>
 							<TextInput
 								style={styles.input}
 								secureTextEntry
@@ -208,19 +235,58 @@ const Myaccount = ({ navigation }) => {
 								}}
 							>
 								<Text style={styles.textStyle}>변경하기</Text>
-								{error && <Text style={styles.errorText}>{error}</Text>}
 							</Pressable>
 						</View>
 					</View>
 				</Modal>
 				<Pressable
 					style={[styles.button, styles.buttonOpen]}
-					onPress={() => setIsModalVisible(true)}>
+					onPress={() => setIsPasswordModalVisible(true)}>
 					<Text style={styles.textStyle2}>비밀번호 변경</Text>
 				</Pressable>
-				<TouchableOpacity style={styles.button} onPress={handleDeleteAccount}>
+
+
+				{ /* 회원 탈퇴 */}
+				<Modal
+					animationType="slide"
+					transparent={true}
+					visible={isResignModalVisible}
+					onRequestClose={() => setIsResignModalVisible(false)}
+				>
+					<View style={styles.modalView}>
+						<Text style={styles.modalText}> 사용자 인증 </Text>
+						<View>
+							<TextInput
+								style={styles.input}
+								placeholder="email"
+								value={email}
+								editable = {false}
+							/>
+							<TextInput
+								style={styles.input}
+								placeholder="password"
+								value={password}
+								secureTextEntry
+								onChangeText={setPassword}
+							/>
+
+							<Pressable
+								style={[styles.button, styles.buttonClose]}
+								onPress={() => {
+									handleDeleteAccount()
+								}}
+							>
+								<Text style={styles.textStyle}>탈퇴하기</Text>
+							</Pressable>
+						</View>
+					</View>
+				</Modal>
+				<TouchableOpacity style={styles.button} onPress={() => setIsResignModalVisible(true)}>
 					<Text style={styles.buttonText}>회원 탈퇴</Text>
 				</TouchableOpacity>
+
+
+				{/* 닉네임 변경 */ }
 				<Modal
 					animationType="slide"
 					transparent={true}
@@ -228,11 +294,15 @@ const Myaccount = ({ navigation }) => {
 					onRequestClose={() => setIsNicknameModalVisible(false)}
 
 				>
-
 					<View style={styles.modalView}>
 						<Text style={styles.modalText}> 닉네임 변경 </Text>
-						<View style={styles.passwordContainer}>
-							<Text>현재 닉네임: {currentNickname}</Text>
+						<View>
+							<TextInput
+								style={styles.input}
+								placeholder="현재 닉네임"
+								value={"현재 닉네임: "+ currentNickname}
+								editable = {false}
+							/>
 							<TextInput
 								style={styles.input}
 								placeholder="새로운 닉네임"
@@ -247,7 +317,6 @@ const Myaccount = ({ navigation }) => {
 								}}
 							>
 								<Text style={styles.textStyle}>변경하기</Text>
-								{error && <Text style={styles.errorText}>{error}</Text>}
 							</Pressable>
 						</View>
 					</View>
@@ -282,12 +351,6 @@ const styles = StyleSheet.create({
 	buttonText: {
 		color: 'white',
 		fontSize: 16,
-		fontWeight: 'bold',
-		textAlign: 'center',
-	},
-	buttonText2: {
-		color: 'white',
-		fontSize: 13,
 		fontWeight: 'bold',
 		textAlign: 'center',
 	},
