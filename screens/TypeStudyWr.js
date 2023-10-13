@@ -238,7 +238,8 @@ const TypeStudyWr = ({ navigation, route }) => {
                     }
 
                     <TypeProbChoiceWrite 
-                        problem = {userProblems.current}
+                        userProblem = {userProblems.current}
+                        problem = {problems[currentIndex]}
 
                         currentIndex = {currentIndex}
                         setCurrentIndex = {setCurrentIndex}
@@ -252,7 +253,9 @@ const TypeStudyWr = ({ navigation, route }) => {
                         PRB_USER_ANSW = {userProblems.current[currentIndex] ? userProblems.current[currentIndex].PRB_USER_ANSW : null}
                         PRB_USER_ANSW2 = {userProblems.current[currentIndex] ? userProblems.current[currentIndex].PRB_USER_ANSW2 : null}
                         SCORE = {userProblems.current[currentIndex] ? userProblems.current[currentIndex].SCORE : -1}
+                        SCORE2 = {userProblems.current[currentIndex] ? userProblems.current[currentIndex].SCORE2 : -1}
                         ERROR_CONT = {userProblems.current[currentIndex] ? userProblems.current[currentIndex].ERROR_CONT: null}
+                        ERROR_CONT2 = {userProblems.current[currentIndex] ? userProblems.current[currentIndex].ERROR_CONT2: null}
 
                         size = {problems.length}
 
