@@ -1,17 +1,60 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { ScrollView, View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { Table, TableWrapper, Row, Cell } from 'react-native-table-component'
 
+import firestore from '@react-native-firebase/firestore';
+import UserContext from '../../lib/UserContext';
 import MockProbModal from './MockProbModal';
 import MockProbWriteModal from './MockProbWriteModal';
 
 const headers = ['No.', 'Selected', 'Answer', 'Result', 'Review'];
 
-const MockResult = ({ level, listen, write, read, prevImages, prevAudios }) => {
+
+
+const MockResult = ({ level, listen, write, read, prevImages, prevAudios, problems }) => {
+
+    const USER = useContext(UserContext)
+
     /* 푼 문제 재확인(결과화면 모달) */
     const [modal, setModal] = useState(<MockProbModal />); // 모달 컴포넌트 state
     const [visible, setVisible] = useState(false); // 모달 비저블
     
+    // 영역별 점수
+    const [scoreLc, setScoreLc] = useState(0)
+    const [scoreRc, setScoreRc] = useState(0)
+    const [scoreWr, setScoreWr] = useState(0)
+
+
+
+    useEffect(() => {
+
+        let [lc, rc, wr] = [0, 0, 0]
+
+        listen.forEach((problem) => {
+            if(problem.PRB_USER_ANSW == problem.PRB_CORRT_ANSW){
+                lc += 2
+            }
+        })
+
+        read.forEach((problem) => {
+            if(problem.PRB_USER_ANSW == problem.PRB_CORRT_ANSW){
+                rc += 2
+            }
+        })
+    
+        write.forEach((problem) => {
+            wr += problem.SCORE 
+            wr += problem.SCORE2 || 0
+        })
+
+        setScoreLc(lc)
+        setScoreRc(rc)
+        setScoreWr(wr)
+
+
+    }, [problems])
+
+
 
     // 푼 문제 재확인 버튼 요소
     const element = (data, index) => (
@@ -40,16 +83,23 @@ const MockResult = ({ level, listen, write, read, prevImages, prevAudios }) => {
 
     return (
         <ScrollView style={styles.container}>
-
-            <Text style={{fontSize: 26}}>Mock Result</Text>
+            <View style = {[styles.titleContainer, {alignItems: "center"}]}>
+                <Text style={{fontSize: 26}}>Mock Result</Text>
+                {/* <Text style = {{fontSize: 20}}>Total {scoreLc + scoreRc + scoreWr} score</Text> */}
+            </View>
             
             {/* 모달 창 */}
             {visible && modal}
             
-            
+            <View style = {{height: 50}} />
+
+
             {/* 듣기 */}
             <View>
-            <Text style={styles.sectionTitle}>듣기</Text>
+                <View style = {styles.titleContainer}>
+                    <Text style={styles.sectionTitle}>듣기</Text>
+                    <Text style = {[styles.sectionTitle]}>{scoreLc} score</Text>    
+                </View>
             <Table borderStyle={{borderWidth: 1, borderColor: '#C1C0B9'}}>
                 <Row data={headers} style={styles.row} textStyle={styles.text}/>
                 {
@@ -68,32 +118,42 @@ const MockResult = ({ level, listen, write, read, prevImages, prevAudios }) => {
             </Table>
             </View>
             
-
-
             {/* 쓰기 */}
             {
                 level === 'LV2'
                 ? <View>
-                <Text style={styles.sectionTitle}>쓰기</Text>
+                    <View style = {{height: 50}} />
+                    <View style = {{borderBottomColor: '#C1C0B9', borderBottomWidth: StyleSheet.hairlineWidth, marginLeft: 4}}/>
+                    <View style = {styles.titleContainer}>
+                        <Text style={styles.sectionTitle}>쓰기</Text>
+                        <Text style = {styles.sectionTitle}>{scoreWr >= 0 ? scoreWr + " score" :  "54번 채점중..."} </Text>    
+                    </View>
                 <View>
                     {
                         write.map((rowData, rowIndex) => {
                             return (
                             <View key={rowIndex}>
-                                <View style={{flexDirection: 'row'}}>
+                                <View style={{flexDirection: 'row', justifyContent: "space-between", alignItems: "center"}}>
                                     <Text style={styles.prbNumText}>{rowData['PRB_NUM']}</Text>
-                                    <TouchableOpacity 
-                                        onPress={() => {
-                                            setModal(<MockProbWriteModal 
-                                                problem={write}
-                                                index={rowIndex}
-                                                setVisible={setVisible}
-                                                images={prevImages}/>);
-                                            setVisible(true);}}
-                                        style={styles.reviewButton}
-                                    >
+                                    <View style = {{flexDirection: "row"}}>
+                                        <TouchableOpacity 
+                                            onPress={() => {
+                                                setModal(<MockProbWriteModal 
+                                                    problem={write}
+                                                    index={rowIndex}
+                                                    setVisible={setVisible}
+                                                    images={prevImages}/>);
+                                                setVisible(true);}}
+                                            style={styles.reviewButton}
+                                        >
                                         <Text style={styles.text}>Review</Text>
-                                    </TouchableOpacity>
+                                        </TouchableOpacity>
+                                        {
+                                            rowData.SCORE >= 0 ?
+                                            <Text style = {{fontSize: 16, marginLeft: 6}}>{rowData.SCORE + (rowData.SCORE2 || 0)} / {rowData.PRB_POINT}</Text>:
+                                            <Text style = {{fontSize: 16, marginLeft: 6}}>채점중...</Text>
+                                        }
+                                    </View>
                                 </View>                                    
                             
                                 {
@@ -118,11 +178,16 @@ const MockResult = ({ level, listen, write, read, prevImages, prevAudios }) => {
                 : null
             }
             
-            
+            <View style = {{height: 50}} />
+            <View style = {{borderBottomColor: '#C1C0B9', borderBottomWidth: StyleSheet.hairlineWidth, marginLeft: 4}}/>
+
 
             {/* 읽기 */}
             <View>
-            <Text style={styles.sectionTitle}>읽기</Text>
+            <View style = {styles.titleContainer}>
+                <Text style={styles.sectionTitle}>읽기</Text>
+                <Text style = {styles.sectionTitle}>{scoreRc} score</Text>    
+            </View>
             <Table style={{marginBottom: 50}} borderStyle={{borderWidth: 1, borderColor: '#C1C0B9'}}>
                 <Row data={headers} style={styles.row} textStyle={styles.text} />
                 {
@@ -156,6 +221,11 @@ const styles = StyleSheet.create({
         fontSize: 20,
     },
 
+    titleContainer: {
+        flexDirection: "row",
+        justifyContent: "space-between"
+    },  
+
     row: {
         height: 40,
         flexDirection: 'row',
@@ -180,7 +250,7 @@ const styles = StyleSheet.create({
         padding: 10,
         borderColor: '#C1C0B9',
         borderWidth: 2,
-        borderRadius: 10,
+        // borderRadius: 10,
         marginTop: 10,
         marginBottom: 20,
     },

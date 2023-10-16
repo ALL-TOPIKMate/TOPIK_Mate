@@ -1,5 +1,6 @@
 import React from 'react';
-import { StyleSheet, Modal, ScrollView, Image, View, Text, TouchableOpacity } from 'react-native';
+import { StyleSheet, Modal, ScrollView, Image, View, Text, TouchableOpacity, useWindowDimensions } from 'react-native';
+import RenderHTML from "react-native-render-html";
 
 import { splitProblemAnswer } from '../../lib/utils';
 import ProbMain from './ProbMain';
@@ -7,18 +8,62 @@ import ImgRef from './ImgRef';
 import ProbTxt from './ProbTxt';
 
 
-function ViewBox({text}){
-    return (
-        <View style = {styles.viewBox}>
-            <Text>
-                {text}
-            </Text>
-        </View>
-    )
+function ViewBox({text, width}){
+    if(width != undefined){
+        return (
+            <View style = {styles.viewBox}>
+                <RenderHTML
+                    source = {text}
+                    contentWidth={width}
+                />
+            </View>
+        )
+    }else{
+        return (
+            <View style = {styles.viewBox}>
+                <Text>
+                    {text}
+                </Text>
+            </View>
+        )
+    }
+    
 }
 
 const MockProbWriteModal = ({ problem, index, setVisible, images }) => {
+
+    const {width} = useWindowDimensions() // window's width
+
+
+    // html code
+    const source = {
+        html: `
+            <p style = "
+                padding: 0px;
+                margin: 0px;
+                font-size: 15px;
+                // color: #000000;
+            ">
+            ${problem[index].ERROR_CONT} 
+            </p>
+        `
+    }
+
+    const source2 = {
+        html: `
+            <p style = "
+                padding: 0px;
+                margin: 0px;
+                font-size: 15px;
+                // color: #000000;
+            ">
+            ${problem[index].ERROR_CONT2} 
+            </p>
+        `
+    }
+
     
+
     return (
         <Modal
             animationType={"slide"}
@@ -26,7 +71,7 @@ const MockProbWriteModal = ({ problem, index, setVisible, images }) => {
             visible={true}
             onRequestClose={() => {
                 setVisible(false)
-                console.log("modal appearance")
+                // console.log("modal appearance")
             }
         }>
             <ScrollView style={styles.container}>
@@ -70,7 +115,8 @@ const MockProbWriteModal = ({ problem, index, setVisible, images }) => {
                                 <Text style = {[styles.textLeft, styles.text]}>Result</Text>
                                 <Text style = {[styles.textRight, styles.text]}>Score: {problem[index].SCORE} / 5</Text>
                             </View>
-                            <ViewBox text = {problem[index].ERROR_CONT} />
+                            
+                            <ViewBox text = {source} width = {width}/>
                             
                         </View>
 
@@ -88,10 +134,11 @@ const MockProbWriteModal = ({ problem, index, setVisible, images }) => {
 
                             <View style = {styles.alignRow}>
                                 <Text style = {[styles.textLeft, styles.text]}>Result</Text>
-                                <Text style = {[styles.textRight, styles.text]}>Score: {problem[index].SCORE} / 5</Text>
+                                <Text style = {[styles.textRight, styles.text]}>Score: {problem[index].SCORE2} / 5</Text>
                             </View>
                             
-                            <ViewBox text = {problem[index].ERROR_CONT} />
+                            <ViewBox text = {source2} width = {width}/>
+
                         </View>
                     </View>
                     : <View>
@@ -107,7 +154,7 @@ const MockProbWriteModal = ({ problem, index, setVisible, images }) => {
                             <Text style = {[styles.textRight, styles.text]}>Score: {problem[index].SCORE} / {problem[index].PRB_POINT}</Text>
                         </View>
                         
-                        <ViewBox text = {problem[index].ERROR_CONT} />
+                        <ViewBox text = {source} width = {width} />
 
                     </View>
                 }

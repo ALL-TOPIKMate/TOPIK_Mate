@@ -19,7 +19,7 @@ const MockProbModal = ({ problem, index, setVisible, images, audios }) => {
             visible={true}
             onRequestClose={() => {
                 setVisible(false)
-                console.log("modal appearance")
+                // console.log("modal appearance")
             }
             }>
             <ScrollView>

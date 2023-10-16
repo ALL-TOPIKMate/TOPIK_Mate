@@ -94,12 +94,8 @@ const MockAudRef = ({ audio }) => {
             <TouchableOpacity onPress={() => { audioPlay() }} style={styles.btnPlay}>
                 {
                     isRunning
-                        ? <Text style={{ color: "#F6F1F1", fontSize: 16 }}>
-                            Stop
-                        </Text>
-                        : <Text style={{ color: "#F6F1F1", fontSize: 16 }}>
-                            Start
-                        </Text>
+                        ? <View style = {styles.stopButton} />
+                        : <View style = {styles.startButton} />
                 }
             </TouchableOpacity>
             <View style = {{flex: 5, marginLeft: 10}}>
@@ -135,7 +131,6 @@ const styles = StyleSheet.create({
         backgroundColor: "#94AF9F",
 
         borderRadius: 20,
-
         width: 80,
         height: 80,
 
@@ -151,6 +146,30 @@ const styles = StyleSheet.create({
 
         height: 10,
     },
+
+    // triangle shape
+    startButton: {
+        width: 0,
+        height: 0,
+        backgroundColor: "transparent",
+        borderStyle: "solid",
+        borderLeftWidth: 20,
+        borderRightWidth: 20,
+        borderBottomWidth: 40,
+        borderLeftColor: "transparent",
+        borderRightColor: "transparent",
+        borderBottomColor: "#F6F1F1",
+
+        transform: [{ rotate: "90deg" }],
+
+        left: 5,
+    },
+    // rectangle shape
+    stopButton: {
+        width: 30,
+        height: 30,
+        backgroundColor: "#F6F1F1"
+    }
 })
 
 export default MockAudRef;

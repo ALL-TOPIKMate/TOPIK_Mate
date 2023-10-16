@@ -14,7 +14,7 @@ const ProbMain = ({ PRB_NUM, PRB_MAIN_CONT }) => {
                 font-size: 15px;
                 color: #000000;
 
-                width: ${width-75}px; // text overflow (PRB_NUM이 차지하는만큼의 너비를 빼줌)
+                width: ${width - 90}px; // text overflow (PRB_NUM이 차지하는만큼의 너비를 빼줌)
 
                 padding: 0px;
                 margin: 5px 10px; 

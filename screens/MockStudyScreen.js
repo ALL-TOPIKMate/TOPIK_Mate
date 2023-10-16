@@ -3,35 +3,66 @@ import { View, StyleSheet } from 'react-native'
 import firebase from '@react-native-firebase/app';
 import firestore from '@react-native-firebase/firestore';
 import { getStorage } from '@react-native-firebase/storage'; // include storage module besides Firebase core(firebase/app)
-import auth from '@react-native-firebase/auth'; // 사용자 정보 가져오기
 import Sound from 'react-native-sound';
 
 
 import UserContext from '../lib/UserContext';
-
+import { getScoring } from '../lib/utils';
 import Loading from './component/Loading';
 import MockProb from './component/MockProb';
 import MockResult from './component/MockResult';
 import MockTimer from './component/MockTimer';
 
 
-// import 유틸
-import { getNow } from '../utils/DateUtil';
-
 
 Sound.setCategory('Playback');
 
 
 
-async function getWriteScore(write){
-    let size = write.length
-    
-    for(let i = 0; i < size; i++){
-        write[i].SCORE = 0
-        write[i].ERROR_CONT = "감점요인 입력칸입니다."
+async function getWriteScore(write, problems, setProblems, isComponentMounted){
+    const time = Date.now()
+
+    if(write.length == 0){
+        return 
     }
 
+    // 51
+    write[0] = await getScoring(write[0])
+    console.log(Date.now() - time)
 
+
+    // 52 
+    write[1] = await getScoring(write[1])
+    console.log(Date.now() - time)
+
+    
+    // 53
+    write[2] = await getScoring(write[2])
+    console.log(Date.now() - time)
+
+
+    // 54
+    // 결과화면 먼저 보여줌
+    // 채점이 완료되면 채점결과가 보임
+    getScoring(write[3]).then(data => {
+        write[3] = data
+        console.log(Date.now() - time)
+
+
+        if(isComponentMounted.current){
+
+            setProblems(problems.map(data => {
+                if(data.PRB_SECT == "WR"){
+                    return write[data.PRB_NUM - 51]
+                }else{
+                    return data
+                }
+            }))
+
+        }
+    })
+
+    // console.log(write)
 }
 
 const MockStudyScreen = ({navigation, route}) =>{
@@ -57,6 +88,7 @@ const MockStudyScreen = ({navigation, route}) =>{
     const [problems, setProblems] = useState([]); // json
     const prevProblems = useRef([]); // 유저 답안 포함한 문제
     const rawProblems = useRef([]); // 원본 문제 (손상 X)
+
     // 오디오 개수 카운팅
     const countAudio = useRef();
 
@@ -211,7 +243,13 @@ const MockStudyScreen = ({navigation, route}) =>{
             // 사용자 틀린 문제 DB 업데이트
             // console.log(rawProblems.current)
             // console.log(prevProblems.current)
-            USER.updateUserWrongColl(rawProblems.current, prevProblems.current)
+
+            // 문제를 풀다 나갔을 경우 기록하지 않음
+            // 54번 채점 도중 
+            if(resultRef.current){
+                USER.updateUserWrongColl(rawProblems.current, prevProblems.current)
+            }
+
         }
 
     }, []);
@@ -233,6 +271,7 @@ const MockStudyScreen = ({navigation, route}) =>{
 
     const [resultscreen, setResultscreen] = useState(false)
     const [isEnd, setIsEnd] = useState(false); // 타임 아웃 여부
+    const resultRef = useRef(false)
     
 
     /* 사용자 답안 저장 */
@@ -250,7 +289,7 @@ const MockStudyScreen = ({navigation, route}) =>{
 
                 // 직전 풀이한 문제의 사용자 선택 저장
 
-                if(problems[index + direction].PRB_SECT == "WR" && problems[index + direction].TAG == "001" || problems[index + direction] == "002"){
+                if(problems[index + direction].PRB_SECT == "WR" && problems[index + direction].TAG == "001" || problems[index + direction].TAG == "002"){
                     newArr[index + direction]['PRB_USER_ANSW'] = choice;
                     newArr[index + direction]['PRB_USER_ANSW2'] = choice2;
                 }else{
@@ -311,11 +350,13 @@ const MockStudyScreen = ({navigation, route}) =>{
             */
             
 
-            getWriteScore(write).then(()=> {
+            getWriteScore(write, problems, setProblems, isComponentMounted).then(()=> {
                 
                 if(isComponentMounted.current){
                     setResultscreen(true)
+                    resultRef.current = true
                 }
+
             })
             
         }
@@ -367,6 +408,7 @@ const MockStudyScreen = ({navigation, route}) =>{
                 read={read}
                 prevImages={prevImages}
                 prevAudios={prevAudios}
+                problems = {problems}
             />
         )
     }else if (isEnd || index === prevProblems.current.length) {
