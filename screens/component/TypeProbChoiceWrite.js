@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
-import { View, Text, StyleSheet, TouchableOpacity, Button, TextInput} from 'react-native'
-import { splitProblemAnswer, dataParsing, dataParsing2 } from '../../lib/utils';
-
+import { View, Text, StyleSheet, TouchableOpacity, Button, TextInput, useWindowDimensions } from 'react-native'
+import { splitProblemAnswer, dataParsing, dataParsing2, getScoring } from '../../lib/utils';
+import RenderHTML from 'react-native-render-html';
 
 
 // UserInputText
@@ -23,12 +22,28 @@ const UserInputText = ({textInput, setTextInput}) => {
 }
 
 // Use after submit
-const ProblemAnswerView = ({text}) => {
+const ProblemAnswerView = ({text, width}) => {
+    
+    // html code
+    const source = {
+        html: `
+            <p style = "
+                padding: 0px;
+                margin: 0px;
+                font-size: 15px;
+                // color: #000000;
+            ">
+            ${text} 
+            </p>
+        `
+    }
+
     return (
         <View style = {styles.inputBox}>
-            <Text>
-                {text}
-            </Text>
+            <RenderHTML
+                source = {source}
+                contentWidth={width}
+            />
         </View>
     )
 }
@@ -36,6 +51,9 @@ const ProblemAnswerView = ({text}) => {
 
 
 export default TypeProbChoiceWrite = ({ problem, userProblem, currentIndex , setCurrentIndex, submitted, setSubmitted, PRB_CORRT_ANSW, PRB_USER_ANSW, PRB_USER_ANSW2, TAG, PRB_POINT, SCORE, SCORE2, ERROR_CONT, ERROR_CONT2, size}) => {
+
+    const {width} = useWindowDimensions() // window's width
+
 
     // 유저 답안1
     const [textInput, setTextInput] = useState(PRB_USER_ANSW);
@@ -51,8 +69,9 @@ export default TypeProbChoiceWrite = ({ problem, userProblem, currentIndex , set
     const [score2, setScore2] = useState(SCORE2)
 
     
-
+    
     useEffect(() => {
+        // 문제 이동 || 채점 직후 
         if(submitted){
             
             setScore(SCORE)
@@ -61,9 +80,6 @@ export default TypeProbChoiceWrite = ({ problem, userProblem, currentIndex , set
             setErrorContents(ERROR_CONT)
             setErrorContents2(ERROR_CONT2)
 
-            // const data = ERROR_CONT.split("/")
-            // console.log(data[0], data[1])
-            // console.log(ERROR_CONT2)
         }
     }, [submitted])
 
@@ -85,118 +101,27 @@ export default TypeProbChoiceWrite = ({ problem, userProblem, currentIndex , set
 
 
     const handleSubmitProblem = async() =>{
-        const answer = {}
+        let answer = {...problem}
 
         /*
             서술형 채점은 여기서
         */
 
         if(TAG == "001" || TAG == "002"){
+
             answer.PRB_USER_ANSW = textInput
             answer.PRB_USER_ANSW2 = textInput2
-
-            const data1 = dataParsing({...problem, text: splitProblemAnswer(PRB_CORRT_ANSW).text1}, textInput)
-            const data2 = dataParsing({...problem, text: splitProblemAnswer(PRB_CORRT_ANSW).text2}, textInput2)
-
-
-            // ㄱ 문제
-            await axios.post("https://port-0-docker-essay-score-jvvy2blm7ipnj3.sel5.cloudtype.app/main", data1).then(res => {
-                console.log("ㄱ 문제")
-                const data = res.data
-                
-                answer.SCORE = data.result_score
-                answer.ERROR_CONT = `${data.s_message}<br/>`
-                
-                // 맞춤법 검사기 출력
-                answer.ERROR_CONT += "맞춤법 검사<br/>"
-                for(let i in data.sp_message){
-                    for(let key in data.sp_message[i]){
-                        answer.ERROR_CONT+=`${key} ${data.sp_message[i][key]}<br/>`
-                    }
-                }
-
-            }).catch(err => {
-                console.log(err)
-            })
-            
-            // ㄴ 문제
-            await axios.post("https://port-0-docker-essay-score-jvvy2blm7ipnj3.sel5.cloudtype.app/main", data2).then(res => {
-                console.log("ㄴ 문제")
-                const data = res.data
-
-                answer.SCORE2 = data.result_score
-                answer.ERROR_CONT2 = `${data.s_message}<br/>`
-
-                // 맞춤법 검사기 출력
-                answer.ERROR_CONT2 += "맞춤법 검사<br/>"
-                for(let i in data.sp_message){
-                    for(let key in data.sp_message[i]){
-                        answer.ERROR_CONT2+=`${key} ${data.sp_message[i][key]}<br/>`
-                    }
-                }
-
-            }).catch(err => {
-                console.log(err)
-            })
-
           
-        }else if(TAG == "003"){
+        }else if(TAG == "003" || TAG == "004"){
+
             answer.PRB_USER_ANSW = textInput
 
-            const data = dataParsing({...problem, text: PRB_CORRT_ANSW}, textInput)
-
-            // console.log(data)
-            await axios.post("https://port-0-docker-essay-score-jvvy2blm7ipnj3.sel5.cloudtype.app/main", data).then(res => {
-                const data = res.data
-
-                answer.SCORE = data.result_score
-                answer.ERROR_CONT = `${data.s_message}<br/>`
-
-                // 글자수 출력
-                answer.ERROR_CONT += `글자 수: ${data.len_message}<br/>`
-
-                // 맞춤법 검사기 출력
-                answer.ERROR_CONT += "맞춤법 검사<br/>"
-                for(let i in data.sp_message){
-                    for(let key in data.sp_message[i]){
-                        answer.ERROR_CONT+=`${key} ${data.sp_message[i][key]}<br/>`
-                    }
-                }
-
-            }).catch(err => {
-                console.log(err)
-            })
-            
-        }else if(TAG == "004"){
-            
-            const time = Date.now()
-            answer.PRB_USER_ANSW = textInput
-
-            const data = dataParsing2(problem, textInput)
-
-
-            // console.log(data)
-            await axios.post("https://port-0-docker-essay-score-jvvy2blm7ipnj3.sel5.cloudtype.app/main", data).then(res => {
-                const data = res.data
-
-                // answer.SCORE = data.result_score
-                answer.SCORE = 0
-                
-                console.log(Date.now() - time)
-                
-                // 글자수 출력
-                answer.ERROR_CONT = `글자 수: ${data["글자 수 검사"]}<br/>`
-                
-                // 채점 결과
-                answer.ERROR_CONT += data["채점결과"]
-            }).catch(err => {
-                console.log(err)
-            })
-            
         }
 
-        userProblem.push(answer)
         
+        answer = await getScoring(answer)
+
+        userProblem.push(answer)
         
         setSubmitted(true)
     }
@@ -217,10 +142,10 @@ export default TypeProbChoiceWrite = ({ problem, userProblem, currentIndex , set
                                     <Text style = {[styles.textLeft, styles.text]}>Your answer</Text>
                                     <Text style = {[styles.textRight, styles.text]}>Score: {score} / 5</Text>        
                                 </View>
-                                <ProblemAnswerView text = {PRB_USER_ANSW}/>
+                                <ProblemAnswerView width = {width} text = {PRB_USER_ANSW}/>
                                 
                                 <Text style = {[styles.textLeft, styles.text]}>Best answer</Text>
-                                <ProblemAnswerView text = {splitProblemAnswer(PRB_CORRT_ANSW).text1}/>
+                                <ProblemAnswerView width = {width} text = {splitProblemAnswer(PRB_CORRT_ANSW).text1}/>
                             
                             </View>
 
@@ -231,10 +156,10 @@ export default TypeProbChoiceWrite = ({ problem, userProblem, currentIndex , set
                                     <Text style = {[styles.textLeft, styles.text]}>Your answer</Text>
                                     <Text style = {[styles.textRight, styles.text]}>Score: {score2} / 5</Text>        
                                 </View>
-                                <ProblemAnswerView text = {PRB_USER_ANSW2}/>
+                                <ProblemAnswerView width = {width} text = {PRB_USER_ANSW2}/>
                                 
                                 <Text style = {[styles.textLeft, styles.text]}>Best answer</Text>
-                                <ProblemAnswerView text = {splitProblemAnswer(PRB_CORRT_ANSW).text2}/>
+                                <ProblemAnswerView width = {width} text = {splitProblemAnswer(PRB_CORRT_ANSW).text2}/>
                             
                             </View>
                         </View> :
@@ -243,18 +168,18 @@ export default TypeProbChoiceWrite = ({ problem, userProblem, currentIndex , set
                                     <Text style = {[styles.textLeft, styles.text]}>Your answer</Text>
                                     <Text style = {[styles.textRight, styles.text]}>Score: {score} / {PRB_POINT}</Text>        
                             </View>
-                            <ProblemAnswerView text = {PRB_USER_ANSW} />
+                            <ProblemAnswerView width = {width} text = {PRB_USER_ANSW} />
 
                             <Text style = {[styles.textLeft, styles.text]}>Best answer</Text>
-                            <ProblemAnswerView text = {PRB_CORRT_ANSW}/>
+                            <ProblemAnswerView width = {width} text = {PRB_CORRT_ANSW}/>
                         </View>
                 }
 
 
 
                 <Text style = {styles.text}>감점요인 / 채점기준</Text>
-                <ProblemAnswerView text = {errorContents} />
-                { (TAG == "001" || TAG == "002") && <ProblemAnswerView text = {errorContents2} /> }  
+                <ProblemAnswerView width = {width} text = {errorContents} />
+                { (TAG == "001" || TAG == "002") && <ProblemAnswerView width = {width} text = {errorContents2} /> }  
                 
 
                 <Text />

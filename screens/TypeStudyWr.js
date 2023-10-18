@@ -250,12 +250,12 @@ const TypeStudyWr = ({ navigation, route }) => {
                         TAG = {problems[currentIndex].TAG}
                         PRB_POINT = {problems[currentIndex].PRB_POINT}
 
-                        PRB_USER_ANSW = {userProblems.current[currentIndex] ? userProblems.current[currentIndex].PRB_USER_ANSW : null}
-                        PRB_USER_ANSW2 = {userProblems.current[currentIndex] ? userProblems.current[currentIndex].PRB_USER_ANSW2 : null}
-                        SCORE = {userProblems.current[currentIndex] ? userProblems.current[currentIndex].SCORE : -1}
-                        SCORE2 = {userProblems.current[currentIndex] ? userProblems.current[currentIndex].SCORE2 : -1}
-                        ERROR_CONT = {userProblems.current[currentIndex] ? userProblems.current[currentIndex].ERROR_CONT: null}
-                        ERROR_CONT2 = {userProblems.current[currentIndex] ? userProblems.current[currentIndex].ERROR_CONT2: null}
+                        PRB_USER_ANSW = {userProblems.current[currentIndex] ? userProblems.current[currentIndex].PRB_USER_ANSW : ""}
+                        PRB_USER_ANSW2 = {userProblems.current[currentIndex] ? userProblems.current[currentIndex].PRB_USER_ANSW2 : ""}
+                        SCORE = {userProblems.current[currentIndex] ? userProblems.current[currentIndex].SCORE : 0}
+                        SCORE2 = {userProblems.current[currentIndex] ? userProblems.current[currentIndex].SCORE2 : 0}
+                        ERROR_CONT = {userProblems.current[currentIndex] ? userProblems.current[currentIndex].ERROR_CONT: ""}
+                        ERROR_CONT2 = {userProblems.current[currentIndex] ? userProblems.current[currentIndex].ERROR_CONT2: ""}
 
                         size = {problems.length}
 
