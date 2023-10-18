@@ -1,20 +1,39 @@
 import React, { useState, useEffect, useRef } from 'react';
 
-import { View, Text, StyleSheet, TouchableOpacity, Button } from 'react-native'
+import { View, Text, StyleSheet, TouchableOpacity, Button, useWindowDimensions } from 'react-native'
+import RenderHTML from 'react-native-render-html';
 import { splitProblemAnswer } from '../../lib/utils';
 
 
 // 뷰 박스 컨테이너
-function ViewBox({text}){
+function ViewBox({text, width}){
+    const source = {
+        html: `
+            <p style = "
+                padding: 0px;
+                margin: 0px;
+                font-size: 15px;
+                // color: #000000;
+            ">
+            ${text} 
+            </p>
+        `
+    }
+
     return (
         <View style ={styles.viewBox}>
-            <Text>{text}</Text>
+            <RenderHTML 
+                source = {source}
+                contentWidth={width}
+            />
         </View>
     )
 }
 
 
-export default WrongProbChoiceWrite = ({ PRB_CORRT_ANSW, PRB_USER_ANSW, PRB_USER_ANSW2, SCORE, PRB_POINT, ERROR_CONT , nextBtn, setNextBtn, size, TAG }) => {
+export default WrongProbChoiceWrite = ({ PRB_CORRT_ANSW, PRB_USER_ANSW, PRB_USER_ANSW2, SCORE, SCORE2, PRB_POINT, ERROR_CONT, ERROR_CONT2, nextBtn, setNextBtn, size, TAG }) => {
+    const {width} = useWindowDimensions()
+    
     return (
         <View>
             {
@@ -25,44 +44,45 @@ export default WrongProbChoiceWrite = ({ PRB_CORRT_ANSW, PRB_USER_ANSW, PRB_USER
                         <Text style={[styles.text, styles.textLeft]}>Your Answer</Text>
                         <Text style={[styles.text, styles.textRight]}>Score: {SCORE} / 5</Text>
                     </View>
-                    <ViewBox text = {PRB_USER_ANSW} />
+                    <ViewBox text = {PRB_USER_ANSW} width = {width} />
                 
                     <Text />
 
                     <Text style={styles.text}>Best Answer</Text>
-                    <ViewBox text = {splitProblemAnswer(PRB_CORRT_ANSW).text1} />
+                    <ViewBox text = {splitProblemAnswer(PRB_CORRT_ANSW).text1} width = {width}/>
     
                     <Text />
 
                     <Text style={styles.text}>㉡</Text>
                     <View style = {styles.alignRow}>
                         <Text style={[styles.text, styles.textLeft]}>Your Answer</Text>
-                        <Text style={[styles.text, styles.textRight]}>Score: {SCORE} / 5</Text>
+                        <Text style={[styles.text, styles.textRight]}>Score: {SCORE2} / 5</Text>
                     </View>
-                    <ViewBox text = {PRB_USER_ANSW2} />
+                    <ViewBox text = {PRB_USER_ANSW2} width = {width} />
                 
                     <Text />
 
                     <Text style={styles.text}>Best Answer</Text>
-                    <ViewBox text = {splitProblemAnswer(PRB_CORRT_ANSW).text2} />
+                    <ViewBox text = {splitProblemAnswer(PRB_CORRT_ANSW).text2} width = {width} />
                 </View>: 
                 <View>
                     <View style = {styles.alignRow}>
                         <Text style={[styles.text, styles.textLeft]}>Your Answer</Text>
                         <Text style={[styles.text, styles.textRight]}>Score: {SCORE} / {PRB_POINT}</Text>
                     </View>
-                    <ViewBox text = {PRB_USER_ANSW} />
+                    <ViewBox text = {PRB_USER_ANSW} width = {width} />
                 
                     <Text />
 
                     <Text style={styles.text}>Best Answer</Text>
-                    <ViewBox text = {PRB_CORRT_ANSW} /> 
+                    <ViewBox text = {PRB_CORRT_ANSW} width = {width}/> 
                 </View>
             }
             
             <Text style={styles.text}>감점 요인</Text>
-            <ViewBox text = {ERROR_CONT} />
-
+            <ViewBox text = {ERROR_CONT} width = {width} />
+            { (TAG == "001" || TAG == "002") && <ViewBox text = {ERROR_CONT2} width = {width} />}
+            
             <Text />
             <Text />
 

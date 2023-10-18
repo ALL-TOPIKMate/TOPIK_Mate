@@ -315,6 +315,9 @@ const WrongStudyScreen = ({ route, navigation }) => {
 
     // 현재 풀이하고 있는 유형을 가르킴
     useEffect(() => {
+        if(route.params.key == "write"){
+            return 
+        }
 
          // 모든 유형의 문제를 모두 풀었다면
         if (typeIndex >= route.params.userTag.length && isComponentMounted.current) {

@@ -33,13 +33,13 @@ export default WrongProb = ({ problem, images, audio, nextBtn, setNextBtn, isSub
                 {
                     // 유저가 문제를 풀었다면 정답 표시
                     userProblems.current[nextBtn] &&
-                    <View style = {{top: 10}}>
-                    <MarkUserAnswer
-                        PRB_CORRT_ANSW={problem.PRB_CORRT_ANSW}
-                        PRB_USER_ANSW={userProblems.current[nextBtn].PRB_USER_ANSW}
-                    />
+                    <View style={{ top: 10 }}>
+                        <MarkUserAnswer
+                            PRB_CORRT_ANSW={problem.PRB_CORRT_ANSW}
+                            PRB_USER_ANSW={userProblems.current[nextBtn].PRB_USER_ANSW}
+                        />
                     </View>
-                    
+
                 }
 
                 <View style={styles.container}>
@@ -50,11 +50,12 @@ export default WrongProb = ({ problem, images, audio, nextBtn, setNextBtn, isSub
                                 {typeName(level, section, tag)}
                             </Text>
 
-                            <TouchableOpacity onPress = {() => { 
+                            <TouchableOpacity onPress={() => {
                                 Alert.alert("학습 종료", "학습을 종료하시겠습니까?", [
-                                    {text: "yes", onPress: () => setResultscreen(true)}, 
-                                    {text: "no"}
-                                ])}}>
+                                    { text: "yes", onPress: () => setResultscreen(true) },
+                                    { text: "no" }
+                                ])
+                            }}>
                                 <Text>exit</Text>
                             </TouchableOpacity>
                         </View>
@@ -117,8 +118,10 @@ export default WrongProb = ({ problem, images, audio, nextBtn, setNextBtn, isSub
                                 PRB_USER_ANSW2={problem.PRB_USER_ANSW2}
 
                                 SCORE={problem.SCORE}
+                                SCORE2={problem.SCORE2}
                                 PRB_POINT={problem.PRB_POINT}
                                 ERROR_CONT={problem.ERROR_CONT}
+                                ERROR_CONT2={problem.ERROR_CONT2}
                                 TAG={problem.TAG}
 
                                 nextBtn={nextBtn}
@@ -138,7 +141,7 @@ const styles = StyleSheet.create({
     container: {
         padding: 20,
     },
-    
+
     // exitButton: {
     //     borderWidth: 1,
     //     padding: 5
