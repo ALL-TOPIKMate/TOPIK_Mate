@@ -4,7 +4,20 @@ import firestore from '@react-native-firebase/firestore';
 import UserContext from "../lib/UserContext";
 import { typeName } from "../lib/utils";
 
+function deleteWriteDoc(data, wrongColl){
+    try{
 
+         for(let i = 0; i < data.length; i++){
+            wrongColl.doc(data[i].DATE).delete().then(() => {
+                console.log(`${data[i].DATE} 삭제 완료`)
+            })
+        }
+    
+    }catch(err){
+        console.log(err)
+    }
+   
+}
 
 const WriteHistoryListScreen = ({route, navigation}) => {
     
@@ -36,17 +49,24 @@ const WriteHistoryListScreen = ({route, navigation}) => {
     }, []);
 
 
-    function dataLoading(){
+    async function dataLoading(){
         try{
-
-            wrongCollection.get().then( querySnapshot => {
-                setData(querySnapshot.docs.map(doc => {
+            let dataset = [] 
+            await wrongCollection.get().then( querySnapshot => {
+                dataset = querySnapshot.docs.map(doc => {
                     return {
                         DATE: doc.id,
                         ...doc.data()
                     }
-                }))
+                })
             })
+
+            /*
+                쓰기 유형의 문제는 10개 제한 (delete)
+            */
+     
+            deleteWriteDoc(dataset.filter((data, index) => {return dataset.length - index > 10}), wrongCollection)
+            setData(dataset.slice(dataset.length-10, dataset.length))
 
         }catch(error){
             console.log(error.message);
@@ -87,12 +107,17 @@ const WriteHistoryListScreen = ({route, navigation}) => {
                         data.map((data, index)=>{
                             return (
                                 <TouchableOpacity key = {index} style = {styles.buttonList} onPress = {()=>{navigation.push("WrongStudy", {key: "write", order: index, userTag: route.params.tag, PRB_ID: route.params.PRB_ID})}}>
-                                    <Text style = {{fontSize: 16}}>
-                                        {getDay(data.DATE)}
-                                    </Text>
-                                    <Text style = {{fontSize: 14}}>
-                                        {getTime(data.DATE)}에 작성한 글입니다
-                                    </Text>
+                                    <View style = {{flex: 1}}>
+                                        <Text style = {{fontSize: 16}}>
+                                            {getDay(data.DATE)}
+                                        </Text>
+                                        <Text style = {{fontSize: 12}}>
+                                            {getTime(data.DATE)}에 작성한 글입니다
+                                        </Text>
+                                    </View>
+                                    <View style = {styles.scoreBox}>
+                                        <Text>SCORE: {data.SCORE + data.SCORE2 || 0} / {data.PRB_POINT}</Text>
+                                    </View>
                                 </TouchableOpacity>
                             )
                         })
@@ -112,8 +137,20 @@ const styles = StyleSheet.create({
 
     buttonList: {
         backgroundColor: "#D9D9D9",
-        padding: 32,
+        // padding: 32,
+        paddingLeft: 32,
+        paddingVertical: 32,
         marginVertical: 2,
+
+        flexDirection: "row",
+
+        // justifyContent: "center",
+        alignItems: "center"
+    },
+
+    scoreBox: {
+        top: 32,
+        flex: 0.5
     }
 
 })

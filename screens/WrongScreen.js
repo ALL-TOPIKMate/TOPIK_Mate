@@ -261,7 +261,7 @@ const WrongScreen = ({ navigation }) => {
                         <Text />
                         <Text>듣기, 읽기 문제 중 틀린 문제를 랜덤으로 학습</Text>
 
-                        <TouchableOpacity onPress={() => { navigation.push("WrongStudy", { key: "random", userTag: userAllTag(), order: 0 }) }} style={styles.btnBox}>
+                        <TouchableOpacity disabled = {data.length == 0} onPress={() => { navigation.push("WrongStudy", { key: "random", userTag: userAllTag(), order: 0 }) }} style={styles.btnBox}>
                             <Text style={styles.buttonText}>
                                 랜덤 학습
                             </Text>
