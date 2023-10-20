@@ -244,8 +244,7 @@ const MockStudyScreen = ({navigation, route}) =>{
             // console.log(rawProblems.current)
             // console.log(prevProblems.current)
 
-            // 문제를 풀다 나갔을 경우 기록하지 않음
-            // 54번 채점 도중 
+            // 문제를 풀다 나갔을 경우 기록하지 않음 (제출하였을경우 기록)
             if(resultRef.current){
                 USER.updateUserWrongColl(rawProblems.current, prevProblems.current)
             }

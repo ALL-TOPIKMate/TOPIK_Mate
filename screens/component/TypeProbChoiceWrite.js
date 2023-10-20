@@ -6,16 +6,15 @@ import RenderHTML from 'react-native-render-html';
 
 // UserInputText
 // Use before submit
-const UserInputText = ({textInput, setTextInput}) => {
+const UserInputText = ({textInput, setTextInput, submitted}) => {
     return (
         <TextInput
-            editable
+            editable = {!submitted}
             multiline
             numberOfLines={4}
             onChangeText={text => setTextInput(text)}
             value={textInput}
 
-            // readOnly={submitted}
             style={styles.inputBox}
         />
     )
@@ -72,7 +71,7 @@ export default TypeProbChoiceWrite = ({ problem, userProblem, currentIndex , set
     
     useEffect(() => {
         // 문제 이동 || 채점 직후 
-        if(submitted){
+        if(submitted && TAG != "004"){
             
             setScore(SCORE)
             setScore2(SCORE2)
@@ -118,8 +117,11 @@ export default TypeProbChoiceWrite = ({ problem, userProblem, currentIndex , set
 
         }
 
+        // 004 유형을 제외하고 채점을 기다림
+        if(TAG != "004"){
+            answer = await getScoring(answer)
+        }
         
-        answer = await getScoring(answer)
 
         userProblem.push(answer)
         
@@ -128,7 +130,7 @@ export default TypeProbChoiceWrite = ({ problem, userProblem, currentIndex , set
 
 
 
-    if (submitted) {
+    if (submitted && TAG != "004") {
         return (
             <View style = {styles.container}>
                 
@@ -229,10 +231,17 @@ export default TypeProbChoiceWrite = ({ problem, userProblem, currentIndex , set
                         </View> :
 
                         <View>
-                            <UserInputText textInput= {textInput} setTextInput={setTextInput}/>
+                            <UserInputText textInput= {textInput} setTextInput={setTextInput} submitted = {submitted}/>
                         </View>
                 }
 
+
+                {
+                    TAG == "004" && submitted &&
+                    <View>
+                        <Text> 채점 결과는 복습하기의 쓰기히스토리애서 확인하세요!</Text>
+                    </View>
+                }
 
                 <Text />
                 <Text />        
