@@ -13,10 +13,10 @@ import LevelProb from './component/LevelProb';
 Sound.setCategory('Playback');
 
 
-const updateUserField = (userDoc, levelIdx) => {
+const updateUserField = (lvtestDoc, levelIdx) => {
 
-    userDoc.update({
-        level_idx: levelIdx
+    lvtestDoc.update({
+        userIndex: levelIdx
     })
 
 }
@@ -127,9 +127,9 @@ const LevelStudyScreen = ({ navigation }) => {
         .doc("LV2").collection("PQ")
         .doc("0041").collection("PRB_LIST")
 
-    // 유저 도큐먼트
-    const userDoc = firestore().collection("users")
-        .doc(USER.uid)
+    // 유저 Leveltest 도큐먼트
+    const lvtestDoc = firestore().collection("users")
+        .doc(USER.uid).collection("leveltest").doc("Leveltest")
 
 
 
@@ -190,15 +190,15 @@ const LevelStudyScreen = ({ navigation }) => {
 
             // firebase update
             // user field
-            updateUserField(userDoc, Number(userIndex) + Number(problemCount.current))
+            updateUserField(lvtestDoc, Number(userIndex) + Number(problemCount.current))
 
 
             // wrong
             USER.updateUserWrongColl(prevProblem.current.slice(userIndex, userIndex + problemCount.current), userData.current.slice(userIndex, userIndex + problemCount.current))
-            // history
-            USER.updateHistoryColl(userData.current.slice(userIndex, userIndex+problemCount.current))
-
-
+            
+            // levelHistory
+            USER.updateLevelHistoryColl(userData.current.slice(userIndex, userIndex + problemCount.current))
+            
             // RecommendScreen update
             USER.levelIdx = Number(userIndex) + Number(problemCount.current) 
         }

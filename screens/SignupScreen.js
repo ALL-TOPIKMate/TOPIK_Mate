@@ -98,15 +98,17 @@ const SignupScreen = ({ navigation, route }) =>{
         try {
             const {user} = await signUp(info)
             const u_uid = user.uid
-            const level_idx = 0
+
 
             console.log(user);
             console.log('닉네임', nickname);
             console.log('나의 레벨', my_level);
             
+            /*  유저 collection 생성  */
+
             // 유저 구조
             const UserDoc = firestore().collection("users").doc(u_uid)
-            UserDoc.set({ email, nickname, my_level, u_uid, level_idx})
+            UserDoc.set({ email, nickname, my_level, u_uid })
             
 
             // 복습 문제 구조
@@ -123,6 +125,12 @@ const SignupScreen = ({ navigation, route }) =>{
             // 추천 문제 구조
             UserDoc.collection("recommend").doc('Recommend').set({ userCorrect: 0, userIndex: 10 })
 
+            // 레벨테스트 문제 구조
+            UserDoc.collection("leveltest").doc('Leveltest').set({ userIndex: 0 })
+
+            
+
+            /*  유저 컨텍스트   */
 
              // initialize uid, email
             USER.initUser(user)
