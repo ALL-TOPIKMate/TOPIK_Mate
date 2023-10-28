@@ -4,13 +4,25 @@ import AppNameHeader from './component/AppNameHeader';
 import firestore from '@react-native-firebase/firestore';
 import firebase from '@react-native-firebase/app';
 import storage, { getStorage } from '@react-native-firebase/storage'
-import { subscribeAuth } from "../lib/auth";
+import { checkUserSession, createUserSession } from "../lib/auth";
 import UserContext from '../lib/UserContext';
 import Loading from './component/Loading';
 import ProbMain from './component/ProbMain';
 import ImgRef from './component/ImgRef';
 import ProbTxt from './component/ProbTxt';
 import TypeProbChoiceWrite from './component/TypeProbChoiceWrite';
+
+
+// 이어서 풀기 - 유저가 마지막에 푼 문제 기록 
+const updateUserLastVisible = async(lastKey, lastVal) => {
+    const user = await checkUserSession()
+
+    user[lastKey] = lastVal
+
+    await createUserSession(user)
+
+    console.log(await checkUserSession())
+}
 
 
 //Write
@@ -54,8 +66,16 @@ const TypeStudyWr = ({ navigation, route }) => {
 
     
 
-    // 마지막 문제를 가르킴
-    const lastVisible = useRef(null);
+    
+
+    // 마지막 문제를 가르킴 (5문제씩 읽어옴) - load problem 
+    const last = useRef(route.params.lastVisible)
+    // 제출 후 문제를 가르킴 (이어서 풀기 기록) - setting session 
+    const lastprbRef = useRef(route.params.lastVisible)
+    // 해당 섹션의 유형정보 (이어서 풀기) - setting session
+    const sectTag = `WR_${route.params.paddedIndex}`
+
+
 
     // 문제풀이화면 준비상태 - 이미지 로드 완료 감지
     const [isReady, setIsReady] = useState(false);
@@ -71,7 +91,13 @@ const TypeStudyWr = ({ navigation, route }) => {
         return () => {
             isComponentMounted.current = false
 
+            // wrong
             USER.updateUserWrongColl(rawProblems.current, userProblems.current)
+       
+            
+            
+            // 이어서 풀기 - 유형학습 마지막 문제 저장
+            updateUserLastVisible(sectTag, lastprbRef.current)
         }
     }, [])
 
@@ -107,51 +133,59 @@ const TypeStudyWr = ({ navigation, route }) => {
 
 
 
-
     // 5문제씩 읽어오기
     const loadProblems = async () => {
         try {
             const prblist = [];
 
+            // 이어서 불러오기
             let query = problemCollection.orderBy('__name__').limit(5);
-            if (lastVisible.current) {
-                query = query.startAfter(lastVisible.current);
+            if (last.current) {
+                query = query.startAfter(last.current);
             }
             const temp_snapshot = await query.get();
 
+            // 데이터 반환
             temp_snapshot.forEach((doc) => {
                 const data = doc.data();
                 prblist.push(data);
             });
+
+
+            // 문제가 없을경우
             if (temp_snapshot.empty && isComponentMounted.current) {
                 setprbstatus(false);
             }
 
+
+            // 문제가 있을경우
             if (prblist.length > 0 && prbstatus == true) {
                 const lastDoc = temp_snapshot.docs[temp_snapshot.docs.length - 1];
-                // console.log('문제 끝: ', lastDoc.id);
                 if (lastDoc) {
                     const lastDocId = lastDoc.id;
-                    lastVisible.current = lastDocId
+
+                    last.current = lastDocId
                 } else {
-                    lastVisible.current = null
+                    last.current = null
                 }
 
-                if(isComponentMounted.current){
+                // 불러온 문제 셋팅
+                if (isComponentMounted.current) {
                     setProblems([...problems, ...prblist]);
                 }
-                
 
             } else {
                 console.log('No more problems to load.');
-                lastVisible.current = null
+
+                last.current = null
+                lastprbRef.current = null // 모든 문제를 다 풀었을 경우 이어서 풀기 리셋      
+
             }
         } catch (error) {
             console.log(error);
         }
 
     };
-
 
 
     // IMG_REF 로드
@@ -189,14 +223,18 @@ const TypeStudyWr = ({ navigation, route }) => {
         if(submitted && rawProblems.current.length == currentIndex){
 
             // 문제 형식 포함한 답안 기록
-            userProblems.current[currentIndex] = {
-                ...problems[currentIndex],
-                ...userProblems.current[currentIndex]
-            }
+            // userProblems.current[currentIndex] = {
+            //     ...problems[currentIndex],
+            //     ...userProblems.current[currentIndex]
+            // }
 
             rawProblems.current.push(problems[currentIndex])
 
+
+            // 문제 제출시 기록
+            lastprbRef.current = problems[currentIndex].PRB_ID
         }
+
     }, [submitted])
 
 

@@ -3,6 +3,7 @@ import { View, Text, Button, StyleSheet, TouchableOpacity, Image, Modal, ScrollV
 import firestore from '@react-native-firebase/firestore';
 import firebase from '@react-native-firebase/app';
 import storage, { getStorage } from '@react-native-firebase/storage'
+import { checkUserSession, createUserSession } from '../lib/auth';
 
 import AppNameHeader from './component/AppNameHeader';
 import UserContext from '../lib/UserContext';
@@ -14,6 +15,18 @@ import ProbSub from './component/ProbSub';
 import ProbScrpt from './component/ProbScrpt';
 import TypeProbChoice from './component/TypeProbChoice';
 import MarkUserAnswer from './component/MarkUserAnswer';
+
+
+// 이어서 풀기 - 유저가 마지막에 푼 문제 기록 
+const updateUserLastVisible = async(lastKey, lastVal) => {
+    const user = await checkUserSession()
+
+    user[lastKey] = lastVal
+
+    await createUserSession(user)
+
+    console.log(await checkUserSession())
+}
 
 
 //Reading
@@ -48,8 +61,17 @@ const TypeStudyRc = ({ navigation, route }) => {
 
 
     const [currentIndex, setCurrentIndex] = useState(0); //현재 문제 번호
+
     const [submitted, setSubmitted] = useState(false); //제출여부 
-    const [Last, setLast] = useState(null) //문제 기준 잡기
+
+
+
+    // 마지막 문제를 가르킴 (5문제씩 읽어옴) - load problem 
+    const last = useRef(route.params.lastVisible)
+    // 제출 후 문제를 가르킴 (이어서 풀기 기록) - setting session 
+    const lastprbRef = useRef(route.params.lastVisible)
+    // 해당 섹션의 유형정보 (이어서 풀기) - setting session
+    const sectTag = `RD_${route.params.paddedIndex}`
 
 
 
@@ -81,6 +103,10 @@ const TypeStudyRc = ({ navigation, route }) => {
             // history
             USER.updateHistoryColl(prbchoice.current)
 
+
+            
+            // 이어서 풀기 - 유형학습 마지막 문제 저장
+            updateUserLastVisible(sectTag, lastprbRef.current)
         }
 
     }, [])
@@ -122,54 +148,55 @@ const TypeStudyRc = ({ navigation, route }) => {
         try {
             const prblist = [];
 
+            // 이어서 불러오기
             let query = problemCollection.orderBy('__name__').limit(5);
-            if (Last) {
-                query = query.startAfter(Last);
+            if (last.current) {
+                query = query.startAfter(last.current);
             }
             const temp_snapshot = await query.get();
 
+            // 데이터 반환
             temp_snapshot.forEach((doc) => {
                 const data = doc.data();
                 prblist.push(data);
             });
+
+
+            // 문제가 없을경우
             if (temp_snapshot.empty && isComponentMounted.current) {
                 setprbstatus(false);
             }
 
+
+            // 문제가 있을경우
             if (prblist.length > 0 && prbstatus == true) {
                 const lastDoc = temp_snapshot.docs[temp_snapshot.docs.length - 1];
-                // console.log('문제 끝: ', lastDoc.id);
                 if (lastDoc) {
                     const lastDocId = lastDoc.id;
 
-                    if(isComponentMounted.current){
-                        setLast(lastDocId);
-                    }
-                    
+                    last.current = lastDocId
                 } else {
-                    if(isComponentMounted.current){
-                        setLast(null);
-                    }
-                    
+                    last.current = null
                 }
 
-                if(isComponentMounted.current){
+                // 불러온 문제 셋팅
+                if (isComponentMounted.current) {
                     setProblems([...problems, ...prblist]);
                 }
-                
 
             } else {
                 console.log('No more problems to load.');
-                if(isComponentMounted.current){
-                    setLast(null);
-                }
-                
+
+                last.current = null
+                lastprbRef.current = null // 모든 문제를 다 풀었을 경우 이어서 풀기 리셋      
+
             }
         } catch (error) {
             console.log(error);
         }
 
     };
+
 
 
     // IMG_REF 로드
@@ -202,7 +229,7 @@ const TypeStudyRc = ({ navigation, route }) => {
                 ELAPSED_TIME: Date.now() - startTime.current
             }
 
-            console.log(prbchoice.current[currentIndex].ELAPSED_TIME)
+            
             // 원본 문제 복사
             rawProblems.current.push(problems[currentIndex])
 
@@ -212,6 +239,9 @@ const TypeStudyRc = ({ navigation, route }) => {
 
             setTotalProblem(prevTotalProblem => prevTotalProblem + 1); // 전체 문제 갯수 저장
 
+
+            // 문제 제출시 기록
+            lastprbRef.current = problems[currentIndex].PRB_ID
         }
 
     }, [submitted])

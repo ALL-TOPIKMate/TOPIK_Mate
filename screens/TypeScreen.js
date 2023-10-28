@@ -1,13 +1,22 @@
 import React, { useState, useEffect, useContext } from 'react';
-import { View, Text, StyleSheet, Image, TouchableOpacity, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, Image, TouchableOpacity, ScrollView, Alert } from 'react-native';
 
 import firebase from '@react-native-firebase/app';
 import firestore from '@react-native-firebase/firestore';
 import UserContext from "../lib/UserContext"
 
 import AppNameHeader from './component/AppNameHeader';
+import { checkUserSession, createUserSession } from '../lib/auth';
 
 
+// 유형별 학습 이어서풀기 -> 세션에 학습정보 저장 
+const findUserLastvisibleTag = async (lastVisible) =>{    
+    const user = await checkUserSession()    
+
+    console.log(user)
+
+    return user[lastVisible]
+}
 
 const TypeScreen = ({ navigation }) => {
 
@@ -145,8 +154,25 @@ const TypeScreen = ({ navigation }) => {
                         <TouchableOpacity
                             key={index}
                             style={[styles.button, styles.buttonMargin]}
-                            onPress={() => {
-                                navigation.navigate('TypeStudyLc', { source: 'LS_TAG', paddedIndex: button.id, tag: button.tag });
+                            onPress={async() => {
+                                const isLast = await findUserLastvisibleTag(`LS_${button.id}`)
+                                
+                                console.log(isLast)
+                                
+                                if(isLast){
+                                    Alert.alert("학습하기", "이어서 풀겠습니까?", [
+                                        {
+                                            text: "yes",
+                                            onPress: () => {navigation.navigate('TypeStudyLc', { source: 'LS_TAG', paddedIndex: button.id, tag: button.tag, lastVisible: isLast });}
+                                        }, 
+                                        {
+                                            text: "no",
+                                            onPress: () => {navigation.navigate('TypeStudyLc', { source: 'LS_TAG', paddedIndex: button.id, tag: button.tag });}
+                                        }
+                                    ])
+                                }else{
+                                    navigation.navigate('TypeStudyLc', { source: 'LS_TAG', paddedIndex: button.id, tag: button.tag });
+                                }
                             }}
                         >
                             <Text style={styles.columnbutton}> {button.tag} </Text>
@@ -160,8 +186,25 @@ const TypeScreen = ({ navigation }) => {
                         <TouchableOpacity
                             key={index}
                             style={[styles.button, styles.buttonMargin]}
-                            onPress={() => {
-                                navigation.navigate('TypeStudyRc', { source: 'RD_TAG', paddedIndex: button.id, tag: button.tag });
+                            onPress={async() => {
+                                const isLast = await findUserLastvisibleTag(`RD_${button.id}`)
+                                
+                                console.log(isLast)
+                                
+                                if(isLast){
+                                    Alert.alert("학습하기", "이어서 풀겠습니까?", [
+                                        {
+                                            text: "yes",
+                                            onPress: () => {navigation.navigate('TypeStudyRc', { source: 'RD_TAG', paddedIndex: button.id, tag: button.tag, lastVisible: isLast });}
+                                        }, 
+                                        {
+                                            text: "no",
+                                            onPress: () => {navigation.navigate('TypeStudyRc', { source: 'RD_TAG', paddedIndex: button.id, tag: button.tag });}
+                                        }
+                                    ])
+                                }else{
+                                    navigation.navigate('TypeStudyRc', { source: 'RD_TAG', paddedIndex: button.id, tag: button.tag });
+                                }
                             }}
                         >
                             <Text style={styles.columnbutton}>{button.tag} </Text>
@@ -175,8 +218,25 @@ const TypeScreen = ({ navigation }) => {
                         <TouchableOpacity
                             key={index}
                             style={[styles.button, styles.buttonMargin]}
-                            onPress={() => {
-                                navigation.navigate('TypeStudyWr', { source: 'WR_TAG', paddedIndex: button.id, tag: button.tag });
+                            onPress={async() => {
+                                const isLast = await findUserLastvisibleTag(`WR_${button.id}`)
+                                
+                                console.log(isLast)
+                                
+                                if(isLast){
+                                    Alert.alert("학습하기", "이어서 풀겠습니까?", [
+                                        {
+                                            text: "yes",
+                                            onPress: () => {navigation.navigate('TypeStudyWr', { source: 'WR_TAG', paddedIndex: button.id, tag: button.tag, lastVisible: isLast });}
+                                        }, 
+                                        {
+                                            text: "no",
+                                            onPress: () => {navigation.navigate('TypeStudyWr', { source: 'WR_TAG', paddedIndex: button.id, tag: button.tag });}
+                                        }
+                                    ])
+                                }else{
+                                    navigation.navigate('TypeStudyWr', { source: 'WR_TAG', paddedIndex: button.id, tag: button.tag });
+                                }
                             }}
                         >
                             <Text style={styles.columnbutton}>{button.tag} </Text>
