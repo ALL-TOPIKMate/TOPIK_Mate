@@ -270,7 +270,7 @@ const WrongScreen = ({ navigation }) => {
                 }
                 {
                     writeList &&
-                    <ScrollView>
+                    <ScrollView refreshControl = {scrollViewRefresh( refresh, setRefresh )}>
                         <Text style={styles.titleText}>유형별 쓰기</Text>
                         <Text />
 
