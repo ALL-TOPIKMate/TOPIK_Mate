@@ -116,7 +116,7 @@ const WriteHistoryListScreen = ({route, navigation}) => {
                                         </Text>
                                     </View>
                                     <View style = {styles.scoreBox}>
-                                        <Text>SCORE: {getRoundedScore(data.SCORE + data.SCORE2 || 0)} / {data.PRB_POINT}</Text>
+                                        <Text>SCORE: {getRoundedScore(data.SCORE + (data.SCORE2 || 0))} / {data.PRB_POINT}</Text>
                                     </View>
                                 </TouchableOpacity>
                             )
