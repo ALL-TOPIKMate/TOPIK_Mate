@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Button, TextInput, useWindowDimensions } from 'react-native'
-import { splitProblemAnswer, dataParsing, dataParsing2, getScoring } from '../../lib/utils';
+import { splitProblemAnswer, splitProblemAnswer2, getScoring } from '../../lib/utils';
 import RenderHTML from 'react-native-render-html';
 
 
@@ -147,7 +147,7 @@ export default TypeProbChoiceWrite = ({ problem, userProblem, currentIndex , set
                                 <ProblemAnswerView width = {width} text = {PRB_USER_ANSW}/>
                                 
                                 <Text style = {[styles.textLeft, styles.text]}>Best answer</Text>
-                                <ProblemAnswerView width = {width} text = {splitProblemAnswer(PRB_CORRT_ANSW).text1}/>
+                                <ProblemAnswerView width = {width} text = {splitProblemAnswer2(splitProblemAnswer(PRB_CORRT_ANSW).text1).join("<br/>")}/>
                             
                             </View>
 
@@ -161,7 +161,7 @@ export default TypeProbChoiceWrite = ({ problem, userProblem, currentIndex , set
                                 <ProblemAnswerView width = {width} text = {PRB_USER_ANSW2}/>
                                 
                                 <Text style = {[styles.textLeft, styles.text]}>Best answer</Text>
-                                <ProblemAnswerView width = {width} text = {splitProblemAnswer(PRB_CORRT_ANSW).text2}/>
+                                <ProblemAnswerView width = {width} text = {splitProblemAnswer2(splitProblemAnswer(PRB_CORRT_ANSW).text2).join("<br/>")}/>
                             
                             </View>
                         </View> :
@@ -239,7 +239,7 @@ export default TypeProbChoiceWrite = ({ problem, userProblem, currentIndex , set
                 {
                     TAG == "004" && submitted &&
                     <View>
-                        <Text> 채점 결과는 복습하기의 쓰기히스토리애서 확인하세요!</Text>
+                        <Text> 채점 결과는 복습하기의 쓰기히스토리에서 확인하세요!</Text>
                     </View>
                 }
 

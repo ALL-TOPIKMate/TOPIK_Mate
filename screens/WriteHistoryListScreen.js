@@ -2,7 +2,7 @@ import React, {useState, useEffect, useContext} from "react";
 import {View, Text, ScrollView, TouchableOpacity, StyleSheet} from "react-native";
 import firestore from '@react-native-firebase/firestore';
 import UserContext from "../lib/UserContext";
-import { typeName } from "../lib/utils";
+import { typeName, getRoundedScore } from "../lib/utils";
 
 function deleteWriteDoc(data, wrongColl){
     try{
@@ -66,7 +66,7 @@ const WriteHistoryListScreen = ({route, navigation}) => {
             */
      
             deleteWriteDoc(dataset.filter((data, index) => {return dataset.length - index > 10}), wrongCollection)
-            setData(dataset.slice(dataset.length-10, dataset.length))
+            setData(dataset.slice((dataset.length-10 < 0 ? 0:  dataset.length-10), dataset.length))
 
         }catch(error){
             console.log(error.message);
@@ -116,7 +116,7 @@ const WriteHistoryListScreen = ({route, navigation}) => {
                                         </Text>
                                     </View>
                                     <View style = {styles.scoreBox}>
-                                        <Text>SCORE: {data.SCORE + (data.SCORE2 || 0)} / {data.PRB_POINT}</Text>
+                                        <Text>SCORE: {getRoundedScore(data.SCORE + data.SCORE2 || 0)} / {data.PRB_POINT}</Text>
                                     </View>
                                 </TouchableOpacity>
                             )

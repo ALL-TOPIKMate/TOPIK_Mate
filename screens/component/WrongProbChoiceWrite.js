@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 
 import { View, Text, StyleSheet, TouchableOpacity, Button, useWindowDimensions } from 'react-native'
 import RenderHTML from 'react-native-render-html';
-import { splitProblemAnswer } from '../../lib/utils';
+import { splitProblemAnswer, splitProblemAnswer2 } from '../../lib/utils';
 
 
 // 뷰 박스 컨테이너
@@ -49,7 +49,7 @@ export default WrongProbChoiceWrite = ({ PRB_CORRT_ANSW, PRB_USER_ANSW, PRB_USER
                     <Text />
 
                     <Text style={styles.text}>Best Answer</Text>
-                    <ViewBox text = {splitProblemAnswer(PRB_CORRT_ANSW).text1} width = {width}/>
+                    <ViewBox text = {splitProblemAnswer2(splitProblemAnswer(PRB_CORRT_ANSW).text1).join("<br/>")} width = {width}/>
     
                     <Text />
 
@@ -63,7 +63,7 @@ export default WrongProbChoiceWrite = ({ PRB_CORRT_ANSW, PRB_USER_ANSW, PRB_USER
                     <Text />
 
                     <Text style={styles.text}>Best Answer</Text>
-                    <ViewBox text = {splitProblemAnswer(PRB_CORRT_ANSW).text2} width = {width} />
+                    <ViewBox text = {splitProblemAnswer2(splitProblemAnswer(PRB_CORRT_ANSW).text2).join("<br/>")} width = {width} />
                 </View>: 
                 <View>
                     <View style = {styles.alignRow}>

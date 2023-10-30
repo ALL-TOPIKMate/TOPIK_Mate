@@ -6,6 +6,7 @@ import firestore from '@react-native-firebase/firestore';
 import UserContext from '../../lib/UserContext';
 import MockProbModal from './MockProbModal';
 import MockProbWriteModal from './MockProbWriteModal';
+import { getRoundedScore } from '../../lib/utils';
 
 const headers = ['No.', 'Selected', 'Answer', 'Result', 'Review'];
 
@@ -32,13 +33,13 @@ const MockResult = ({ level, listen, write, read, prevImages, prevAudios, proble
 
         listen.forEach((problem) => {
             if(problem.PRB_USER_ANSW == problem.PRB_CORRT_ANSW){
-                lc += 2
+                lc += problem.PRB_POINT
             }
         })
 
         read.forEach((problem) => {
             if(problem.PRB_USER_ANSW == problem.PRB_CORRT_ANSW){
-                rc += 2
+                rc += problem.PRB_POINT
             }
         })
     
@@ -98,7 +99,7 @@ const MockResult = ({ level, listen, write, read, prevImages, prevAudios, proble
             <View>
                 <View style = {styles.titleContainer}>
                     <Text style={styles.sectionTitle}>듣기</Text>
-                    <Text style = {[styles.sectionTitle]}>{scoreLc} score</Text>    
+                    <Text style = {[styles.sectionTitle]}>{getRoundedScore(scoreLc)} score</Text>    
                 </View>
             <Table borderStyle={{borderWidth: 1, borderColor: '#C1C0B9'}}>
                 <Row data={headers} style={styles.row} textStyle={styles.text}/>
@@ -126,7 +127,7 @@ const MockResult = ({ level, listen, write, read, prevImages, prevAudios, proble
                     <View style = {{borderBottomColor: '#C1C0B9', borderBottomWidth: StyleSheet.hairlineWidth, marginLeft: 4}}/>
                     <View style = {styles.titleContainer}>
                         <Text style={styles.sectionTitle}>쓰기</Text>
-                        <Text style = {styles.sectionTitle}>{scoreWr >= 0 ? scoreWr + " score" :  "54번 채점중..."} </Text>    
+                        <Text style = {styles.sectionTitle}>{scoreWr >= 0 ? getRoundedScore(scoreWr) + " score" :  "54번 채점중..."} </Text>    
                     </View>
                 <View>
                     {
@@ -150,7 +151,7 @@ const MockResult = ({ level, listen, write, read, prevImages, prevAudios, proble
                                         </TouchableOpacity>
                                         {
                                             rowData.SCORE >= 0 ?
-                                            <Text style = {{fontSize: 16, marginLeft: 6}}>{rowData.SCORE + (rowData.SCORE2 || 0)} / {rowData.PRB_POINT}</Text>:
+                                            <Text style = {{fontSize: 16, marginLeft: 6}}>{getRoundedScore(rowData.SCORE + (rowData.SCORE2 || 0))} / {rowData.PRB_POINT}</Text>:
                                             <Text style = {{fontSize: 16, marginLeft: 6}}>채점중...</Text>
                                         }
                                     </View>
@@ -186,7 +187,7 @@ const MockResult = ({ level, listen, write, read, prevImages, prevAudios, proble
             <View>
             <View style = {styles.titleContainer}>
                 <Text style={styles.sectionTitle}>읽기</Text>
-                <Text style = {styles.sectionTitle}>{scoreRc} score</Text>    
+                <Text style = {styles.sectionTitle}>{getRoundedScore(scoreRc)} score</Text>    
             </View>
             <Table style={{marginBottom: 50}} borderStyle={{borderWidth: 1, borderColor: '#C1C0B9'}}>
                 <Row data={headers} style={styles.row} textStyle={styles.text} />

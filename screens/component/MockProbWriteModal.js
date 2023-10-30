@@ -2,39 +2,14 @@ import React from 'react';
 import { StyleSheet, Modal, ScrollView, Image, View, Text, TouchableOpacity, useWindowDimensions } from 'react-native';
 import RenderHTML from "react-native-render-html";
 
-import { splitProblemAnswer } from '../../lib/utils';
+import { splitProblemAnswer, splitProblemAnswer2, getRoundedScore } from '../../lib/utils';
 import ProbMain from './ProbMain';
 import ImgRef from './ImgRef';
 import ProbTxt from './ProbTxt';
 
 
 function ViewBox({text, width}){
-    if(width != undefined){
-        return (
-            <View style = {styles.viewBox}>
-                <RenderHTML
-                    source = {text}
-                    contentWidth={width}
-                />
-            </View>
-        )
-    }else{
-        return (
-            <View style = {styles.viewBox}>
-                <Text>
-                    {text}
-                </Text>
-            </View>
-        )
-    }
     
-}
-
-const MockProbWriteModal = ({ problem, index, setVisible, images }) => {
-
-    const {width} = useWindowDimensions() // window's width
-
-
     // html code
     const source = {
         html: `
@@ -44,24 +19,25 @@ const MockProbWriteModal = ({ problem, index, setVisible, images }) => {
                 font-size: 15px;
                 // color: #000000;
             ">
-            ${problem[index].ERROR_CONT} 
+            ${text} 
             </p>
         `
     }
 
-    const source2 = {
-        html: `
-            <p style = "
-                padding: 0px;
-                margin: 0px;
-                font-size: 15px;
-                // color: #000000;
-            ">
-            ${problem[index].ERROR_CONT2} 
-            </p>
-        `
-    }
 
+    return (
+        <View style = {styles.viewBox}>
+            <RenderHTML
+                source = {source}
+                contentWidth={width}
+            />
+        </View>
+    )
+}
+
+const MockProbWriteModal = ({ problem, index, setVisible, images }) => {
+
+    const {width} = useWindowDimensions() // window's width
     
 
     return (
@@ -106,17 +82,17 @@ const MockProbWriteModal = ({ problem, index, setVisible, images }) => {
                         <View>
                             <Text style = {styles.text}>㉠</Text>
                             <Text style = {styles.text}>Your answer</Text>
-                            <ViewBox text = {problem[index].PRB_USER_ANSW} />
+                            <ViewBox text = {problem[index].PRB_USER_ANSW} width = {width} />
 
                             <Text style = {styles.text}>Best answer</Text>
-                            <ViewBox text = {splitProblemAnswer(problem[index].PRB_CORRT_ANSW).text1} />
+                            <ViewBox text = {splitProblemAnswer2(splitProblemAnswer(problem[index].PRB_CORRT_ANSW).text1).join("<br/>")} width = {width}/>
 
                             <View style = {styles.alignRow}>
                                 <Text style = {[styles.textLeft, styles.text]}>Result</Text>
-                                <Text style = {[styles.textRight, styles.text]}>Score: {problem[index].SCORE} / 5</Text>
+                                <Text style = {[styles.textRight, styles.text]}>Score: {getRoundedScore(problem[index].SCORE)} / 5</Text>
                             </View>
                             
-                            <ViewBox text = {source} width = {width}/>
+                            <ViewBox text = {problem[index].ERROR_CONT} width = {width}/>
                             
                         </View>
 
@@ -125,36 +101,36 @@ const MockProbWriteModal = ({ problem, index, setVisible, images }) => {
                         <View>
                             <Text style = {styles.text}>㉡</Text>
                             <Text style = {styles.text}>Your answer</Text>
-                            <ViewBox text = {problem[index].PRB_USER_ANSW2} />
+                            <ViewBox text = {problem[index].PRB_USER_ANSW2} width = {width} />
 
 
                             <Text style = {styles.text}>Best answer</Text>
-                            <ViewBox text = {splitProblemAnswer(problem[index].PRB_CORRT_ANSW).text2} />
+                            <ViewBox text = {splitProblemAnswer2(splitProblemAnswer(problem[index].PRB_CORRT_ANSW).text2).join("<br/>")} width = {width} />
 
 
                             <View style = {styles.alignRow}>
                                 <Text style = {[styles.textLeft, styles.text]}>Result</Text>
-                                <Text style = {[styles.textRight, styles.text]}>Score: {problem[index].SCORE2} / 5</Text>
+                                <Text style = {[styles.textRight, styles.text]}>Score: {getRoundedScore(problem[index].SCORE2)} / 5</Text>
                             </View>
                             
-                            <ViewBox text = {source2} width = {width}/>
+                            <ViewBox text = {problem[index].ERROR_CONT2} width = {width}/>
 
                         </View>
                     </View>
                     : <View>
                         <Text style = {styles.text}>Your answer</Text>
-                        <ViewBox text = {problem[index].PRB_USER_ANSW} />
+                        <ViewBox text = {problem[index].PRB_USER_ANSW} width = {width} />
 
                         <Text style = {styles.text}>Best answer</Text>
-                        <ViewBox text = {problem[index].PRB_CORRT_ANSW} />
+                        <ViewBox text = {problem[index].PRB_CORRT_ANSW} width = {width} />
 
 
                         <View style = {styles.alignRow}>
                             <Text style = {[styles.textLeft, styles.text]}>Result</Text>
-                            <Text style = {[styles.textRight, styles.text]}>Score: {problem[index].SCORE} / {problem[index].PRB_POINT}</Text>
+                            <Text style = {[styles.textRight, styles.text]}>Score: {getRoundedScore(problem[index].SCORE)} / {problem[index].PRB_POINT}</Text>
                         </View>
                         
-                        <ViewBox text = {source} width = {width} />
+                        <ViewBox text = {problem[index].ERROR_CONT} width = {width} />
 
                     </View>
                 }
