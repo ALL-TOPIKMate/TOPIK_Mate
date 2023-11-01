@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useContext } from 'react';
-import { View, Text, Button, StyleSheet, TouchableOpacity, ScrollView, Alert, RefreshControl } from 'react-native'
+import { View, Text, Button, StyleSheet, TouchableOpacity, ScrollView, Alert, RefreshControl} from 'react-native'
 
 
 import firestore from '@react-native-firebase/firestore';
@@ -33,7 +33,12 @@ const WrongScreen = ({ navigation }) => {
 
 
     // wrong collection
-    const WrongColl = firestore().collection("users").doc(USER.uid).collection(`wrong_lv${USER.level}`)
+    const WrongColl = firestore().collection("users").doc(USER.uid).collection("wrong_lv1")
+    const WrongColl2 = firestore().collection("users").doc(USER.uid).collection("wrong_lv2")
+
+
+    // topik level 선택
+    const [level, setLevel] = useState(USER.level)
 
 
     // section 선택
@@ -50,6 +55,7 @@ const WrongScreen = ({ navigation }) => {
 
     // 유형 리스트
     const [data, setData] = useState([])
+    const [data2, setData2] = useState([])
 
 
 
@@ -58,7 +64,8 @@ const WrongScreen = ({ navigation }) => {
     useEffect(() => {
         if (USER.uid) {
             
-            loadTypeList();
+            loadTypeList(WrongColl, setData);
+            loadTypeList(WrongColl2, setData2)
 
         }
 
@@ -69,7 +76,10 @@ const WrongScreen = ({ navigation }) => {
         
         // pull down시, data refresh
         if(refresh){
-            loadTypeList().then(() => {
+            const wrongColl = level == 1? WrongColl: WrongColl2
+            const SetData = level == 1? setData: setData2
+
+            loadTypeList(wrongColl, SetData).then(() => {
                 setRefresh(false)
                 console.log("success to load")
                 
@@ -80,11 +90,11 @@ const WrongScreen = ({ navigation }) => {
 
 
     // load tag list
-    const loadTypeList = async () => {
+    const loadTypeList = async (wrongcoll, setData) => {
         try {
             const typeList = []
 
-            await WrongColl.doc("LS_TAG").collection("PRB_TAG").get().then(documentSnapshot => {
+            await wrongcoll.doc("LS_TAG").collection("PRB_TAG").get().then(documentSnapshot => {
                 documentSnapshot.forEach(doc => {
                     if (doc.id != "Wrong") {
                         typeList.push({
@@ -96,7 +106,7 @@ const WrongScreen = ({ navigation }) => {
                 })
             })
 
-            await WrongColl.doc("RD_TAG").collection("PRB_TAG").get().then(documentSnapshot => {
+            await wrongcoll.doc("RD_TAG").collection("PRB_TAG").get().then(documentSnapshot => {
                 documentSnapshot.forEach(doc => {
                     if (doc.id != "Wrong") {
                         typeList.push({
@@ -108,7 +118,7 @@ const WrongScreen = ({ navigation }) => {
                 })
             })
 
-            await WrongColl.doc("WR_TAG").collection("PRB_TAG").get().then(documentSnapshot => {
+            await wrongcoll.doc("WR_TAG").collection("PRB_TAG").get().then(documentSnapshot => {
                 documentSnapshot.forEach(doc => {
                     if (doc.id != "Wrong") {
                         typeList.push({
@@ -129,7 +139,7 @@ const WrongScreen = ({ navigation }) => {
 
 
     // 유저가 고른 유형 반환 (선택 학습)
-    const userSelectedTag = () => {
+    const userSelectedTag = (data) => {
         var userTag = [];
 
         for (var i = 0; i < data.length; i++) {
@@ -145,7 +155,7 @@ const WrongScreen = ({ navigation }) => {
 
 
     // 모든 유형 반환 (랜덤 학습)
-    const userAllTag = () => {
+    const userAllTag = (data) => {
         var userTag = []
 
 
@@ -171,14 +181,14 @@ const WrongScreen = ({ navigation }) => {
 
 
     // 유저의 학습 리스트 
-    const showUserList = () => {
+    const showUserList = (data) => {
         if (selectList) {
             return data.map((data, index) => {
                 if ((data.section == "LS" && listen) || (data.section == "RD" && read)) {
                     return (
                         <TouchableOpacity key={index} onPress={() => { data.choice = !(data.choice); reRender(!render); }} style={[styles.tagList, data.choice ? styles.buttonSelected : styles.buttonNotSelected]}>
                             <Text style={{ flex: 5 }}>
-                                {typeName(USER.level, data.section, data.tag)}
+                                {typeName(level, data.section, data.tag)}
                             </Text>
                             <View style={{ flex: 1 }} />
                         </TouchableOpacity>
@@ -192,7 +202,7 @@ const WrongScreen = ({ navigation }) => {
                         return (
                             <TouchableOpacity key={index} onPress={() => { navigation.push("WriteHistory", {section: "WR", tag: data.tag}) }} style={styles.tagList}>
                                 <Text style={{ flex: 5 }}>
-                                    {typeName(USER.level, data.section, data.tag)}
+                                    {typeName(level, data.section, data.tag)}
                                 </Text>
                                 <View style={{ flex: 1 }} />
                             </TouchableOpacity>
@@ -203,9 +213,22 @@ const WrongScreen = ({ navigation }) => {
             )
         }
     }
-
+    
     return (
         <View>
+            {/* 토픽 레벨 선택창 */}
+            <View style = {{flexDirection: "row", justifyContent: "flex-end", marginVertical: 10, marginHorizontal: 30}}>
+                <View style = {{flex: 3, alignItems: "flex-end"}}>
+                    <Text>current level</Text>
+                </View>
+                
+                <TouchableOpacity style = {{flex: 1, alignItems: "center", backgroundColor: "#D9D9D9", marginLeft: 5}} onPress={() => setLevel(level == 1? 2: 1)}>
+                    <Text style = {{fontWeight: "bold"}}>TOPIK {level}</Text>
+                </TouchableOpacity>
+            </View>
+
+
+            {/* 유저의 틀린문제 유형 목록 */}
             <View style={{ flexDirection: "row", marginTop: 20 }}>
                 <View style={{ flex: 0.2 }} />
                 <TouchableOpacity onPress={() => { setSelectList(true); setRandomList(false); setWriteList(false); }} style={[styles.listBox, selectList ? styles.buttonSelected : styles.buttonNotSelected]}>
@@ -216,7 +239,7 @@ const WrongScreen = ({ navigation }) => {
                     <Text style={{ fontWeight: "bold" }}>랜덤 학습</Text>
                 </TouchableOpacity>
                 <View style={{ flex: 0.1 }} />
-                <TouchableOpacity onPress={() => { USER.level == 1 ? alert("TOPIK1은 쓰기 유형을 제공하지 않습니다.") : setWriteList(true); setSelectList(false); setRandomList(false); }} style={[styles.listBox, writeList ? styles.buttonSelected : styles.buttonNotSelected]}>
+                <TouchableOpacity onPress={() => { setWriteList(true); setSelectList(false); setRandomList(false); }} style={[styles.listBox, writeList ? styles.buttonSelected : styles.buttonNotSelected, {opacity: level == 1 ? 0.5: 1}]} disabled = {level == 1}>
                     <Text style={{ fontWeight: "bold" }}>쓰기 히스토리</Text>
                 </TouchableOpacity>
                 <View style={{ flex: 0.2 }} />
@@ -241,17 +264,17 @@ const WrongScreen = ({ navigation }) => {
 
                         {
                             // 선택학습의 유형리스트
-                            showUserList()
+                            showUserList(level == 1? data: data2)
                         }
 
 
-                        <TouchableOpacity onPress={() => { (userSelectedTag().length == 0 ? Alert.alert("", "Please select a type") : navigation.push("WrongStudy", {key: "select", userTag: userSelectedTag(), order: 0})) }} style={styles.btnBox}>
+                        <TouchableOpacity onPress={() => { (userSelectedTag(level == 1? data: data2).length == 0 ? Alert.alert("", "Please select a type") : navigation.push("WrongStudy", {key: "select", userTag: userSelectedTag(level == 1? data: data2), order: 0, level: level})) }} style={styles.btnBox}>
                             <Text style={styles.buttonText}>
                                 선택 학습
                             </Text>
                         </TouchableOpacity>
 
-                        <View style = {{ height: 128}}/>
+                        <View style = {{ height: 200 }}/>
                     </ScrollView>
                 }
                 {
@@ -261,7 +284,7 @@ const WrongScreen = ({ navigation }) => {
                         <Text />
                         <Text>듣기, 읽기 문제 중 틀린 문제를 랜덤으로 학습</Text>
 
-                        <TouchableOpacity disabled = {data.length == 0} onPress={() => { navigation.push("WrongStudy", { key: "random", userTag: userAllTag(), order: 0 }) }} style={styles.btnBox}>
+                        <TouchableOpacity disabled = { level == 1? data.length == 0: data2.length == 0 } onPress={() => { navigation.push("WrongStudy", { key: "random", userTag: userAllTag(level == 1? data: data2), order: 0, level: level }) }} style={styles.btnBox}>
                             <Text style={styles.buttonText}>
                                 랜덤 학습
                             </Text>
@@ -276,7 +299,7 @@ const WrongScreen = ({ navigation }) => {
 
                         {
                             // 쓰기 히스트리 리스트
-                            showUserList()
+                            showUserList(level == 1? data: data2)
                         }
 
                     </ScrollView>

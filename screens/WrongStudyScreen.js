@@ -212,10 +212,10 @@ const WrongStudyScreen = ({ route, navigation }) => {
     const wrongCollection = route.params.key !== "write" ?
         firestore().collection("users")
             .doc(USER.uid)
-            .collection(`wrong_lv${USER.level}`):
+            .collection(`wrong_lv${route.params.level}`):
         firestore().collection("users")
             .doc(USER.uid)
-            .collection(`wrong_lv${USER.level}`)
+            .collection(`wrong_lv2`)
             .doc("WR_TAG").collection("PRB_TAG")
             .doc(route.params.userTag)
             .collection("PRB_RSC_LIST")
@@ -431,7 +431,7 @@ const WrongStudyScreen = ({ route, navigation }) => {
                 isSubmit={isSubmit}
                 setIsSubmit={setIsSubmit}
 
-                level = {USER.level}
+                level = {route.params.level}
                 tag = {problems[nextBtn].TAG}
                 section = {problems[nextBtn].PRB_SECT.slice(0,2)}
                 setResultscreen = {setResultscreen} // 나가기 버튼시 결과화면
