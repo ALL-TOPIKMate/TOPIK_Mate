@@ -288,6 +288,13 @@ const WrongStudyScreen = ({ route, navigation }) => {
         return () => {
             isComponentMounted.current = false
 
+            // 오디오 객체 정리
+            Object.keys(audiosRef.current).forEach(audiopath => {
+                audiosRef.current[audiopath].release()
+            })
+
+
+
             // console.log(rawProblems.current)
             // console.log(userProblems.current)
             USER.updateUserWrongColl(rawProblems.current, userProblems.current)

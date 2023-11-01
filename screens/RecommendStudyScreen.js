@@ -201,6 +201,14 @@ const RecommendStudyScreen = ({route, navigation}) =>{
         return () => {
             isComponentMounted.current = false
 
+
+            // 오디오 객체 정리
+            Object.keys(audioRef.current).forEach(item => {
+                audioRef.current[item].release()
+            })
+
+
+
             // firebase update
             // recommend field
             updateUserAnswer(recommendColl, Number(userIndex) + Number(problemCount.current), Number(userCorrect)+Number(correctCount.current))

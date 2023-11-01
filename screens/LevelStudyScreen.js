@@ -188,6 +188,12 @@ const LevelStudyScreen = ({ navigation }) => {
         return () => {
             isComponentMounted.current = false
 
+            // 오디오 객체 정리
+            Object.keys(audioData.current).forEach(item => {
+                audioData.current[item].release()
+            })
+
+
             // firebase update
             // user field
             updateUserField(lvtestDoc, Number(userIndex) + Number(problemCount.current))
