@@ -15,7 +15,7 @@ import MockTimer from './component/MockTimer';
 
 
 
-Sound.setCategory('Playback');
+// Sound.setCategory('Playback');
 
 
 
@@ -91,6 +91,8 @@ const MockStudyScreen = ({navigation, route}) =>{
 
     // 오디오 개수 카운팅
     const countAudio = useRef();
+    // 이미지 개수 카운팅
+    const countImage = useRef();
 
 
 
@@ -109,6 +111,7 @@ const MockStudyScreen = ({navigation, route}) =>{
     
             if(isComponentMounted.current){
                 setProblems(rawData)
+                setReadyProblem(true)
             }
     
         } catch (error) {
@@ -131,28 +134,27 @@ const MockStudyScreen = ({navigation, route}) =>{
     
     // 이미지 로드
     const imageRef = storage.ref().child(`/images/${route.params.level}PQ${route.params.order}/`);
-    const [images, setImages] = useState({});
     const prevImages = useRef({});
     
-    const imagesLoading = async (imageRef) => {
+    const imagesLoading = (imageRef) => {
         try {
-            await imageRef.listAll().then(res => {
+            imageRef.listAll().then(res => {
                 
-                const data = {}
-                
+                countImage.current = res.items.length
+                console.log("이미지 개수", countImage.current)
+
                 res.items.forEach(item => {
                     item.getDownloadURL().then(url => {
                         
-                        data[item.name] = {};
-                        data[item.name].url = url;
+                        prevImages.current[item.name] = {};
+                        prevImages.current[item.name].url = url;
                         
+                        countImage.current -= 1
+                        if(isComponentMounted.current && countImage.current == 0){
+                            setReadyImage(true)
+                        }
                     })
                 })
-                
-
-                if(isComponentMounted.current){
-                    setImages(data);
-                }
                 
             });
 
@@ -160,84 +162,129 @@ const MockStudyScreen = ({navigation, route}) =>{
             console.log(err);
         }
     }
-    
-    // 이미지 REF 설정
-    useEffect(() => {
-        prevImages.current = images;
-    }, [images])
 
 
 
     // 오디오 로드
     const audioRef = storage.ref().child(`/audios/${route.params.level}PQ${route.params.order}/`);
-    const [audios, setAudios] = useState({});
     const prevAudios = useRef({});
     
-    const audiosLoading = async (audioRef) =>  { 
-        
-        await audioRef.listAll().then(res => {
-            const data = {}
-            countAudio.current = res.items.length
-            
-            res.items.forEach(item => {
-                item.getDownloadURL().then(url => {
+
+    const audiosLoading = async (audioRef) => {
+        try{
+
+            const audio = {}
+            countAudio.current = 0
+
+            // 남은 오디오 
+            for(let i = index; i < index + 5; i++){
+
+                const audiopath = problems[i].AUD_REF
+
+                if(audio[audiopath]){
+                    continue
+                }
+                else if(problems[i].PRB_SECT != "LS"){
+                    break
+                }
+
+                countAudio.current += 1
+                audio[audiopath] = true
+            }
+            console.log("남은오디오개수", countAudio.current)
+
+
+            for(let audiopath in audio){
+                
+                audioRef.child(`/${audiopath}`).getDownloadURL().then(url => {
                     
-                    data[item.name] = {};
-                    data[item.name].url = url
-                    data[item.name].URL = new Sound(url, null, err => {
+                    prevAudios.current[audiopath] = {};
+                    prevAudios.current[audiopath].url = url
+                    prevAudios.current[audiopath].URL = new Sound(url, null, err => {
                         if(err){
                             console.log("Failed to load the sound" ,err);
                             return undefined
                         }
 
                         // 객체 생성 성공
-
+                        console.log("success to load", audiopath, countAudio.current - 1)
                         countAudio.current -= 1
 
                         if(countAudio.current == 0 && isComponentMounted.current){
                             setReadyAudio(true)       
                          }
+
                     })
                 })
-            })
-
-            if(isComponentMounted.current){
-                setAudios(data);
+                
             }
-            
-            
-        });
+
+
+        }catch(err){
+            console.log(err)
+        }
 
     }
 
-    
-    // 오디오 REF 설정
-    useEffect(() => {
-        prevAudios.current = audios;
-    }, [audios])
-    
 
+    // 한번에 모든 오디오 불러오기
+    // const audiosLoading = (audioRef) =>  { 
+        
+    //     audioRef.listAll().then(res => {
+
+    //         countAudio.current = res.items.length
+    //         console.log("오디오 개수", countAudio.current)
+
+    //         res.items.forEach(item => {
+    //             item.getDownloadURL().then(url => {
+                    
+    //                 prevAudios.current[item.name] = {};
+    //                 prevAudios.current[item.name].url = url
+    //                 prevAudios.current[item.name].URL = new Sound(url, null, err => {
+    //                     if(err){
+    //                         console.log("Failed to load the sound" ,err);
+    //                         return undefined
+    //                     }
+
+    //                     // 객체 생성 성공
+    //                     console.log("success to load", item.name, countAudio.current - 1)
+    //                     countAudio.current -= 1
+
+    //                     if(countAudio.current == 0 && isComponentMounted.current){
+    //                         setReadyAudio(true)       
+    //                      }
+    //                 })
+
+    //             })
+    //         })            
+            
+    //     });
+
+    // }
+
+    
+    const time = useRef(undefined);
     // 데이터 준비 여부
     const [readyImage, setReadyImage] = useState(false);
     const [readyAudio, setReadyAudio] = useState(false);
+    const [readyProblem, setReadyProblem] = useState(false)
     
     /** 데이터 로딩 처리 */
     useEffect(() => {
 
-        dataLoading();
-        imagesLoading(imageRef).then(()=>{
-            
-            if(isComponentMounted.current){
-                setReadyImage(true)
-            }
-
-        })
-        audiosLoading(audioRef);
+        dataLoading()
+        imagesLoading(imageRef)
 
   
 
         return () => {
             isComponentMounted.current = false
+
+
+            // 오디오 객체 정리
+            Object.keys(prevAudios.current).forEach( audiopath => {
+                prevAudios.current[audiopath].URL.release()
+            })
 
 
             // 사용자 틀린 문제 DB 업데이트
@@ -256,8 +303,10 @@ const MockStudyScreen = ({navigation, route}) =>{
     useEffect(()=>{
 
         if(readyImage && readyAudio){
+            console.log(Date.now() - time.current)
             console.log("로드 완료")
         }else if(readyImage){
+            time.current = Date.now()
             console.log("오디오 로드 대기중")
         }else if(readyAudio){
             console.log("이미지 로드 대기중")
@@ -270,7 +319,7 @@ const MockStudyScreen = ({navigation, route}) =>{
 
     const [resultscreen, setResultscreen] = useState(false)
     const [isEnd, setIsEnd] = useState(false); // 타임 아웃 여부
-    const resultRef = useRef(false)
+    const resultRef = useRef(false) // 제출 여부
     
 
     /* 사용자 답안 저장 */
@@ -279,6 +328,22 @@ const MockStudyScreen = ({navigation, route}) =>{
     const [direction, setDirection] = useState(0); // 문제 이동 방향
     const [index, setIndex] = useState(0); // 현재 풀이하는 문제의 인덱스
     
+
+    
+    // 듣기영역의 오디오 5개씩 끊어 불러오기
+    useEffect(() => {
+
+        // 문제 이동시 오디오 추가로 불러옴
+        if(readyProblem && problems[index].PRB_SECT == "LS" && !prevAudios.current[problems[index].AUD_REF]){
+            
+            console.log("오디오 이어서 불러오는중....", prevAudios.current[problems[index].AUD_REF])
+            setReadyAudio(false)
+            audiosLoading(audioRef)
+
+        }
+
+    }, [index, readyProblem])
+
     // 문제 이동이 일어날 때마다 직전 사용자 풀이 정보(choice, choice2) 업데이트
     useEffect(() => {
         if (isEnd || direction !== 0) {
@@ -364,8 +429,8 @@ const MockStudyScreen = ({navigation, route}) =>{
 
 
     /** 출력 화면 */ 
-    if (!readyImage || !readyAudio) {
-        // 로딩 화면
+    if (!readyImage || !readyProblem) {
+        // 문제 생성중 로딩화면
         return (
             <Loading />
         )
@@ -380,7 +445,9 @@ const MockStudyScreen = ({navigation, route}) =>{
                 />
     
                 {/* 문제 풀이 영역 */}
-                <MockProb
+                {
+                    readyAudio ?
+                    <MockProb
                     problem={prevProblems.current[index]}
                     choice={prevProblems.current[index].PRB_USER_ANSW || null}
                     setChoice={setChoice}
@@ -395,7 +462,9 @@ const MockStudyScreen = ({navigation, route}) =>{
                     audios={prevAudios}
 
                     key = {`MOCKSCREEN${index}`} // MockProb 컴포넌트 구분 (audio 객체)
-                />
+                    />
+                    : <Loading />
+                }
             </View>
         );
     }else if(resultscreen){

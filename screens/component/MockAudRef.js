@@ -5,7 +5,7 @@ import { StyleSheet, View, Text, TouchableOpacity } from 'react-native';
 
 const MockAudRef = ({ audio }) => {
 
-    // const isComponentMounted = useRef(true)
+    const isComponentMounted = useRef(true)
     const intervalId = useRef(null)
 
     // init timer 
@@ -22,7 +22,7 @@ const MockAudRef = ({ audio }) => {
     useEffect(() => {
 
         return () => {
-            // isComponentMounted.current = false
+            isComponentMounted.current = false
 
             clearInterval(intervalId.current)
         }
@@ -32,7 +32,10 @@ const MockAudRef = ({ audio }) => {
     useEffect(() => {
 
         console.log(currentWidth, currentTime)
-        setCurrentWidth(width / finishTime * currentTime)
+        
+        if(isComponentMounted.current){   
+            setCurrentWidth(width / finishTime * currentTime)
+        }
 
     }, [currentTime])
 
@@ -42,12 +45,16 @@ const MockAudRef = ({ audio }) => {
 
             intervalId.current = setInterval(() => {
 
-                setCurrenttime(prevTime =>
-                    prevTime < finishTime ?
-                        prevTime + 1 :
-                        prevTime
-                )
+                if(isComponentMounted.current){
 
+                    setCurrenttime(prevTime =>
+                        prevTime < finishTime ?
+                            prevTime + 1 :
+                            prevTime
+                    )
+    
+                }
+                
             }, 1000)
 
         } else {
@@ -55,7 +62,7 @@ const MockAudRef = ({ audio }) => {
             clearInterval(intervalId.current)
             intervalId.current = null
 
-            if(currentTime == finishTime){
+            if(currentTime == finishTime && isComponentMounted.current){
                 setCurrenttime(0)
                 setCurrentWidth(0)
             }
@@ -70,18 +77,26 @@ const MockAudRef = ({ audio }) => {
             if (audio.isPlaying()) {
                 audio.pause()
 
-                setIsRunning(false)
+                if(isComponentMounted.current){
+                    setIsRunning(false)
+                }
             } else {
-                setIsRunning(true)
+                if(isComponentMounted.current){
+                   setIsRunning(true) 
+                }
+                
 
                 // audio.play()
 
                 audio.play((success) => {
-                    if (success) {
+                    if (success && isComponentMounted.current) {
                         setIsRunning(false);
                         console.log('successfully finished playing');
                     } else {
-                        setIsRunning(false);
+
+                        if(isComponentMounted.current){
+                            setIsRunning(false);
+                        }
                         console.log('playback failed due to audio decoding errors');
                     }
                 })
