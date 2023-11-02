@@ -22,6 +22,11 @@ const initNickname = (length = 8) => {
     return `USER${Math.random().toString(16).substring(2, length)}`
 };
 
+// 랜덤 난수 생성 (레벨테스트 문제 구성중 랜덤 배정) 1 ~ 5 사이의 값
+const initLvtag = (mx = 5+1, mn = 1) => {
+    return parseInt(Math.random() * (mx - mn) + mn)
+}
+
 
 const ErrorText = ({text}) => {
     return (
@@ -98,7 +103,7 @@ const SignupScreen = ({ navigation, route }) =>{
         try {
             const {user} = await signUp(info)
             const u_uid = user.uid
-
+            const lvTag = initLvtag()
 
             console.log(user);
             console.log('닉네임', nickname);
@@ -126,7 +131,7 @@ const SignupScreen = ({ navigation, route }) =>{
             UserDoc.collection("recommend").doc('Recommend').set({ userCorrect: 0, userIndex: 10 })
 
             // 레벨테스트 문제 구조
-            UserDoc.collection("leveltest").doc('Leveltest').set({ userIndex: 0 })
+            UserDoc.collection("leveltest").doc('Leveltest').set({ userIndex: 0, userLvtag: `0${lvTag}`})
 
             
 
@@ -134,8 +139,8 @@ const SignupScreen = ({ navigation, route }) =>{
 
              // initialize uid, email
             USER.initUser(user)
-            // initialize level, nickname, levelIdx, recIndex, recCorrect
-            USER.setUserInfo(my_level, nickname)
+            // initialize level, nickname, levelTag, levelIdx, recIndex, recCorrect
+            USER.setUserInfo(my_level, nickname, `0${lvTag}`)
 
 
             navigation.dispatch(
