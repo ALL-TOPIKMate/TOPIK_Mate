@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useContext } from 'react';
-import { View, Text, Image, StyleSheet, Pressable, Modal, Button, TouchableOpacity } from 'react-native';
+import { View, Text, Image, StyleSheet, Pressable, Button, TouchableOpacity, ScrollView } from 'react-native';
 
 import firebase from '@react-native-firebase/app';
 import firestore from '@react-native-firebase/firestore';
@@ -10,6 +10,7 @@ import auth from "@react-native-firebase/auth"
 import DropDownPicker from 'react-native-dropdown-picker';
 import { CommonActions } from '@react-navigation/native';
 import UserContext from '../lib/UserContext';
+import { style } from 'deprecated-react-native-prop-types/DeprecatedViewPropTypes';
 //import AppNameHeader from './component/AppNameHeader';
 
 
@@ -23,19 +24,8 @@ const InfoScreen = ({ navigation }) => {
     const profileStorage = getStorage(firebase).ref("/profile")
 
 
-    // 이미지
+    // 프로필 이미지
     const [imageUrl, setImageUrl] = useState(null);
-
-
-    // 모달창
-    const [isModalVisible, setIsModalVisible] = useState(false);
-    const [open, setOpen] = useState(false);
-    const [value, setValue] = useState(null);
-    const [items, setItems] = useState([
-        { label: 'TOPIK 1', value: '1' },
-        { label: 'TOPIK 2', value: '2' },
-    ]);
-
 
 
 
@@ -95,50 +85,18 @@ const InfoScreen = ({ navigation }) => {
 
 
 
-    // 레벨 변경
-    const updateUserLevel = async (email, newLevel) => {
-        try {
-            const userDoc = firestore().collection('users').doc(USER.uid)
-
-            if (userDoc) {
-                await userDoc.update({ my_level: newLevel });
-
-
-                USER.level = newLevel
-                console.log('my_level 업데이트 완료');
-            } else {
-                console.log('사용자를 찾을 수 없음');
-            }
-        } catch (error) {
-            console.error('my_level 업데이트 에러:', error);
-        }
-    };
-
-
-    // 레벨 선택
-    const saveLevelToFirebase = (selectedLevel) => {
-        // Firebase에 선택한 레벨 저장하는 로직 구현
-        console.log('선택한 레벨:', selectedLevel);
-        updateUserLevel(USER.email, selectedLevel);
-    };
-
-
     return (
-        <View>
-            <TouchableOpacity
-                style={styles.settingsButton}
-                onPress={() => { navigation.navigate('InfoSetting') }}
-            >
-                <View>
+        <View style = {styles.container}>
+            <View style={styles.settingsButton}>
+                <TouchableOpacity  onPress={() => { navigation.navigate('InfoSetting') }}>
                     <Image
                         source={require('../assets/settings-icon.png')}
                         style={styles.settingsIcon}
                     />
-                </View>
-            </TouchableOpacity>
+                </TouchableOpacity>
+            </View>
 
             <View style={styles.circleContainer}>
-                <Text>내 정보</Text>
                 <Pressable
                     style={[
                         styles.circle,
@@ -156,66 +114,24 @@ const InfoScreen = ({ navigation }) => {
                     )}
                 </Pressable>
 
-                <Text> 이메일 : {USER.email} </Text>
+                <Text style = {{marginVertical: 8, color: "#000000"}}> {USER.nickname} </Text>
             </View>
 
-            <Text> 나의 레벨 </Text>
-            <Modal
-                animationType="slide"
-                transparent={true}
-                visible={isModalVisible}
-                onRequestClose={() => {
-                    Alert.alert('Modal has been closed.');
-                    setIsModalVisible(!isModalVisible);
-                }}
-            >
-                <View style={styles.centeredView}>
-                    <View style={styles.modalView}>
-                        <Text style={styles.modalText}>레벨 수정하기</Text>
-                        <DropDownPicker
-                            open={open}
-                            value={value}
-                            items={items}
-                            setOpen={setOpen}
-                            setValue={setValue}
-                            setItems={setItems}
-                            placeholder="레벨을 선택해 주세요"
-                            listMode="FLATLIST"
-                            modalProps={{
-                                animationType: 'fade',
-                            }}
-                            modalTitle="레벨 선택"
-                        />
-                        <Pressable
-                            style={[styles.button, styles.buttonClose]}
-                            onPress={() => {
-                                setIsModalVisible(!isModalVisible);
-                                saveLevelToFirebase(value);
-                                navigation.dispatch(
-                                    CommonActions.reset({
-                                        index: 0,
-                                        routes: [{ name: 'Home' }] // 로그인 페이지 이름으로 변경
-                                    })
-                                );
-                            }}
-                        >
-                            <Text style={styles.textStyle}>저장</Text>
-                        </Pressable>
-                    </View>
-                </View>
-            </Modal>
-            <Pressable
-                style={[styles.button, styles.buttonOpen]}
-                onPress={() => setIsModalVisible(true)}>
-                <Text style={styles.textStyle}>수정하기</Text>
-            </Pressable>
-            <Text> {USER.level}</Text>
+            <Text style = {styles.titleText}> My level </Text>
+            
+            <View style = {styles.levelContainer}>
+                <Text style = {styles.headerText}> TOPIK {USER.level} </Text>
+                <Text style = {styles.middleText}>- {USER.level == 1? "for beginner": "for intermediate-advanced"}</Text>
+            </View>
+
         </View>
-
-
     );
 };
 const styles = StyleSheet.create({
+    container: {
+        padding: 8
+    },
+
     circleContainer: {
         alignItems: 'center',
         marginTop: 20,
@@ -224,7 +140,7 @@ const styles = StyleSheet.create({
         width: 100,
         height: 100,
         borderRadius: 50,
-        backgroundColor: '#87CEEB',
+        backgroundColor: '#A4BAA1',
     },
     circleDefaultImage: {
         width: 100,
@@ -249,58 +165,10 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
 
-    centeredView: {
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-        marginTop: 22,
-    },
-    modalView: {
-        height: 200,
-        margin: 20,
-        backgroundColor: 'white',
-        borderRadius: 20,
-        padding: 35,
-        alignItems: 'center',
-        shadowColor: '#000',
-        shadowOffset: {
-            width: 0,
-            height: 2,
-        },
-        shadowOpacity: 0.25,
-        shadowRadius: 4,
-        elevation: 5,
-    },
     button: {
         borderRadius: 20,
         padding: 10,
-        elevation: 2,
-        position: 'absolute',
-        right: 10,
-        top: 200,
-    },
-    modalText: {
-        marginBottom: 15,
-        textAlign: 'center',
-    },
-    textStyle: {
-        color: 'white',
-        fontWeight: 'bold',
-        textAlign: 'center',
-        fontSize: 10,
-    },
-    buttonOpen: {
-        backgroundColor: '#6B8E23',
-        width: 60,
-        height: 35,
-        justifyContent: 'center',
-    },
-    buttonClose: {
-        backgroundColor: '#9ACD32',
-        width: 100,
-        position: 'absolute',
-        top: 150,
-        left: 130,
+        
     },
     settingsButton: {
         flexDirection: 'row',
@@ -313,6 +181,30 @@ const styles = StyleSheet.create({
         height: 20,
         top: 10,
     },
+
+    levelContainer: {
+        backgroundColor: "#D9D9D9", 
+        height: 100,
+        borderRadius: 10,
+
+        flexDirection: "row",
+        alignItems: "center",
+
+        paddingHorizontal: 10
+    },
+
+    titleText: {
+        fontSize: 20,
+        color: "#000000",
+        marginVertical: 6
+    },
+    headerText: {
+        fontSize: 24,
+        fontWeight: "bold"
+    },
+    middleText:{
+        fontSize: 20,
+    }
 });
 
 

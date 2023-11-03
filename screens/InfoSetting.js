@@ -30,15 +30,11 @@ const InfoSetting = ({ navigation }) => {
 
     return (
         <View style={styles.container}>
-
-            <Text> 보여주어야 하는 것들 </Text>
-            <Text> 개인 정보 관련, 로그인 정보, 닉네임 변경 </Text>
-
             <FlatList data={[
-                { key: '계정', onPress: handleButton1Press },
-                { key: '공지사항', onPress: handleButton2Press },
-                { key: '문의', onPress: handleButton3Press },
-                { key: '앱 정보', onPress: handleButton4Press },
+                { key: 'Account', onPress: handleButton1Press },
+                { key: 'Notice', onPress: handleButton2Press },
+                { key: 'Inquiry', onPress: handleButton3Press },
+                { key: 'App info', onPress: handleButton4Press },
             ]}
                 renderItem={({ item }) => (
                     <TouchableOpacity style={styles.button} onPress={item.onPress}>
@@ -54,14 +50,17 @@ const InfoSetting = ({ navigation }) => {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        paddingTop: 22,
+        marginTop: 40,
+        marginHorizontal: 10
     },
     button: {
         padding: 10,
-        backgroundColor: 'lightgray',
         marginBottom: 10,
         alignItems: 'flex-start',
         justifyContent: 'center',
+
+        borderBottomWidth: 1,
+        borderBottomColor: "#D9D9D9"
     },
     buttonText: {
         fontSize: 18,

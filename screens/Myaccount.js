@@ -186,8 +186,13 @@ const Myaccount = ({ navigation }) => {
 	return (
 		<View style={styles.container}>
 
-			<Text>계정 내용</Text>
-			<Text> 이메일 : {USER.email}</Text>
+			<View style = {styles.emailContainer}>
+				<Text style = {{fontSize: 20}}>Linked Email</Text>
+				<View style = {styles.emailBox}>
+					<Text style = {{fontSize: 20, fontWeight: "bold"}}>{USER.email}</Text>
+				</View>
+			</View>
+			
 			
 			<View style={styles.buttonContainer}>
 
@@ -196,7 +201,7 @@ const Myaccount = ({ navigation }) => {
 					style={styles.button}
 					onPress={handleLogout}
 				>
-					<Text style={styles.buttonText}>로그아웃</Text>
+					<Text style={styles.buttonText}>Logout</Text>
 				</TouchableOpacity>
 
 
@@ -211,19 +216,19 @@ const Myaccount = ({ navigation }) => {
 					}}
 				>
 					<View style={styles.modalView}>
-						<Text style={styles.modalText}>비밀번호 변경하기 </Text>
-						<View>
+						<Text style={styles.modalText}>Change password</Text>
+						<View style = {styles.rowCenter}>
 							<TextInput
 								style={styles.input}
 								secureTextEntry
-								placeholder="현재 비밀번호"
+								placeholder="current password"
 								value={currentPassword}
 								onChangeText={setCurrentPassword}
 							/>
 							<TextInput
 								style={styles.input}
 								secureTextEntry
-								placeholder="새로운 비밀번호"
+								placeholder="new password"
 								value={newPassword}
 								onChangeText={setNewPassword}
 							/>
@@ -234,7 +239,7 @@ const Myaccount = ({ navigation }) => {
 									handlePasswordChange(currentPassword, newPassword)
 								}}
 							>
-								<Text style={styles.textStyle}>변경하기</Text>
+								<Text style={styles.buttonText}>change</Text>
 							</Pressable>
 						</View>
 					</View>
@@ -242,7 +247,7 @@ const Myaccount = ({ navigation }) => {
 				<Pressable
 					style={[styles.button, styles.buttonOpen]}
 					onPress={() => setIsPasswordModalVisible(true)}>
-					<Text style={styles.textStyle2}>비밀번호 변경</Text>
+					<Text style={styles.buttonText}>Change password</Text>
 				</Pressable>
 
 
@@ -254,8 +259,8 @@ const Myaccount = ({ navigation }) => {
 					onRequestClose={() => setIsResignModalVisible(false)}
 				>
 					<View style={styles.modalView}>
-						<Text style={styles.modalText}> 사용자 인증 </Text>
-						<View>
+						<Text style={styles.modalText}> User reauthenticate </Text>
+						<View style = {styles.rowCenter}>
 							<TextInput
 								style={styles.input}
 								placeholder="email"
@@ -276,13 +281,13 @@ const Myaccount = ({ navigation }) => {
 									handleDeleteAccount()
 								}}
 							>
-								<Text style={styles.textStyle}>탈퇴하기</Text>
+								<Text style={styles.buttonText}>Delete account</Text>
 							</Pressable>
 						</View>
 					</View>
 				</Modal>
 				<TouchableOpacity style={styles.button} onPress={() => setIsResignModalVisible(true)}>
-					<Text style={styles.buttonText}>회원 탈퇴</Text>
+					<Text style={styles.buttonText}>Delete account</Text>
 				</TouchableOpacity>
 
 
@@ -295,17 +300,17 @@ const Myaccount = ({ navigation }) => {
 
 				>
 					<View style={styles.modalView}>
-						<Text style={styles.modalText}> 닉네임 변경 </Text>
-						<View>
+						<Text style={styles.modalText}> Change nickname </Text>
+						<View style = {styles.rowCenter}>
 							<TextInput
 								style={styles.input}
-								placeholder="현재 닉네임"
-								value={"현재 닉네임: "+ currentNickname}
+								placeholder="current name"
+								value={"current name: "+ currentNickname}
 								editable = {false}
 							/>
 							<TextInput
 								style={styles.input}
-								placeholder="새로운 닉네임"
+								placeholder="new name"
 								value={newNickname}
 								onChangeText={setNewNickname}
 							/>
@@ -316,7 +321,7 @@ const Myaccount = ({ navigation }) => {
 									handleUpdateNickname(newNickname)
 								}}
 							>
-								<Text style={styles.textStyle}>변경하기</Text>
+								<Text style={styles.buttonText}>Change</Text>
 							</Pressable>
 						</View>
 					</View>
@@ -324,7 +329,7 @@ const Myaccount = ({ navigation }) => {
 				<Pressable
 					style={[styles.button, styles.buttonOpen]}
 					onPress={() => setIsNicknameModalVisible(true)}>
-					<Text style={styles.textStyle2}>닉네임 변경</Text>
+					<Text style={styles.buttonText}>Change nickname</Text>
 				</Pressable>
 			</View>
 		</View>
@@ -333,40 +338,68 @@ const Myaccount = ({ navigation }) => {
 };
 const styles = StyleSheet.create({
 	container: {
-		//flex: 1,
-		justifyContent: 'center',
-		alignItems: 'flex-start',
+		paddingHorizontal: 12
 	},
+
+	emailContainer: {
+		marginTop: 10,
+		height: 150,
+
+		flexDirection: "column",
+		justifyContent: "center",
+		
+
+		// borderTopColor: "#D9D9D9",
+		borderBottomColor: "#D9D9D9",
+		// borderTopWidth: 1,
+		borderBottomWidth: 1,
+		
+	},
+	emailBox: {
+		backgroundColor: "#D9D9D9",
+		borderRadius: 12,
+
+		 marginHorizontal: 32, 
+		 marginVertical: 12,
+
+		 padding: 12,
+		 alignItems: "center"
+	},
+	
 	buttonContainer: {
 		marginTop: 50,
 	},
 	button: {
-		backgroundColor: '#66CC66',
-		padding: 10,
-		borderRadius: 5,
-		marginTop: 10,
-		width: 100,
-		height: 40,
+		backgroundColor: "#FFFFFF",
+
+		borderWidth: 1,
+		borderColor: "#666363",
+		height: 50,
+
+		alignItems: "center",
+		justifyContent: "center",
+
+		marginVertical: 12,
 	},
 	buttonText: {
-		color: 'white',
 		fontSize: 16,
-		fontWeight: 'bold',
-		textAlign: 'center',
+		// fontWeight: 'bold',
+		
 	},
 	modalText: {
 		marginBottom: 15,
 		textAlign: 'center',
-		fontSize: 10,
+		fontSize: 14,
 	},
 	modalView: {
-		height: 250,
+		height: 300,
 		margin: 20,
 		marginTop: 200, // 내리고자 하는 만큼의 값으로 조정
 		backgroundColor: 'white',
 		borderRadius: 20,
 		padding: 35,
 		alignItems: 'center',
+		
 		shadowColor: '#000',
 		shadowOffset: {
 			width: 0,
@@ -377,11 +410,12 @@ const styles = StyleSheet.create({
 		elevation: 5,
 	},
 	buttonClose: {
-		backgroundColor: '#9ACD32',
-		width: 100,
-		position: 'absolute',
-		top: 120,
-		left: 60,
+		backgroundColor: '#A4BAA1',
+		width: 200,
+		marginVertical: 30
+	},
+	rowCenter: {
+		alignItems: "center"
 	},
 	input: {
 		height: 40,
@@ -390,17 +424,6 @@ const styles = StyleSheet.create({
 		padding: 10,
 		width: 200,
 	},
-	textStyle: {
-		color: 'white',
-		fontWeight: 'bold',
-		textAlign: 'center',
-		fontSize: 15,
-	},
-	textStyle2: {
-		color: 'white',
-		fontWeight: 'bold',
-		textAlign: 'center',
-		fontSize: 13,
-	},
+	
 });
 export default Myaccount;
