@@ -65,7 +65,7 @@ const RecommendScreen = ({route, navigation}) =>{
                         </TouchableOpacity>:
 
                         // 다 풀었을 경우 (추천 문제)
-                        <TouchableOpacity style = {styles.recommendBtn} onPress={()=> (USER.recIndex == 10) ? (Alert.alert("", "문제가 없습니다 다음에 도전하세요.")): (navigation.navigate("RecommendStudy")) }>
+                        <TouchableOpacity style = {[styles.recommendBtn, {opacity: USER.recIndex == 10? 0.5: 1}]} onPress={() => navigation.navigate("RecommendStudy")} disabled = {USER.recIndex}>
                         <Text style = {{color: "#F6F1F1", fontSize: 24, fontWeight: "bold", paddingVertical: 5}}>
                             추천문제 풀기
                         </Text>

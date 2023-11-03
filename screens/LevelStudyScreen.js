@@ -8,26 +8,27 @@ import Sound from 'react-native-sound';
 import UserContext from '../lib/UserContext';
 import Loading from './component/Loading';
 import LevelProb from './component/LevelProb';
-
+import { sendProblemRecommend } from '../lib/utils';
 
 Sound.setCategory('Playback');
 
 
-const updateUserField = (lvtestDoc, levelIdx) => {
+const updateUserField = (lvtestDoc, levelIdx, levelTag) => {
 
     lvtestDoc.update({
-        userIndex: levelIdx
+        userIndex: levelIdx,
+        userLvtag: levelTag
     })
 
 }
 
 
 
-const audioURL = async (problem, audioRef, audioStorage, setReadyAudio, countAudio, isComponentMounted) => {
+const audioURL = (problem, audioRef, audioStorage, setReadyAudio, countAudio, isComponentMounted) => {
     const PRB_RSC = problem.PRB_ID.substr(0, problem.PRB_ID.length - 3)
 
     try {
-        await audioStorage.child(`/${PRB_RSC}/${problem.AUD_REF}`).getDownloadURL().then((url) => {
+        audioStorage.child(`/${PRB_RSC}/${problem.AUD_REF}`).getDownloadURL().then((url) => {
             const audio = new Sound(url, null, err => {
                 if (err) {
                     console.log('Failed to load the sound', err);
@@ -35,7 +36,7 @@ const audioURL = async (problem, audioRef, audioStorage, setReadyAudio, countAud
                 }
 
                 // 로드 성공
-                // console.log(`오디오 로드 성공. ${url}`);
+                console.log(`오디오 로드 성공. ${problem.AUD_REF}`);
 
                 countAudio.current -= 1
 
@@ -97,7 +98,7 @@ async function loadMultimedia(data, imageData, audioData, imageStorage, audioSto
         const imageIndex = data[i].PRB_CHOICE1.search(".png")
 
         if (data[i].AUD_REF) {
-            await audioURL(data[i], audioData, audioStorage, setIsAudioReady, audioCount, isComponentMounted)
+            audioURL(data[i], audioData, audioStorage, setIsAudioReady, audioCount, isComponentMounted)
         } if (data[i].IMG_REF) {
             await imageURL(data[i], imageData, imageStorage)
         } if (imageIndex != -1) {
@@ -105,7 +106,7 @@ async function loadMultimedia(data, imageData, audioData, imageStorage, audioSto
         }
     }
 
-
+    // console.log("이미지 로드 완료111")
 }
 
 
@@ -123,9 +124,8 @@ const LevelStudyScreen = ({ navigation }) => {
     const imageStorage = storage.ref().child(`/images`);
 
     // 문제 콜렉션
-    const problemColl = firestore().collection("problems")
-        .doc("LV2").collection("PQ")
-        .doc("0041").collection("PRB_LIST")
+    const problemColl = firestore().collection("lvtproblems")
+        .doc(`LV${USER.level}`).collection(USER.levelTag)
 
     // 유저 Leveltest 도큐먼트
     const lvtestDoc = firestore().collection("users")
@@ -170,19 +170,17 @@ const LevelStudyScreen = ({ navigation }) => {
     useEffect(() => {
 
         // 문제 불러오기
-        problemColl.limit(10).get().then(querySnapshot => {
-
-            let DATA = querySnapshot.docs.map(doc => {
-                if (doc._data.AUD_REF) {
-                    audioCount.current++
+        problemColl.get().then(querySnapshot => {
+            setData(querySnapshot.docs.map(doc => {
+                // 오디오 카운팅
+                if(doc.data().AUD_REF){
+                    audioCount.current+=1
                 }
-                return doc.data()
-            })
 
-            if(isComponentMounted.current){
-                setData(DATA)
-            }
+                return doc.data()
+            }))
         })
+
 
 
         return () => {
@@ -196,7 +194,7 @@ const LevelStudyScreen = ({ navigation }) => {
 
             // firebase update
             // user field
-            updateUserField(lvtestDoc, Number(userIndex) + Number(problemCount.current))
+            updateUserField(lvtestDoc, Number(userIndex) + Number(problemCount.current), USER.levelTag)
 
 
             // wrong
@@ -219,12 +217,13 @@ const LevelStudyScreen = ({ navigation }) => {
             prevProblem.current = JSON.parse(JSON.stringify(data))
             userData.current = JSON.parse(JSON.stringify(data))
 
-            if(audioCount.current == 0 && isComponentMounted.current){
-                setIsAudioReady(true)
-            }
+            // if(audioCount.current == 0 && isComponentMounted.current){
+            //     setIsAudioReady(true)
+            // }
 
             loadMultimedia(data, imageData, audioData, imageStorage, audioStorage, setIsAudioReady, audioCount, isComponentMounted).then(() => {
                 if(isComponentMounted.current){
+                    // console.log("이미지로드완료 222")
                     setIsImageReady(true)
                 }
             })
@@ -274,9 +273,9 @@ const LevelStudyScreen = ({ navigation }) => {
 
     useEffect(() => {
         if(resultscreen){
-
             if(index == data.length){
-                Alert.alert("진단고사 완료", "수고하셨습니다 5-10분 뒤에 추천문제를 풀어보세요! ", [
+                sendProblemRecommend(USER)
+                Alert.alert("진단고사 완료", "수고하셨습니다 잠시 후 추천문제를 풀어보세요! ", [
                     { text: "ok", onPress: () => navigation.pop() },
                 ])
             }else{
