@@ -1,5 +1,5 @@
 import React, {useState, useEffect, useRef, useContext } from 'react';
-import { View, StyleSheet } from 'react-native'
+import { View, StyleSheet, TouchableOpacity, Text } from 'react-native'
 import firebase from '@react-native-firebase/app';
 import firestore from '@react-native-firebase/firestore';
 import { getStorage } from '@react-native-firebase/storage'; // include storage module besides Firebase core(firebase/app)
@@ -438,11 +438,20 @@ const MockStudyScreen = ({navigation, route}) =>{
         // 문제 풀이 화면
         return (
             <View style={styles.container}>
-                {/* 타이머 */}
-                <MockTimer
-                    level={route.params.level}
-                    setIsEnd={setIsEnd}
-                />
+                {/* 타이머와 나가기버튼*/}
+                <View style = {styles.headerContainer}>
+                    <MockTimer
+                        level={route.params.level}
+                        setIsEnd={setIsEnd}
+                    />
+                    <TouchableOpacity
+                        onPress={() => {
+                            setIsEnd(true);
+                        }}
+                        style={styles.exitBtn}>
+                        <Text>Exit</Text>
+                    </TouchableOpacity>
+                </View>
     
                 {/* 문제 풀이 영역 */}
                 {
@@ -493,6 +502,27 @@ const MockStudyScreen = ({navigation, route}) =>{
 const styles = StyleSheet.create({
     container:{
         padding: 20,
+    },
+
+    headerContainer: {
+        flexDirection: "row",
+        justifyContent: "space-between",
+        alignItems: "center",
+        
+        marginBottom: 50
+    },  
+
+    // 나가기 버튼
+    exitBtn: {
+        width: 80,
+        borderStyle: 'solid',
+        borderColor: "#666363",
+        borderWidth: 1,
+        borderRadius: 5,
+        padding: 8,
+        backgroundColor: '#D9D9D9',
+
+        alignItems: "center"
     },
 
 })

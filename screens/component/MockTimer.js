@@ -7,8 +7,8 @@ const MockTimer = ({ setIsEnd, level }) => {
     const navigation = useNavigation();
 
     const levelTime = {
-        'LV1': 300, // 10s
-        'LV2': 300, // 30s
+        'LV1': 6000, // 100m = (60 * 100) sec
+        'LV2': 10800, // 180m = (60*180) sec 
     }
 
     const [time, setTime] = useState(levelTime[level])
@@ -41,10 +41,17 @@ const MockTimer = ({ setIsEnd, level }) => {
 
     }, [time])
 
+    function getLeftMinute(time){
+        return parseInt(time/60) // unit s to m
+    }
+
+    function getLeftSec(time){
+        return time%60
+    }
 
     return (
         <View>
-            <Text style={styles.timeText}>Left Time: {time}</Text>
+            <Text style={styles.timeText}>Left Time: {getLeftMinute(time)}m {getLeftSec(time)}s</Text>
         </View>
     )
 

@@ -13,7 +13,7 @@ import MockAudRef from './MockAudRef';
 
 
 
-const MockProb = ({ problem, choice, setChoice, choice2, setChoice2, index, setIndex, setIsEnd, probListLength, setDirection, images, audios }) => {
+const MockProb = ({ problem, choice, setChoice, choice2, setChoice2, index, setIndex, probListLength, setDirection, images, audios }) => {
 
 
     // 오디오 파일이 있으면 audio Object 가져오기
@@ -37,15 +37,6 @@ const MockProb = ({ problem, choice, setChoice, choice2, setChoice2, index, setI
 
     return (
         <View>
-            <View>
-                <TouchableOpacity
-                    onPress={() => {
-                        setIsEnd(true);
-                    }}
-                    style={styles.exitBtn}>
-                    <Text>Exit</Text>
-                </TouchableOpacity>
-            </View>
             <ScrollView>
                 <View>
                     {/* 오디오 */}
@@ -122,19 +113,5 @@ const MockProb = ({ problem, choice, setChoice, choice2, setChoice2, index, setI
         </View>
     )
 }
-
-const styles = StyleSheet.create({
-    // 나가기 버튼
-    exitBtn: {
-        width: 50,
-        left: 300,
-        borderStyle: 'solid',
-        borderColor: 'black',
-        borderWidth: 1,
-        borderRadius: 5,
-        padding: 8,
-        backgroundColor: '#D9D9D9',
-    },
-})
 
 export default MockProb;
