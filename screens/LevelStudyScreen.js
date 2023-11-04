@@ -191,20 +191,19 @@ const LevelStudyScreen = ({ navigation }) => {
                 audioData.current[item].release()
             })
 
+            // RecommendScreen update
+            USER.levelIdx = Number(userIndex) + Number(problemCount.current) 
 
             // firebase update
             // user field
-            updateUserField(lvtestDoc, Number(userIndex) + Number(problemCount.current), USER.levelTag)
+            updateUserField(lvtestDoc, USER.levelIdx, USER.levelTag)
 
 
             // wrong
-            USER.updateUserWrongColl(prevProblem.current.slice(userIndex, userIndex + problemCount.current), userData.current.slice(userIndex, userIndex + problemCount.current))
+            USER.updateUserWrongColl(prevProblem.current.slice(userIndex, USER.levelIdx), userData.current.slice(userIndex, USER.levelIdx))
             
             // levelHistory
-            USER.updateLevelHistoryColl(userData.current.slice(userIndex, userIndex + problemCount.current))
-            
-            // RecommendScreen update
-            USER.levelIdx = Number(userIndex) + Number(problemCount.current) 
+            USER.updateLevelHistoryColl(userData.current.slice(userIndex, USER.levelIdx), USER.levelIdx)
         }
 
     }, [])
@@ -274,7 +273,6 @@ const LevelStudyScreen = ({ navigation }) => {
     useEffect(() => {
         if(resultscreen){
             if(index == data.length){
-                sendProblemRecommend(USER)
                 Alert.alert("진단고사 완료", "수고하셨습니다 잠시 후 추천문제를 풀어보세요! ", [
                     { text: "ok", onPress: () => navigation.pop() },
                 ])
