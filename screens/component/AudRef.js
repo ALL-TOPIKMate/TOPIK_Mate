@@ -9,36 +9,59 @@ const AudRef = ({ audio }) => {
     const [isRunning, setIsRunning] = useState(false);
     const [isSlowRunning, setIsSlowRunning] = useState(false);
 
+    const isComponentMounted = useRef(true); // 메모리누수 (state)
+
 
     useEffect(() => {
-        setIsRunning(false)
-        setIsSlowRunning(false)
+
+        return () => {
+            isComponentMounted.current = false
+        }
+    }, [])
+
+    useEffect(() => {
+        if(isComponentMounted.current){
+            setIsRunning(false)
+            setIsSlowRunning(false)
+        }
+
     }, [audio])
 
 
     // 오디오 재생 / 스탑 함수
     // 오디오 속도 조절시 자동 재생됨 -> 오디오 중단
     function audioPlay() {
-        setIsSlowRunning(false)
+        if(isComponentMounted.current){
+            setIsSlowRunning(false)
+        }
+
 
         if (audio) {
             if (audio.isPlaying()) {
 
                 audio.pause()
-                setIsRunning(false)
+                if(isComponentMounted.current){
+                    setIsRunning(false)
+                }
 
             } else {
 
-                setIsRunning(true)
+                if(isComponentMounted.current){
+                    setIsRunning(true)
+                }
+                
                 audio.setSpeed(1)
                 audio.pause()
 
                 audio.play((success) => {
-                    if (success) {
+                    if (success && isComponentMounted.current) {
                         setIsRunning(false);
                         console.log('successfully finished playing');
                     } else {
-                        setIsRunning(false);
+
+                        if(isComponentMounted.current){
+                           setIsRunning(false); 
+                        }
                         console.log('playback failed due to audio decoding errors');
                     }
                 })
@@ -50,27 +73,39 @@ const AudRef = ({ audio }) => {
     // 오디오 재생 / 스탑 함수
     // 오디오 속도 조절시 자동 재생됨 -> 오디오 중단
     function audioSlowPlay() {
-        setIsRunning(false)
+        if(isComponentMounted.current){
+            setIsRunning(false)
+        }
+        
 
         if (audio) {
 
             if (audio.isPlaying()) {
 
                 audio.pause()
-                setIsSlowRunning(false)
+                if(isComponentMounted.current){
+                    setIsSlowRunning(false)
+                }
+                
 
             } else {
 
-                setIsSlowRunning(true)
+                if(isComponentMounted.current){
+                   setIsSlowRunning(true) 
+                }
+                
                 audio.setSpeed(0.75)
                 audio.pause()
 
                 audio.play((success) => {
-                    if (success) {
+                    if (success && isComponentMounted.current) {
                         setIsSlowRunning(false);
                         console.log('successfully finished playing');
                     } else {
-                        setIsSlowRunning(false);
+                        if(isComponentMounted.current){
+                            setIsSlowRunning(false);
+                        }
+                        
                         console.log('playback failed due to audio decoding errors');
                     }
                 })

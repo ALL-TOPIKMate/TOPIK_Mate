@@ -20,13 +20,15 @@ Sound.setCategory('Playback');
 
 
 // 오디오 로드
-const audioURL = async (problem, audiosRef, audioStorage, countAudio, setIsReadyAudio, isComponentMounted) => {
+const audioURL = (problem, audiosRef, audioStorage, countAudio, setIsReadyAudio, isComponentMounted) => {
     const PRB_RSC = problem.PRB_ID.substr(0, problem.PRB_ID.length - 3)
 
     try {
 
-        await audioStorage.child(`/${PRB_RSC}/${problem.AUD_REF}`).getDownloadURL().then((url) => {
+        audioStorage.child(`/${PRB_RSC}/${problem.AUD_REF}`).getDownloadURL().then((url) => {
             const audio = new Sound(url, null, err => {
+
+                console.log(`${problem.AUD_REF} - ${problem.PRB_ID} 로드 완료`)
 
                 countAudio.current--
 
@@ -91,12 +93,12 @@ const imagesURL = async (problem, imagesRef, imageStorage) => {
 const loadMultimedia = async (problem, audiosRef, imagesRef, audioStorage, imageStorage, countAudio, setIsReadyAudio, nextBtn, isComponentMounted) => {
     try {
         let size = problem.length
-
+        console.log("loadmultimedia!!!!!!!!!!!!!!")
         for (var i = nextBtn; i < size; i++) {
             const imageIndex = problem[i].PRB_CHOICE1.search(".png")
 
             if (problem[i].AUD_REF) {
-                await audioURL(problem[i], audiosRef, audioStorage, countAudio, setIsReadyAudio, isComponentMounted)
+                audioURL(problem[i], audiosRef, audioStorage, countAudio, setIsReadyAudio, isComponentMounted)
             } if (problem[i].IMG_REF) {
                 await imageURL(problem[i], imagesRef, imageStorage)
             } if (imageIndex != -1) {
@@ -322,7 +324,7 @@ const WrongStudyScreen = ({ route, navigation }) => {
 
     // 현재 풀이하고 있는 유형을 가르킴
     useEffect(() => {
-        if(route.params.key == "write"){
+        if(route.params.key == "write" || typeIndex == 0){
             return 
         }
 
@@ -330,9 +332,13 @@ const WrongStudyScreen = ({ route, navigation }) => {
         if (typeIndex >= route.params.userTag.length && isComponentMounted.current) {
             setResultscreen(true)
         } else {
+            
             // 아직 문제가 남아있다면
-            setIsReadyImage(false)
-            setIsReadyAudio(false)
+            if(isComponentMounted.current){
+                setIsReadyImage(false)
+                setIsReadyAudio(false)
+            }
+            
 
             loadProblem(wrongCollection, problems, setProblems, route.params.userTag, lastVisible, typeIndex, setTypeIndex, countAudio, isComponentMounted)
         }
