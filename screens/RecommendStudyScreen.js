@@ -25,11 +25,11 @@ const updateUserAnswer = (recommendColl, index, correct) =>{
 
 
 
-const audioURL = async(problem, audioRef, audioStorage, countAudio, setReadyAudio, isComponentMounted) =>{
+const audioURL = (problem, audioRef, audioStorage, countAudio, setReadyAudio, isComponentMounted) =>{
     const PRB_RSC = problem.PRB_ID.substr(0, problem.PRB_ID.length-3)
 
     try{
-        await audioStorage.child(`/${PRB_RSC}/${problem.AUD_REF}`).getDownloadURL().then((url)=>{
+        audioStorage.child(`/${PRB_RSC}/${problem.AUD_REF}`).getDownloadURL().then((url)=>{
             const audio = new Sound(url, null, err => {
                 if (err) {
                     console.log('Failed to load the sound', err);
@@ -37,7 +37,7 @@ const audioURL = async(problem, audioRef, audioStorage, countAudio, setReadyAudi
                 }
                 
                 // 로드 성공
-                // console.log(`오디오 로드 성공. ${url}`);
+                console.log(`${problem.AUD_REF} - ${problem.PRB_ID}오디오 로드 성공`);
 
                 countAudio.current -= 1
                 
@@ -102,7 +102,7 @@ const loadMultimedia = async (problem, audioRef, imgRef, audioStorage, imageStor
             const imageIndex = problem[i].PRB_CHOICE1.search(".png")
 
             if(problem[i].AUD_REF){
-                await audioURL(problem[i], audioRef, audioStorage, countAudio, setReadyAudio, isComponentMounted)
+                audioURL(problem[i], audioRef, audioStorage, countAudio, setReadyAudio, isComponentMounted)
             }if(problem[i].IMG_REF){
                 await imageURL(problem[i], imgRef, imageStorage)
             }if(imageIndex != -1){
@@ -276,6 +276,12 @@ const RecommendStudyScreen = ({route, navigation}) =>{
                 if(isComponentMounted.current){
                     setReadyProblem(true)
                     // setReadyAudio(true)
+
+                    
+                    // 오디오가 없을 경우
+                    if (countAudio.current == 0 && isComponentMounted.current) {
+                        setReadyAudio(true)
+                    }
                 }
             })
 
