@@ -13,7 +13,7 @@ import LevelProbChoice from './LevelProbChoice';
 
 export default LevelProb = ({ problem, userData, audios, images, setIndex, setResultscreen, size, index }) => {
 
-    const audio = audios[problem.AUD_REF]
+    const audio = audios[problem.PRB_ID]
 
     useEffect(() => {
 

@@ -37,7 +37,7 @@ const audioURL = (problem, audiosRef, audioStorage, countAudio, setIsReadyAudio,
                 }
             })
 
-            audiosRef.current[problem.AUD_REF] = audio
+            audiosRef.current[problem.PRB_ID] = audio
         })
 
     } catch (err) {
@@ -429,7 +429,7 @@ const WrongStudyScreen = ({ route, navigation }) => {
             <WrongProb
                 problem={problems[nextBtn]}
                 images={imagesRef.current}
-                audio={audiosRef.current[problems[nextBtn].AUD_REF]} // 오디오 제어
+                audio={audiosRef.current[problems[nextBtn].PRB_ID]} // 오디오 제어
 
                 nextBtn={nextBtn}
                 setNextBtn={setNextBtn}

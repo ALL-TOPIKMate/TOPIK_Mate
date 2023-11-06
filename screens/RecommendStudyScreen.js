@@ -47,7 +47,7 @@ const audioURL = (problem, audioRef, audioStorage, countAudio, setReadyAudio, is
             })
 
 
-            audioRef.current[problem.AUD_REF] = audio
+            audioRef.current[problem.PRB_ID] = audio
         })
     }catch(err){
         console.log(err)

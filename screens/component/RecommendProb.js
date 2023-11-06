@@ -94,7 +94,7 @@ const problemStructure = (problem, imgRef, nextBtn, setNextBtn, isSubmit, setIsS
 
 export default recommendProb = ({ problem, audRef, imgRef, nextBtn, setNextBtn, isSubmit, setIsSubmit}) =>{
 
-    const audio = problem.AUD_REF ? audRef[problem.AUD_REF] : null
+    const audio = problem.AUD_REF ? audRef[problem.PRB_ID] : null
 
     useEffect(()=>{
 

@@ -55,7 +55,7 @@ const audioURL = async (problem, audiosRef, audioStorage, audioCount, setIsAudRe
             })
 
 
-            audiosRef.current[problem.AUD_REF] = audio
+            audiosRef.current[problem.PRB_ID] = audio
         })
     } catch (err) {
         console.log(err)
@@ -401,7 +401,7 @@ const TypeStudyLc = ({ navigation, route }) => {
                         PRB_MAIN_CONT={problems[currentIndex].PRB_MAIN_CONT}
                     />
 
-                    <AudRef audio={audiosRef.current[problems[currentIndex].AUD_REF]} />
+                    <AudRef audio={audiosRef.current[problems[currentIndex].PRB_ID]} key = {`AUDIO_${currentIndex}`} />
 
                     <ProbSub PRB_SUB_CONT={problems[currentIndex].PRB_SUB_CONT} />
 
@@ -410,7 +410,7 @@ const TypeStudyLc = ({ navigation, route }) => {
                         problem={prbchoice.current}
                         imagesRef={imagesRef.current}
 
-                        audio={audiosRef.current[problems[currentIndex].AUD_REF]} // 오디오 제어
+                        audio={audiosRef.current[problems[currentIndex].PRB_ID]} // 오디오 제어
 
                         PRB_CHOICE1={problems[currentIndex].PRB_CHOICE1}
                         PRB_CHOICE2={problems[currentIndex].PRB_CHOICE2}
