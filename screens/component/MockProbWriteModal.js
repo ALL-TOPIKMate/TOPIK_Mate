@@ -82,7 +82,7 @@ const MockProbWriteModal = ({ problem, index, setVisible, images }) => {
                         <View>
                             <Text style = {styles.text}>㉠</Text>
                             <Text style = {styles.text}>Your answer</Text>
-                            <ViewBox text = {problem[index].PRB_USER_ANSW} width = {width} />
+                            <ViewBox text = {problem[index].PRB_USER_ANSW || ""} width = {width} />
 
                             <Text style = {styles.text}>Best answer</Text>
                             <ViewBox text = {splitProblemAnswer2(splitProblemAnswer(problem[index].PRB_CORRT_ANSW).text1).join("<br/>")} width = {width}/>
@@ -101,7 +101,7 @@ const MockProbWriteModal = ({ problem, index, setVisible, images }) => {
                         <View>
                             <Text style = {styles.text}>㉡</Text>
                             <Text style = {styles.text}>Your answer</Text>
-                            <ViewBox text = {problem[index].PRB_USER_ANSW2} width = {width} />
+                            <ViewBox text = {problem[index].PRB_USER_ANSW2 || ""} width = {width} />
 
 
                             <Text style = {styles.text}>Best answer</Text>
@@ -119,7 +119,7 @@ const MockProbWriteModal = ({ problem, index, setVisible, images }) => {
                     </View>
                     : <View>
                         <Text style = {styles.text}>Your answer</Text>
-                        <ViewBox text = {problem[index].PRB_USER_ANSW} width = {width} />
+                        <ViewBox text = {problem[index].PRB_USER_ANSW || ""} width = {width} />
 
                         <Text style = {styles.text}>Best answer</Text>
                         <ViewBox text = {problem[index].PRB_CORRT_ANSW} width = {width} />
