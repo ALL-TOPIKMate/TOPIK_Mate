@@ -51,7 +51,7 @@ const MockTimer = ({ setIsEnd, level }) => {
 
     return (
         <View>
-            <Text style={styles.timeText}>Left Time: {getLeftMinute(time)}m {getLeftSec(time)}s</Text>
+            <Text style={styles.timeText}>Time Left: {getLeftMinute(time)}m {getLeftSec(time)}s</Text>
         </View>
     )
 
