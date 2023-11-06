@@ -12,9 +12,9 @@ import { getStorage } from '@react-native-firebase/storage'; // include storage 
 
 
 import Sound from 'react-native-sound';
+import { settingUserStudyTime } from '../lib/utils';
 
 Sound.setCategory('Playback');
-
 
 
 
@@ -203,6 +203,11 @@ const WrongStudyScreen = ({ route, navigation }) => {
     const isComponentMounted = useRef(true)
 
 
+    
+    // 학습화면에서 머무른 시간 = 학습시간으로 간주
+    const USERTIMER = useRef(0)
+
+
     // 멀티미디어
     const storage = getStorage(firebase);
     const audioStorage = storage.ref().child(`/audios`);
@@ -285,6 +290,9 @@ const WrongStudyScreen = ({ route, navigation }) => {
 
 
     useEffect(() => {
+        
+        USERTIMER.current = Date.now()
+        
         // console.log(route.params.userTag)
         // unmount
         return () => {
@@ -300,6 +308,11 @@ const WrongStudyScreen = ({ route, navigation }) => {
             // console.log(rawProblems.current)
             // console.log(userProblems.current)
             USER.updateUserWrongColl(rawProblems.current, userProblems.current)
+
+
+            
+            // 유저의 학습시간 업데이트
+            settingUserStudyTime(Date.now() - USERTIMER.current)
         }
     }, [])
 

@@ -15,6 +15,7 @@ import ProbSub from './component/ProbSub';
 import ProbScrpt from './component/ProbScrpt';
 import TypeProbChoice from './component/TypeProbChoice';
 import MarkUserAnswer from './component/MarkUserAnswer';
+import { settingUserStudyTime } from '../lib/utils';
 
 
 // 이어서 풀기 - 유저가 마지막에 푼 문제 기록 
@@ -36,6 +37,10 @@ const TypeStudyRc = ({ navigation, route }) => {
 
     // 메모리 누수 방지
     const isComponentMounted = useRef(true)
+
+
+    // 학습화면에서 머무른 시간 = 학습시간으로 간주
+    const USERTIMER = useRef(0)
 
 
     // 멀티미디어
@@ -92,6 +97,8 @@ const TypeStudyRc = ({ navigation, route }) => {
 
 
     useEffect(() => {
+        
+        USERTIMER.current = Date.now()
 
         // unmount
         return () => {
@@ -107,6 +114,11 @@ const TypeStudyRc = ({ navigation, route }) => {
             
             // 이어서 풀기 - 유형학습 마지막 문제 저장
             updateUserLastVisible(sectTag, lastprbRef.current)
+
+            
+            
+            // 유저의 학습시간 업데이트
+            settingUserStudyTime(Date.now() - USERTIMER.current)
         }
 
     }, [])

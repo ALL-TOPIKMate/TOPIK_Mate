@@ -12,6 +12,7 @@ Sound.setCategory('Playback');
 import UserContext from '../lib/UserContext';
 import RecommendProb from './component/RecommendProb';
 import Loading from './component/Loading';
+import { settingUserStudyTime } from '../lib/utils';
 
 
 
@@ -125,6 +126,8 @@ const RecommendStudyScreen = ({route, navigation}) =>{
     // 메모리 누수 방지
     const isComponentMounted = useRef(true)
     
+    // 학습화면에서 머무른 시간 = 학습시간으로 간주
+    const USERTIMER = useRef(0)
     
 
     // 멀티미디어
@@ -192,7 +195,9 @@ const RecommendStudyScreen = ({route, navigation}) =>{
 
     // MOUNT 
     useEffect(()=> {
-         
+        
+        USERTIMER.current = Date.now()
+
         // promise 객체를 반환하는 함수
         dataLoading();
 
@@ -222,6 +227,10 @@ const RecommendStudyScreen = ({route, navigation}) =>{
             // RecommendScreen update
             USER.recIndex = userIndex + Number(problemCount.current)
             USER.recCorrect = userCorrect + Number(correctCount.current)
+
+
+            // 유저의 학습시간 업데이트
+            settingUserStudyTime(Date.now() - USERTIMER.current)
         }
 
     }, []);

@@ -15,6 +15,7 @@ import ProbMain from './component/ProbMain';
 import ProbSub from './component/ProbSub';
 import TypeProbChoice from './component/TypeProbChoice';
 import MarkUserAnswer from "./component/MarkUserAnswer"
+import { settingUserStudyTime } from '../lib/utils';
 
 
 Sound.setCategory('Playback');
@@ -119,6 +120,10 @@ const TypeStudyLc = ({ navigation, route }) => {
     const isComponentMounted = useRef(true)
 
 
+    // 학습화면에서 머무른 시간 = 학습시간으로 간주
+    const USERTIMER = useRef(0)
+
+
     // 멀티미디어
     const storage = getStorage(firebase);
     const audioStorage = storage.ref().child(`/audios`);
@@ -182,6 +187,8 @@ const TypeStudyLc = ({ navigation, route }) => {
 
 
     useEffect(() => {
+        
+        USERTIMER.current = Date.now()
 
         // unmount
         return () => {
@@ -202,6 +209,12 @@ const TypeStudyLc = ({ navigation, route }) => {
 
             // 이어서 풀기 - 유형학습 마지막 문제 저장
             updateUserLastVisible(sectTag, lastprbRef.current)
+
+
+            
+            
+            // 유저의 학습시간 업데이트
+            settingUserStudyTime(Date.now() - USERTIMER.current)
         }
 
     }, [])

@@ -2,9 +2,34 @@ import React, { useState, useContext, useCallback, useEffect } from 'react';
 import { Button, View ,Text, StyleSheet, TouchableOpacity, Alert } from 'react-native'
 import { useIsFocused } from "@react-navigation/native";
 
-
 import UserContext from "../lib/UserContext"
+import { checkUserSession } from '../lib/auth';
+import { getNow2 } from '../lib/utils';
 // import {subscribeAuth } from "../lib/auth";
+
+const getUserStudyTime = async () => {
+    try{
+
+        const user = await checkUserSession()
+
+        const time = getNow2()
+
+        // user.studyTime.2011-10-10
+
+        if(user["studyTime"]){
+            if(user["studyTime"][time]){
+
+                return user["studyTime"][time]
+
+            }
+        }
+
+
+        return 0
+    }catch(err){
+        console.log(err)
+    }
+}
 
 
 const RecommendScreen = ({route, navigation}) =>{
@@ -16,12 +41,23 @@ const RecommendScreen = ({route, navigation}) =>{
     const isFocused = useIsFocused()
     const [render, reRender] = useState(false)
 
+    // 유저 학습시간
+    const [time, setTime] = useState(0)
+
 
     useEffect(()=>{
         const unsubscribe = () =>{
             // console.log("포커싱 감지!! 홈화면")
             reRender(!render)
         }
+
+
+        getUserStudyTime().then((data) => {
+
+            console.log(`유저의 학습시간: ${data}`)
+            setTime(data)
+
+        })
 
         return () => unsubscribe
     }, [isFocused])
@@ -31,21 +67,9 @@ const RecommendScreen = ({route, navigation}) =>{
         <View style = {{flex: 1}}>
             <View style = {styles.container}>
                 <View style = {styles.detail}>
-                    <Text style = {{flex: 2, fontSize: 24, fontWeight: "bold"}}>WEAK POINT</Text>
-                    <View style = {{flex: 4, borderBottomColor: 'black', borderBottomWidth: StyleSheet.hairlineWidth, marginLeft: 4}}/>
-                    <TouchableOpacity onPress = { () => {navigation.navigate("Info")} } style = {{flex:1, marginLeft: 16}}>
-                        <Text>Detail</Text>
-                    </TouchableOpacity>
-                </View>
-
-                <Text />
-                
-                <View style = {styles.detail}>
-                    <Text style = {{flex: 2, fontSize: 24, fontWeight: "bold"}}>STRONG POINT</Text>
-                    <View style = {{flex: 4, borderBottomColor: 'black', borderBottomWidth: StyleSheet.hairlineWidth, marginLeft: 8}}/>
-                    <TouchableOpacity onPress = { () => {navigation.navigate("Info")} } style = {{flex:1, marginLeft: 16}}>
-                        <Text>Detail</Text>
-                    </TouchableOpacity>
+                    <Text style = {styles.mainText}>Today's</Text>
+                    <Text style = {styles.mainText}>Running Time</Text>
+                    <Text style = {styles.mainText}>: {time}ms</Text>
                 </View>
                 
                 
@@ -90,9 +114,9 @@ const styles = StyleSheet.create({
         flex: 1,
     }, 
     detail: {
-        flex: 0.5,
-        flexDirection: "row",
-        alignItems: "center"
+        flex: 1.2,
+        marginTop: 20,
+        marginLeft: 10
     },
     recommend: {
         alignItems: "center",
@@ -108,12 +132,9 @@ const styles = StyleSheet.create({
         justifyContent: "center" 
     },
 
-    modalcontainer:{
-        marginBottom: 64,
-    },
-
-    modal:{
-        padding: 16
+    mainText: {
+        fontSize: 28,
+        fontWeight: "bold"
     }
 })
 

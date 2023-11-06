@@ -8,7 +8,7 @@ import Sound from 'react-native-sound';
 import UserContext from '../lib/UserContext';
 import Loading from './component/Loading';
 import LevelProb from './component/LevelProb';
-import { sendProblemRecommend } from '../lib/utils';
+import { settingUserStudyTime } from '../lib/utils';
 
 Sound.setCategory('Playback');
 
@@ -117,6 +117,9 @@ const LevelStudyScreen = ({ navigation }) => {
     // 메모리 누수 방지
     const isComponentMounted = useRef(true)
 
+    // 학습화면에서 머무른 시간 = 학습시간으로 간주
+    const USERTIMER = useRef(0)
+
 
     // 멀티미디어
     const storage = getStorage(firebase);
@@ -168,6 +171,8 @@ const LevelStudyScreen = ({ navigation }) => {
 
 
     useEffect(() => {
+        
+        USERTIMER.current = Date.now()
 
         // 문제 불러오기
         problemColl.get().then(querySnapshot => {
@@ -204,6 +209,11 @@ const LevelStudyScreen = ({ navigation }) => {
             
             // levelHistory
             USER.updateLevelHistoryColl(userData.current.slice(userIndex, USER.levelIdx), USER.levelIdx)
+
+
+            
+            // 유저의 학습시간 업데이트
+            settingUserStudyTime(Date.now() - USERTIMER.current)
         }
 
     }, [])

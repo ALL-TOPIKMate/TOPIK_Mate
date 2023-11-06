@@ -7,7 +7,7 @@ import Sound from 'react-native-sound';
 
 
 import UserContext from '../lib/UserContext';
-import { getScoring } from '../lib/utils';
+import { getScoring, settingUserStudyTime } from '../lib/utils';
 import Loading from './component/Loading';
 import MockProb from './component/MockProb';
 import MockResult from './component/MockResult';
@@ -72,6 +72,9 @@ const MockStudyScreen = ({navigation, route}) =>{
     // 메모리 누수 방지
     const isComponentMounted = useRef(true)
         
+
+    // 학습화면에서 머무른 시간 = 학습시간으로 간주
+    const USERTIMER = useRef(0)
 
     const storage = getStorage(firebase);
     
@@ -271,6 +274,8 @@ const MockStudyScreen = ({navigation, route}) =>{
     
     /** 데이터 로딩 처리 */
     useEffect(() => {
+        
+        USERTIMER.current = Date.now()
 
         dataLoading()
         imagesLoading(imageRef)
@@ -296,6 +301,10 @@ const MockStudyScreen = ({navigation, route}) =>{
                 USER.updateUserWrongColl(rawProblems.current, prevProblems.current)
             }
 
+
+            
+            // 유저의 학습시간 업데이트
+            settingUserStudyTime(Date.now() - USERTIMER.current)
         }
 
     }, []);
