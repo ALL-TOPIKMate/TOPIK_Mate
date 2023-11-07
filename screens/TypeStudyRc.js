@@ -313,7 +313,7 @@ const TypeStudyRc = ({ navigation, route }) => {
 
                     <ProbMain 
                         PRB_MAIN_CONT={problems[currentIndex].PRB_MAIN_CONT} 
-                        PRB_NUM={currentIndex + 1} 
+                        PRB_NUM={problems[currentIndex].PRB_NUM}
                     />
 
                     {

@@ -410,7 +410,7 @@ const TypeStudyLc = ({ navigation, route }) => {
                     </View>
 
                     <ProbMain
-                        PRB_NUM={currentIndex + 1}
+                        PRB_NUM={problems[currentIndex].PRB_NUM}
                         PRB_MAIN_CONT={problems[currentIndex].PRB_MAIN_CONT}
                     />
 
