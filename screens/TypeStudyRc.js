@@ -19,7 +19,7 @@ import { settingUserStudyTime } from '../lib/utils';
 
 
 // 이어서 풀기 - 유저가 마지막에 푼 문제 기록 
-const updateUserLastVisible = async(lastKey, lastVal) => {
+const updateUserLastVisible = async(lastKey, lastVal, USERTIMER) => {
     const user = await checkUserSession()
 
     user[lastKey] = lastVal
@@ -27,6 +27,10 @@ const updateUserLastVisible = async(lastKey, lastVal) => {
     await createUserSession(user)
 
     console.log(await checkUserSession())
+
+    
+    // 유저의 학습시간 업데이트
+    settingUserStudyTime(Date.now() - USERTIMER)
 }
 
 
@@ -113,12 +117,8 @@ const TypeStudyRc = ({ navigation, route }) => {
 
             
             // 이어서 풀기 - 유형학습 마지막 문제 저장
-            updateUserLastVisible(sectTag, lastprbRef.current)
+            updateUserLastVisible(sectTag, lastprbRef.current, USERTIMER.current)
 
-            
-            
-            // 유저의 학습시간 업데이트
-            settingUserStudyTime(Date.now() - USERTIMER.current)
         }
 
     }, [])
