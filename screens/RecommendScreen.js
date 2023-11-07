@@ -4,7 +4,7 @@ import { useIsFocused } from "@react-navigation/native";
 
 import UserContext from "../lib/UserContext"
 import { checkUserSession } from '../lib/auth';
-import { getNow2 } from '../lib/utils';
+import { getHour, getMinute, getNow2, getSecond } from '../lib/utils';
 // import {subscribeAuth } from "../lib/auth";
 
 const getUserStudyTime = async () => {
@@ -69,35 +69,42 @@ const RecommendScreen = ({route, navigation}) =>{
                 <View style = {styles.detail}>
                     <Text style = {styles.mainText}>Today's</Text>
                     <Text style = {styles.mainText}>Running Time</Text>
-                    <Text style = {styles.mainText}>: {time}ms</Text>
+                    <Text style = {styles.mainText}>: {getHour(time)}h {getMinute(time)}m {getSecond(time)}s </Text>
                 </View>
                 
+                <View style = {{ borderBottomColor: '#CECECE', borderBottomWidth: StyleSheet.hairlineWidth, marginLeft: 4, marginBottom: 20}}/>
                 
-                <View style = {[styles.recommend, {flex: 1.8,}]}>
+                <View style = {[styles.recommend, {flex: 1.2,}]}>
 
                     {
                         // 레벨테스트 문제를 다 풀지 않았을 경우 (진단 고사)
                         (USER.level == 1 && USER.levelIdx < 10) || (USER.level == 2 && USER.levelIdx < 10)?
-                        <TouchableOpacity style = {styles.recommendBtn} onPress={()=> navigation.navigate("LevelStudy") }>
+                        <View style = {styles.recommend}>
+                            <TouchableOpacity style = {styles.recommendBtn} onPress={()=> navigation.navigate("LevelStudy") }>
+                                <Text style = {{color: "#F6F1F1", fontSize: 24, fontWeight: "bold", paddingVertical: 5}}>
+                                    진단고사 풀기
+                                </Text>
+
+                                <Text style = {{color: "#F6F1F1", fontSize: 20}}>                        
+                                    {10 - Number(USER.levelIdx)} / 10
+                                </Text>
+                            </TouchableOpacity>
+                            <Text style = {styles.recommendBottomText}>추천 문제를 풀기 위해 진단고사 문제를 다 풀어보세요!</Text>
+                        </View>:
+
+                        // 다 풀었을 경우 (추천 문제)
+                        <View style = {styles.recommend}>
+                            <TouchableOpacity style = {[styles.recommendBtn, {opacity: USER.recIndex == 10? 0.5: 1}]} onPress={() => navigation.navigate("RecommendStudy")} disabled = {USER.recIndex}>
                             <Text style = {{color: "#F6F1F1", fontSize: 24, fontWeight: "bold", paddingVertical: 5}}>
-                                진단고사 풀기
+                                추천문제 풀기
                             </Text>
 
                             <Text style = {{color: "#F6F1F1", fontSize: 20}}>                        
-                                {10 - Number(USER.levelIdx)} / 10
+                                {10 - Number(USER.recIndex)} / 10
                             </Text>
-                        </TouchableOpacity>:
-
-                        // 다 풀었을 경우 (추천 문제)
-                        <TouchableOpacity style = {[styles.recommendBtn, {opacity: USER.recIndex == 10? 0.5: 1}]} onPress={() => navigation.navigate("RecommendStudy")} disabled = {USER.recIndex}>
-                        <Text style = {{color: "#F6F1F1", fontSize: 24, fontWeight: "bold", paddingVertical: 5}}>
-                            추천문제 풀기
-                        </Text>
-
-                        <Text style = {{color: "#F6F1F1", fontSize: 20}}>                        
-                            {10 - Number(USER.recIndex)} / 10
-                        </Text>
-                        </TouchableOpacity>
+                            </TouchableOpacity>
+                            <Text style = {styles.recommendBottomText}>하루에 한번 10문제의 추천문제를 풀어보세요!</Text>
+                        </View>
                     }
                     
                 </View>
@@ -114,11 +121,12 @@ const styles = StyleSheet.create({
         flex: 1,
     }, 
     detail: {
-        flex: 1.2,
+        flex: 0.5,
         marginTop: 20,
         marginLeft: 10
     },
     recommend: {
+        flexDirection: "column",
         alignItems: "center",
         justifyContent: "center" 
     },
@@ -135,6 +143,9 @@ const styles = StyleSheet.create({
     mainText: {
         fontSize: 28,
         fontWeight: "bold"
+    },
+    recommendBottomText: {
+        marginTop: 16
     }
 })
 
