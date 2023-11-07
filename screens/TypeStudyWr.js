@@ -274,6 +274,9 @@ const TypeStudyWr = ({ navigation, route }) => {
                             <Text>exit</Text>
                         </TouchableOpacity>
                     </View>
+                    <View>
+                        <Text>{problems[currentIndex].PRB_RSC}</Text>
+                    </View>
                     
                     <ProbMain PRB_NUM={problems[currentIndex].PRB_NUM} PRB_MAIN_CONT = {problems[currentIndex].PRB_MAIN_CONT} />
 
