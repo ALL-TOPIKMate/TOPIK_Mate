@@ -321,7 +321,7 @@ const RecommendStudyScreen = ({route, navigation}) =>{
     useEffect(()=>{
 
         // 제출 버튼 클릭
-       if(problem.length && userProblem.current[nextBtn].PRB_USER_ANSW){
+       if(isSubmit){
 
             // 문제 풀이시간 기록
             userProblem.current[nextBtn].ELAPSED_TIME = Date.now() - startTime.current

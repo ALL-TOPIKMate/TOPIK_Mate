@@ -5,10 +5,6 @@ import {View, Text, StyleSheet, TouchableOpacity, Button, Image} from 'react-nat
 
 export default RecommendProbChoice = ({problem, PRB_CHOICE1, PRB_CHOICE2, PRB_CHOICE3, PRB_CHOICE4, imgRef, PRB_CORRT_ANSW, nextBtn, setNextBtn, isSubmit, setIsSubmit}) =>{
  
-    // 제출 여부를 확인하여 렌더링
-    const [subBtn, setSubBtn] = useState(false)
-
-
     // 유저가 누르는 버튼 
     const [click, setClick] = useState(0);
 
@@ -19,7 +15,7 @@ export default RecommendProbChoice = ({problem, PRB_CHOICE1, PRB_CHOICE2, PRB_CH
     
 
     function setBtnColor(btn){
-        if(subBtn){ // 4지선다 비활성화 (사용자 정답 결과)
+        if(isSubmit){ // 4지선다 비활성화 (사용자 정답 결과)
 
             if(btn == click){ // 유저가 고른 버튼
 
@@ -48,7 +44,7 @@ export default RecommendProbChoice = ({problem, PRB_CHOICE1, PRB_CHOICE2, PRB_CH
         <Text /><Text />
        {
             isImage ? (   
-                <TouchableOpacity onPress = {() => {setClick(1)}} disabled = {subBtn} style = {[{borderColor: setBtnColor(1), borderWidth: 5}]}>
+                <TouchableOpacity onPress = {() => {setClick(1)}} disabled = {isSubmit} style = {[{borderColor: setBtnColor(1), borderWidth: 5}]}>
                     <Image
                     style={{height: 200}}
                     resizeMode = "stretch"
@@ -56,7 +52,7 @@ export default RecommendProbChoice = ({problem, PRB_CHOICE1, PRB_CHOICE2, PRB_CH
                     />
                 </TouchableOpacity>
             ):(
-                <TouchableOpacity onPress = {() => {setClick(1)}} disabled = {subBtn} style = {[styles.button, {backgroundColor: setBtnColor(1)}]}>
+                <TouchableOpacity onPress = {() => {setClick(1)}} disabled = {isSubmit} style = {[styles.button, {backgroundColor: setBtnColor(1)}]}>
                     <Text>
                         {PRB_CHOICE1}
                     </Text>
@@ -66,7 +62,7 @@ export default RecommendProbChoice = ({problem, PRB_CHOICE1, PRB_CHOICE2, PRB_CH
        <Text />
        {
             isImage ? (   
-                <TouchableOpacity onPress = {() => {setClick(2)}} disabled = {subBtn} style = {[{borderColor: setBtnColor(2), borderWidth: 5}]}>
+                <TouchableOpacity onPress = {() => {setClick(2)}} disabled = {isSubmit} style = {[{borderColor: setBtnColor(2), borderWidth: 5}]}>
                     <Image
                     style={{height: 200}}
                     resizeMode = "stretch"
@@ -74,7 +70,7 @@ export default RecommendProbChoice = ({problem, PRB_CHOICE1, PRB_CHOICE2, PRB_CH
                     />
                 </TouchableOpacity>
             ):(
-                <TouchableOpacity onPress = {() => {setClick(2)}} disabled = {subBtn} style = {[styles.button, {backgroundColor: setBtnColor(2)}]}>
+                <TouchableOpacity onPress = {() => {setClick(2)}} disabled = {isSubmit} style = {[styles.button, {backgroundColor: setBtnColor(2)}]}>
                     <Text>
                         {PRB_CHOICE2}
                     </Text>
@@ -84,7 +80,7 @@ export default RecommendProbChoice = ({problem, PRB_CHOICE1, PRB_CHOICE2, PRB_CH
        <Text/>
        {
             isImage ? (   
-                <TouchableOpacity onPress = {() => {setClick(3)}} disabled = {subBtn} style = {[{borderColor: setBtnColor(3), borderWidth: 5}]}>
+                <TouchableOpacity onPress = {() => {setClick(3)}} disabled = {isSubmit} style = {[{borderColor: setBtnColor(3), borderWidth: 5}]}>
                     <Image
                     style={{height: 200}}
                     resizeMode = "stretch"
@@ -92,7 +88,7 @@ export default RecommendProbChoice = ({problem, PRB_CHOICE1, PRB_CHOICE2, PRB_CH
                     />
                 </TouchableOpacity>
             ):(
-                <TouchableOpacity onPress = {() => {setClick(3)}} disabled = {subBtn} style = {[styles.button, {backgroundColor: setBtnColor(3)}]}>
+                <TouchableOpacity onPress = {() => {setClick(3)}} disabled = {isSubmit} style = {[styles.button, {backgroundColor: setBtnColor(3)}]}>
                     <Text>
                         {PRB_CHOICE3}
                     </Text>
@@ -102,7 +98,7 @@ export default RecommendProbChoice = ({problem, PRB_CHOICE1, PRB_CHOICE2, PRB_CH
         <Text/>
         {
             isImage ? (   
-                <TouchableOpacity onPress = {() => {setClick(4)}} disabled = {subBtn} style = {[{borderColor: setBtnColor(4), borderWidth: 5}]}>
+                <TouchableOpacity onPress = {() => {setClick(4)}} disabled = {isSubmit} style = {[{borderColor: setBtnColor(4), borderWidth: 5}]}>
                     <Image
                     style={{height: 200}}
                     resizeMode = "stretch"
@@ -110,7 +106,7 @@ export default RecommendProbChoice = ({problem, PRB_CHOICE1, PRB_CHOICE2, PRB_CH
                     />
                 </TouchableOpacity>
             ):(
-                <TouchableOpacity onPress = {() => {setClick(4)}} disabled = {subBtn} style = {[styles.button, {backgroundColor: setBtnColor(4)}]}>
+                <TouchableOpacity onPress = {() => {setClick(4)}} disabled = {isSubmit} style = {[styles.button, {backgroundColor: setBtnColor(4)}]}>
                     <Text>
                         {PRB_CHOICE4}
                     </Text>
@@ -119,13 +115,13 @@ export default RecommendProbChoice = ({problem, PRB_CHOICE1, PRB_CHOICE2, PRB_CH
         }
 
         <Text/>
-        {!subBtn ? 
-            (<TouchableOpacity onPress = {() => {problem.PRB_USER_ANSW = click; setIsSubmit(!isSubmit); setSubBtn(true)}} disabled = {click==0} style = {[styles.button, {backgroundColor: click == 0 ? "#D9D9D9" : "#94AF9F"}]}>
+        {!isSubmit ? 
+            (<TouchableOpacity onPress = {() => { problem.PRB_USER_ANSW = click; setIsSubmit(true) }} disabled = {click==0} style = {[styles.button, {backgroundColor: click == 0 ? "#D9D9D9" : "#94AF9F"}]}>
                 <Text>
                     SUBMIT
                 </Text>
             </TouchableOpacity>): 
-            (<TouchableOpacity onPress = {() => {setNextBtn(nextBtn+1)}} style = {[styles.button, {backgroundColor: "#94AF9F"}]}>
+            (<TouchableOpacity onPress = {() => { setNextBtn(nextBtn+1); setIsSubmit(false) }} style = {[styles.button, {backgroundColor: "#94AF9F"}]}>
                 <Text>
                     NEXT
                 </Text>

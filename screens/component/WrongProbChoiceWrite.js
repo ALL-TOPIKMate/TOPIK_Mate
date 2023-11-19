@@ -52,6 +52,10 @@ export default WrongProbChoiceWrite = ({ PRB_CORRT_ANSW, PRB_USER_ANSW, PRB_USER
                     <ViewBox text = {splitProblemAnswer2(splitProblemAnswer(PRB_CORRT_ANSW).text1).join("<br/>")} width = {width}/>
     
                     <Text />
+                    {/* 감점요인 */}
+                    <Text style={styles.text}>감점 요인</Text>
+                    <ViewBox text = {ERROR_CONT} width = {width} />
+
 
                     <Text style={styles.text}>㉡</Text>
                     <View style = {styles.alignRow}>
@@ -64,6 +68,10 @@ export default WrongProbChoiceWrite = ({ PRB_CORRT_ANSW, PRB_USER_ANSW, PRB_USER
 
                     <Text style={styles.text}>Best Answer</Text>
                     <ViewBox text = {splitProblemAnswer2(splitProblemAnswer(PRB_CORRT_ANSW).text2).join("<br/>")} width = {width} />
+                    
+                    {/* 감점요인 */}
+                    <Text style={styles.text}>감점 요인</Text>
+                    <ViewBox text = {ERROR_CONT2} width = {width} />
                 </View>: 
                 <View>
                     <View style = {styles.alignRow}>
@@ -76,12 +84,13 @@ export default WrongProbChoiceWrite = ({ PRB_CORRT_ANSW, PRB_USER_ANSW, PRB_USER
 
                     <Text style={styles.text}>Best Answer</Text>
                     <ViewBox text = {PRB_CORRT_ANSW} width = {width}/> 
+
+                    {/* 감점요인 */}
+                    <Text style={styles.text}>감점 요인</Text>
+                    <ViewBox text = {ERROR_CONT} width = {width} />
                 </View>
             }
             
-            <Text style={styles.text}>감점 요인</Text>
-            <ViewBox text = {ERROR_CONT} width = {width} />
-            { (TAG == "001" || TAG == "002") && <ViewBox text = {ERROR_CONT2} width = {width} />}
             
             <Text />
             <Text />

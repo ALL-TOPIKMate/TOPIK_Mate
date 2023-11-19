@@ -109,6 +109,8 @@ const MockProb = ({ problem, choice, setChoice, choice2, setChoice2, index, setI
                     }
 
                 </View>
+
+                <View style = {{height: 50}}/>
             </ScrollView>
         </View>
     )

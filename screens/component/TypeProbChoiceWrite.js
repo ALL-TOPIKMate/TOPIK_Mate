@@ -148,7 +148,11 @@ export default TypeProbChoiceWrite = ({ problem, userProblem, currentIndex , set
                                 
                                 <Text style = {[styles.textLeft, styles.text]}>Best answer</Text>
                                 <ProblemAnswerView width = {width} text = {splitProblemAnswer2(splitProblemAnswer(PRB_CORRT_ANSW).text1).join("<br/>")}/>
-                            
+
+
+                                {/* 감점요인 */}
+                                <Text style = {styles.text}>감점요인 / 채점기준</Text>
+                                <ProblemAnswerView width = {width} text = {errorContents} />
                             </View>
 
                             <View style = {styles.questionContainer}>
@@ -163,6 +167,9 @@ export default TypeProbChoiceWrite = ({ problem, userProblem, currentIndex , set
                                 <Text style = {[styles.textLeft, styles.text]}>Best answer</Text>
                                 <ProblemAnswerView width = {width} text = {splitProblemAnswer2(splitProblemAnswer(PRB_CORRT_ANSW).text2).join("<br/>")}/>
                             
+                                {/* 감점요인 */}
+                                <Text style = {styles.text}>감점요인 / 채점기준</Text>
+                                <ProblemAnswerView width = {width} text = {errorContents2} />
                             </View>
                         </View> :
                         <View style = {styles.questionContainer}>
@@ -174,14 +181,12 @@ export default TypeProbChoiceWrite = ({ problem, userProblem, currentIndex , set
 
                             <Text style = {[styles.textLeft, styles.text]}>Best answer</Text>
                             <ProblemAnswerView width = {width} text = {PRB_CORRT_ANSW}/>
+
+                            {/* 감점요인 */}
+                            <Text style = {styles.text}>감점요인 / 채점기준</Text>
+                            <ProblemAnswerView width = {width} text = {errorContents} />
                         </View>
                 }
-
-
-
-                <Text style = {styles.text}>감점요인 / 채점기준</Text>
-                <ProblemAnswerView width = {width} text = {errorContents} />
-                { (TAG == "001" || TAG == "002") && <ProblemAnswerView width = {width} text = {errorContents2} /> }  
                 
 
                 <Text />

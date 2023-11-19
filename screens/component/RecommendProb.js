@@ -108,8 +108,23 @@ export default recommendProb = ({ problem, audRef, imgRef, nextBtn, setNextBtn, 
 
 
     return (
-        <ScrollView style = {styles.container}>
-            { problemStructure(problem, imgRef, nextBtn, setNextBtn, isSubmit, setIsSubmit, audio) }
+        <ScrollView>
+            {
+            /* 정오답 표시 마크 */
+                isSubmit &&
+                <MarkUserAnswer 
+                    PRB_CORRT_ANSW={problem.PRB_CORRT_ANSW}
+                    PRB_USER_ANSW={problem.PRB_USER_ANSW}
+                />
+            }
+            
+            
+            <View style = {styles.container}>
+                {
+                problemStructure(problem, imgRef, nextBtn, setNextBtn, isSubmit, setIsSubmit, audio)
+                }
+            </View>
+            <View style = {{height: 50}}/>
         </ScrollView>
     )
 }
@@ -119,21 +134,5 @@ export default recommendProb = ({ problem, audRef, imgRef, nextBtn, setNextBtn, 
 const styles = StyleSheet.create({
     container:{
         padding: 20,
-    },
-
-    btnBox:{
-        backgroundColor: "#D9D9D9", 
-        flexDirection: "row", 
-        justifyContent: "center",
-
-        alignItems: "center",
-
-        paddingVertical: 30
-    }, 
-
-    btnPlay:{
-        backgroundColor: "#94AF9F",
-        padding: 30,
-        borderRadius: 20
     }
 })
