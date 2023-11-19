@@ -137,7 +137,7 @@ const TypeScreen = ({ navigation }) => {
                 </TouchableOpacity>
                 <View style = {{flex: 0.1}}/>
                 <TouchableOpacity
-                    style={[styles.buttonContainer, selectedButton === 'write' ? styles.selectedButton : styles.noSelectedButton]} onPress={handleWriteButtonPress}>
+                    style={[styles.buttonContainer, selectedButton === 'write' ? styles.selectedButton : styles.noSelectedButton, {opacity: USER.level == 1? 0.5: 1}]} onPress={handleWriteButtonPress} disabled = {USER.level == 1}>
                     <Text style = {{fontWeight: "bold"}}>Writing</Text>
                 </TouchableOpacity>
                 <View style = {{flex: 0.2}}/>
